@@ -3,16 +3,84 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
+//Auslagern!!!!!!!!!!!!!!!
+class UIData {
+  //Verwendete Routen
+  static const String homeRoute = "/home";
+  static const String logIn = "/login";
+}
+
+//Login
+class LogIn extends StatefulWidget {
+  const LogIn({super.key});
+
+  @override
+  State<LogIn> createState() => _LogIn();
+}
+
+class _LogIn extends State<LogIn> with SingleTickerProviderStateMixin {
+  int _selectedIndex = 0;
+  static const TextStyle optionStyle =
+      TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
+  static const List<Widget> _widgetOptions = <Widget>[
+    Text(
+      'Index 0: Home',
+      style: optionStyle,
+    ),
+    Text(
+      'Index 1: Business',
+      style: optionStyle,
+    ),
+    Text(
+      'Index 2: School',
+      style: optionStyle,
+    ),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      Navigator.pushNamed(context, UIData.homeRoute);
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: _widgetOptions.elementAt(_selectedIndex),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.business),
+            label: 'Business',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.school),
+            label: 'School',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.amber[800],
+        onTap: _onItemTapped,
+      ),
+    );
+  }
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -23,6 +91,12 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const MyHomePage(title: 'Crime Spotter'),
+      initialRoute: null,
+      routes: <String, WidgetBuilder>{
+        UIData.homeRoute: (BuildContext context) =>
+            const MyHomePage(title: 'Crime Spotter'),
+        UIData.logIn: (BuildContext context) => const LogIn()
+      },
     );
   }
 }
@@ -62,15 +136,15 @@ class _MyHomePageState extends State<MyHomePage>
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
-    controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    );
-    animation = Tween<double>(begin: 0.0, end: 1.0).animate(controller);
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   controller = AnimationController(
+  //     vsync: this,
+  //     duration: const Duration(seconds: 2),
+  //   );
+  //   animation = Tween<double>(begin: 0.0, end: 1.0).animate(controller);
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -79,27 +153,63 @@ class _MyHomePageState extends State<MyHomePage>
         child: SizedBox(
           child: ScrollConfiguration(
             behavior: AppScrollBehavior(),
-            child: Column(children: [
-              const Text(
-                  textAlign: TextAlign.left,
-                  overflow: TextOverflow.fade,
-                  maxLines: 1,
-                  'Kürzlich hinzugefügte Falle:'),
-              Expanded(
-                child: GridView.builder(
-                  padding: const EdgeInsets.all(12.0),
-                  gridDelegate: CustomGridDelegate(dimension: 240.0),
-                  // itemCount: 10, // Pagination??
-                  scrollDirection: Axis.horizontal,
-                  //reverse: true,
-                  itemBuilder: (BuildContext context, int index) {
-                    final math.Random random = math.Random(index);
-                    return GridTile(
-                      header: GridTileBar(
-                        title: Text('$index',
-                            style: const TextStyle(color: Colors.black)),
-                      ),
-                      child: Container(
+            child: Column(
+              children: [
+                const Text(
+                    textAlign: TextAlign.left,
+                    overflow: TextOverflow.fade,
+                    maxLines: 1,
+                    'Kürzlich hinzugefügte Falle:'),
+                Expanded(
+                  child: GridView.builder(
+                    padding: const EdgeInsets.all(12.0),
+                    gridDelegate: CustomGridDelegate(dimension: 240.0),
+                    // itemCount: 10, // Pagination??
+                    scrollDirection: Axis.horizontal,
+                    //reverse: true,
+                    itemBuilder: (BuildContext context, int index) {
+                      return GridTile(
+                        header: GridTileBar(
+                          title: Text('$index',
+                              style: const TextStyle(color: Colors.black)),
+                        ),
+                        child: Container(
+                            margin: const EdgeInsets.all(12.0),
+                            decoration: ShapeDecoration(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12.0),
+                              ),
+                              gradient: const RadialGradient(
+                                colors: <Color>[
+                                  Color.fromARGB(1, 21, 209, 242),
+                                  Color(0x2F0099BB)
+                                ],
+                              ),
+                            ),
+                            child: const Placeholder()),
+                      );
+                    },
+                  ),
+                ),
+                const Text(
+                    overflow: TextOverflow.fade,
+                    maxLines: 1,
+                    'In deiner Nähe:'),
+                Expanded(
+                  child: GridView.builder(
+                    padding: const EdgeInsets.all(12.0),
+                    gridDelegate: CustomGridDelegate(dimension: 240.0),
+                    itemCount: 20, // Pagination??
+                    scrollDirection: Axis.vertical,
+                    //reverse: true,
+                    itemBuilder: (BuildContext context, int index) {
+                      final math.Random random = math.Random(index);
+                      return GridTile(
+                        header: GridTileBar(
+                          title: Text('$index',
+                              style: const TextStyle(color: Colors.black)),
+                        ),
+                        child: Container(
                           margin: const EdgeInsets.all(12.0),
                           decoration: ShapeDecoration(
                             shape: RoundedRectangleBorder(
@@ -112,50 +222,28 @@ class _MyHomePageState extends State<MyHomePage>
                               ],
                             ),
                           ),
-                          child: const Placeholder()),
-                    );
-                  },
-                ),
-              ),
-              const Text(
-                  overflow: TextOverflow.fade, maxLines: 1, 'In deiner Nähe:'),
-              Expanded(
-                child: GridView.builder(
-                  padding: const EdgeInsets.all(12.0),
-                  gridDelegate: CustomGridDelegate(dimension: 240.0),
-                  //itemCount: 10, // Pagination??
-                  scrollDirection: Axis.vertical,
-                  //reverse: true,
-                  itemBuilder: (BuildContext context, int index) {
-                    final math.Random random = math.Random(index);
-                    return GridTile(
-                      header: GridTileBar(
-                        title: Text('$index',
-                            style: const TextStyle(color: Colors.black)),
-                      ),
-                      child: Container(
-                        margin: const EdgeInsets.all(12.0),
-                        decoration: ShapeDecoration(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
-                          gradient: const RadialGradient(
-                            colors: <Color>[
-                              Color.fromARGB(1, 21, 209, 242),
-                              Color(0x2F0099BB)
-                            ],
+                          child: FlutterLogo(
+                            style: FlutterLogoStyle.values[
+                                random.nextInt(FlutterLogoStyle.values.length)],
                           ),
                         ),
-                        child: FlutterLogo(
-                          style: FlutterLogoStyle.values[
-                              random.nextInt(FlutterLogoStyle.values.length)],
-                        ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ]),
+                OverflowBar(
+                  alignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    TextButton(
+                      child: const Text('Button 1'),
+                      onPressed: () {
+                        Navigator.pushNamed(context, UIData.logIn);
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -287,20 +375,3 @@ class CustomGridLayout extends SliverGridLayout {
     return count + crossAxisCount - 1;
   }
 }
-
-// bottomNavigationBar: BottomNavigationBar(
-//   items: const <BottomNavigationBarItem>[
-//     BottomNavigationBarItem(
-//       icon: Icon(Icons.home),
-//       label: 'Home',
-//     ),
-//     BottomNavigationBarItem(
-//       icon: Icon(Icons.photo_camera),
-//       label: 'Camera',
-//     ),
-//     BottomNavigationBarItem(
-//       icon: Icon(Icons.help),
-//       label: 'Help',
-//     ),
-//   ],
-// ),
