@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const MyHomePage(title: 'Crime Spotter'),
-      initialRoute: null,
+      initialRoute: UIData.logIn,
       routes: <String, WidgetBuilder>{
         UIData.homeRoute: (BuildContext context) =>
             const MyHomePage(title: 'Crime Spotter'),
