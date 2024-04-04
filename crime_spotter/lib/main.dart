@@ -3,7 +3,9 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
+
+import 'src/features/LogIn/presentation/login.dart';
+import 'src/shared/4data/const.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,7 +14,6 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -23,21 +24,18 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const MyHomePage(title: 'Crime Spotter'),
+      initialRoute: null,
+      routes: <String, WidgetBuilder>{
+        UIData.homeRoute: (BuildContext context) =>
+            const MyHomePage(title: 'Crime Spotter'),
+        UIData.logIn: (BuildContext context) => const LogIn()
+      },
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
 
   final String title;
 
@@ -49,28 +47,6 @@ class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
   late AnimationController controller;
   late Animation<double> animation;
-  bool _isMenuOpened = false;
-
-  void _switchMenu() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _isMenuOpened = !_isMenuOpened;
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    );
-    animation = Tween<double>(begin: 0.0, end: 1.0).animate(controller);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,27 +55,63 @@ class _MyHomePageState extends State<MyHomePage>
         child: SizedBox(
           child: ScrollConfiguration(
             behavior: AppScrollBehavior(),
-            child: Column(children: [
-              const Text(
-                  textAlign: TextAlign.left,
-                  overflow: TextOverflow.fade,
-                  maxLines: 1,
-                  'Kürzlich hinzugefügte Falle:'),
-              Expanded(
-                child: GridView.builder(
-                  padding: const EdgeInsets.all(12.0),
-                  gridDelegate: CustomGridDelegate(dimension: 240.0),
-                  // itemCount: 10, // Pagination??
-                  scrollDirection: Axis.horizontal,
-                  //reverse: true,
-                  itemBuilder: (BuildContext context, int index) {
-                    final math.Random random = math.Random(index);
-                    return GridTile(
-                      header: GridTileBar(
-                        title: Text('$index',
-                            style: const TextStyle(color: Colors.black)),
-                      ),
-                      child: Container(
+            child: Column(
+              children: [
+                const Text(
+                    textAlign: TextAlign.left,
+                    overflow: TextOverflow.fade,
+                    maxLines: 1,
+                    'Kürzlich hinzugefügte Falle:'),
+                Expanded(
+                  child: GridView.builder(
+                    padding: const EdgeInsets.all(12.0),
+                    gridDelegate: CustomGridDelegate(dimension: 240.0),
+                    // itemCount: 10, // Pagination??
+                    scrollDirection: Axis.horizontal,
+                    //reverse: true,
+                    itemBuilder: (BuildContext context, int index) {
+                      return GridTile(
+                        header: GridTileBar(
+                          title: Text('$index',
+                              style: const TextStyle(color: Colors.black)),
+                        ),
+                        child: Container(
+                            margin: const EdgeInsets.all(12.0),
+                            decoration: ShapeDecoration(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12.0),
+                              ),
+                              gradient: const RadialGradient(
+                                colors: <Color>[
+                                  Color.fromARGB(1, 21, 209, 242),
+                                  Color(0x2F0099BB)
+                                ],
+                              ),
+                            ),
+                            child: const Placeholder()),
+                      );
+                    },
+                  ),
+                ),
+                const Text(
+                    overflow: TextOverflow.fade,
+                    maxLines: 1,
+                    'In deiner Nähe:'),
+                Expanded(
+                  child: GridView.builder(
+                    padding: const EdgeInsets.all(12.0),
+                    gridDelegate: CustomGridDelegate(dimension: 240.0),
+                    itemCount: 20, // Pagination??
+                    scrollDirection: Axis.vertical,
+                    //reverse: true,
+                    itemBuilder: (BuildContext context, int index) {
+                      final math.Random random = math.Random(index);
+                      return GridTile(
+                        header: GridTileBar(
+                          title: Text('$index',
+                              style: const TextStyle(color: Colors.black)),
+                        ),
+                        child: Container(
                           margin: const EdgeInsets.all(12.0),
                           decoration: ShapeDecoration(
                             shape: RoundedRectangleBorder(
@@ -112,50 +124,28 @@ class _MyHomePageState extends State<MyHomePage>
                               ],
                             ),
                           ),
-                          child: const Placeholder()),
-                    );
-                  },
-                ),
-              ),
-              const Text(
-                  overflow: TextOverflow.fade, maxLines: 1, 'In deiner Nähe:'),
-              Expanded(
-                child: GridView.builder(
-                  padding: const EdgeInsets.all(12.0),
-                  gridDelegate: CustomGridDelegate(dimension: 240.0),
-                  //itemCount: 10, // Pagination??
-                  scrollDirection: Axis.vertical,
-                  //reverse: true,
-                  itemBuilder: (BuildContext context, int index) {
-                    final math.Random random = math.Random(index);
-                    return GridTile(
-                      header: GridTileBar(
-                        title: Text('$index',
-                            style: const TextStyle(color: Colors.black)),
-                      ),
-                      child: Container(
-                        margin: const EdgeInsets.all(12.0),
-                        decoration: ShapeDecoration(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
-                          gradient: const RadialGradient(
-                            colors: <Color>[
-                              Color.fromARGB(1, 21, 209, 242),
-                              Color(0x2F0099BB)
-                            ],
+                          child: FlutterLogo(
+                            style: FlutterLogoStyle.values[
+                                random.nextInt(FlutterLogoStyle.values.length)],
                           ),
                         ),
-                        child: FlutterLogo(
-                          style: FlutterLogoStyle.values[
-                              random.nextInt(FlutterLogoStyle.values.length)],
-                        ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ]),
+                OverflowBar(
+                  alignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    TextButton(
+                      child: const Text('Button 1'),
+                      onPressed: () {
+                        Navigator.pushNamed(context, UIData.logIn);
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -287,20 +277,3 @@ class CustomGridLayout extends SliverGridLayout {
     return count + crossAxisCount - 1;
   }
 }
-
-// bottomNavigationBar: BottomNavigationBar(
-//   items: const <BottomNavigationBarItem>[
-//     BottomNavigationBarItem(
-//       icon: Icon(Icons.home),
-//       label: 'Home',
-//     ),
-//     BottomNavigationBarItem(
-//       icon: Icon(Icons.photo_camera),
-//       label: 'Camera',
-//     ),
-//     BottomNavigationBarItem(
-//       icon: Icon(Icons.help),
-//       label: 'Help',
-//     ),
-//   ],
-// ),
