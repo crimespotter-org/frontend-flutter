@@ -1,8 +1,7 @@
 import 'dart:async';
-
 import 'package:crime_spotter/main.dart';
+import 'package:crime_spotter/src/features/LogIn/presentation/register.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -16,20 +15,24 @@ class LogIn extends StatefulWidget {
 class _LogInState extends State<LogIn> {
   bool _isLoading = false;
   bool _redirect = false;
+  bool _hidePassword = true;
+  bool _register = false;
 
   late final TextEditingController _emailController = TextEditingController();
   late final TextEditingController _passwordController =
       TextEditingController();
   late final StreamSubscription<AuthState> _authStateSubscription;
 
+  final _listViewKey = GlobalKey<FormState>();
+
   Future<void> _signIn() async {
+    setState(() {
+      _isLoading = true;
+    });
     try {
-      setState(() {
-        _isLoading = true;
-      });
       await supabase.auth.signInWithPassword(
         email: _emailController.text.trim(),
-        password: _emailController.text,
+        password: _passwordController.text,
         // emailRedirectTo:
         //     kIsWeb ? null : 'io.supabase.flutterquickstart://login-callback/',
       );
@@ -37,20 +40,26 @@ class _LogInState extends State<LogIn> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content: Text('Bestätigen Sie die versendete E-Mail!')),
+            content: Text('WIllkommen bei CrimeSpotter!'),
+            backgroundColor: Colors.green,
+          ),
         );
         _emailController.clear();
         _passwordController.clear();
       }
     } on AuthException catch (ex) {
-      SnackBar(
-        content: Text(ex.message),
-        backgroundColor: Theme.of(context).colorScheme.error,
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Überprüfen Sie Ihre Eingaben'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
       );
     } catch (ex) {
-      SnackBar(
-        content: const Text('Ein unerwarteter Fehler ist aufgetreten!'),
-        backgroundColor: Theme.of(context).colorScheme.error,
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Ein unerwarteter Fehler ist aufgetreten!'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
       );
     } finally {
       if (mounted) {
@@ -59,6 +68,12 @@ class _LogInState extends State<LogIn> {
         });
       }
     }
+  }
+
+  Future<void> _upadateRegister() async {
+    setState(() {
+      _register = !_register;
+    });
   }
 
   @override
@@ -104,50 +119,118 @@ class _LogInState extends State<LogIn> {
               child: Container(
                 decoration: const BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage(
-                        'assets/LogIn.jpg'), //////////////////////// Richtiges Bild einsetzen
+                    image: AssetImage('assets/LogIn-Card.png'),
                     fit: BoxFit.cover,
                   ),
                 ),
-                child: ListView(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
-                  children: [
-                    // Center(
-                    //   child: Image.asset(
-                    //     'assets/LogIn.png', //////////////////////// Richtiges Bild einsetzen
-                    //     width: 100.0,
-                    //     height: 100.0,
-                    //     fit: BoxFit.contain,
-                    //   ),
-                    // ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'LogIn',
-                      style: TextStyle(
-                        fontSize: MediaQuery.of(context).size.width *
-                            0.08, // 8% der Bildschirmbreite
-                        fontWeight: FontWeight.bold,
-                        color: Colors.yellow,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 20),
-                    TextFormField(
-                      controller: _emailController,
-                      decoration: const InputDecoration(labelText: "E-Mail"),
-                    ),
-                    const SizedBox(height: 20),
-                    TextFormField(
-                      controller: _emailController,
-                      decoration: const InputDecoration(labelText: "Passwort"),
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: _isLoading ? null : _signIn,
-                      child: Text(_isLoading ? 'Lädt' : 'Einloggen'),
-                    ),
-                  ],
+                child: Form(
+                  key: _listViewKey,
+                  child: _register
+                      ? const Register()
+                      : ListView(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 18, horizontal: 12),
+                          children: [
+                            Center(
+                              child: Image.asset(
+                                'assets/Login-Detective.png', //////////////////////// Richtiges Bild einsetzen
+                                width: 100.0,
+                                height: 100.0,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                            Text(
+                              'LogIn',
+                              style: TextStyle(
+                                fontSize: MediaQuery.of(context).size.width *
+                                    0.08, // 8% der Bildschirmbreite
+                                fontWeight: FontWeight.bold,
+                                fontStyle: FontStyle.italic,
+                                color: Colors.yellow,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 10),
+                            TextFormField(
+                              controller: _emailController,
+                              decoration:
+                                  const InputDecoration(labelText: "E-Mail"),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Bitte geben Sie eine E-Mail ein';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 10),
+                            TextFormField(
+                              controller: _passwordController,
+                              obscureText: _hidePassword,
+                              decoration: InputDecoration(
+                                //helperText: ,
+                                labelText: "Passwort",
+                                suffixIcon: IconButton(
+                                  icon: Icon(_hidePassword
+                                      ? Icons.visibility_off
+                                      : Icons.visibility),
+                                  onPressed: () {
+                                    setState(
+                                      () {
+                                        _hidePassword = !_hidePassword;
+                                      },
+                                    );
+                                  },
+                                ),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Bitte geben Sie Ihr Passwort ein';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 10),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                shadowColor: Colors.black12,
+                                backgroundColor:
+                                    const Color.fromARGB(172, 248, 197, 79),
+                              ),
+                              onPressed: () {
+                                if (_isLoading) return;
+
+                                if (_listViewKey.currentState!.validate()) {
+                                  _signIn();
+                                }
+                              },
+                              child: Text(
+                                _isLoading ? 'Lädt' : 'Einloggen',
+                                style: const TextStyle(
+                                  color: Color.fromARGB(216, 8, 1, 1),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                shadowColor: Colors.black12,
+                                backgroundColor:
+                                    const Color.fromARGB(172, 248, 197, 79),
+                              ),
+                              onPressed: () {
+                                if (_isLoading) return;
+
+                                _upadateRegister();
+                              },
+                              child: Text(
+                                _isLoading ? 'Lädt' : 'Registrieren',
+                                style: const TextStyle(
+                                  color: Color.fromARGB(216, 8, 1, 1),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                 ),
               ),
             ),

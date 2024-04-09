@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:ui';
 import 'dart:math' as math;
 
+import 'package:crime_spotter/src/features/LogIn/presentation/register.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -40,7 +42,8 @@ class MyApp extends StatelessWidget {
       routes: <String, WidgetBuilder>{
         UIData.homeRoute: (BuildContext context) =>
             const MyHomePage(title: 'Crime Spotter'),
-        UIData.logIn: (BuildContext context) => const LogIn()
+        UIData.logIn: (BuildContext context) => const LogIn(),
+        UIData.register: (BuildContext context) => const Register(),
       },
     );
   }
@@ -60,6 +63,26 @@ class _MyHomePageState extends State<MyHomePage>
   late AnimationController controller;
   late Animation<double> animation;
 
+  late final StreamSubscription<AuthState> _authStateSubscription;
+
+  @override
+  void initState() {
+    _authStateSubscription = supabase.auth.onAuthStateChange.listen((data) {
+      final session = data.session;
+
+      if (session == null) {
+        Navigator.of(context).pushReplacementNamed(UIData.logIn);
+      }
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _authStateSubscription.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,6 +92,31 @@ class _MyHomePageState extends State<MyHomePage>
             behavior: AppScrollBehavior(),
             child: Column(
               children: [
+                IconButton(
+                  iconSize: 20,
+                  alignment: Alignment.topRight,
+                  onPressed: () async {
+                    final sm = ScaffoldMessenger.of(context);
+                    try {
+                      final response = await supabase.auth.signOut();
+
+                      sm.showSnackBar(
+                        const SnackBar(
+                            content:
+                                Text('Sie haben sich erfolgreich ausgeloggt'),
+                            backgroundColor: Colors.green),
+                      );
+                    } catch (ex) {
+                      sm.showSnackBar(
+                        const SnackBar(
+                          content: Text('Beim Ausloggen trat ein Fehler auf!'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.logout),
+                ),
                 const Text(
                     textAlign: TextAlign.left,
                     overflow: TextOverflow.fade,
