@@ -2,10 +2,11 @@ import 'dart:async';
 import 'package:crime_spotter/src/features/LogIn/presentation/register.dart';
 import 'package:crime_spotter/src/features/explore/1presentation/explore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
 
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:location/location.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -62,19 +63,15 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final locationController = Location();
-
-  LocationData? currentLocation;
-  Map<PolylineId, Polyline> polylines = {};
-
   static const googlePlex = LatLng(37.4223, -122.0848);
   static const mountainView = LatLng(37.2861, -122.0839);
 
-  late AnimationController controller;
-  late Animation<double> animation;
-
   late final StreamSubscription<AuthState> _authStateSubscription;
   final Completer<GoogleMapController> _controller = Completer();
+
+  final double spaceBetweenButtons = 5;
+
+  MapType _mapType = MapType.none;
 
   // Future<void> generatePolyLineFromPoints(
   //     List<LatLng> polylineCoordinates) async {
@@ -139,33 +136,18 @@ class _MyHomePageState extends State<MyHomePage> {
   //   );
   // }
 
-  Future<void> getCurrentLocation() async {
-    Location location = Location();
-    location.getLocation().then((location) => currentLocation = location);
-
-    GoogleMapController googleMapController = await _controller.future;
-
-    location.onLocationChanged.listen(
-      (event) {
-        currentLocation = event;
-
-        googleMapController.animateCamera(
-          CameraUpdate.newCameraPosition(
-            CameraPosition(
-              zoom: 13.5,
-              target: LatLng(
-                event.latitude!,
-                event.longitude!,
-              ),
-            ),
-          ),
-        );
-        setState(() {});
-      },
-    );
+  Future<Position> getUserCurrentLocation() async {
+    await Geolocator.requestPermission()
+        .then((value) {})
+        .onError((error, stackTrace) async {
+      await Geolocator.requestPermission();
+      print("ERROR" + error.toString());
+    });
+    return await Geolocator.getCurrentPosition();
   }
 
   Future<void> initializeMap() async {
+    getUserCurrentLocation();
     // getCurrentLocation();
     // await fetchLocationUpdate();
     // final coordinates = await fetchPolyLinePoints();
@@ -195,35 +177,147 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
+  final List<Marker> _markers = <Marker>[
+    // const Marker(
+    //   markerId: MarkerId('sourceLocation'),
+    //   icon: BitmapDescriptor.defaultMarker,
+    //   position: googlePlex,
+    // ),
+    // const Marker(
+    //   markerId: MarkerId('destinationLocation'),
+    //   icon: BitmapDescriptor.defaultMarker,
+    //   position: mountainView,
+    // )
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GoogleMap(
-        initialCameraPosition: const CameraPosition(
-          target: googlePlex,
-          zoom: 13,
-        ),
-        markers: {
-          // Marker(
-          //   markerId: const MarkerId('currentLocation'),
-          //   icon: BitmapDescriptor.defaultMarker,
-          //   position: LatLng(
-          //     currentLocation!.latitude!,
-          //     currentLocation!.longitude!,
-          //   ),
-          // ),
-          const Marker(
-            markerId: MarkerId('sourceLocation'),
-            icon: BitmapDescriptor.defaultMarker,
-            position: googlePlex,
+      body: Stack(
+        children: <Widget>[
+          GoogleMap(
+            initialCameraPosition: const CameraPosition(
+              target: googlePlex,
+              zoom: 13,
+            ),
+            mapType: _mapType,
+            markers: Set<Marker>.of(_markers),
+            onMapCreated: (GoogleMapController controller) {
+              _controller.complete(controller);
+            },
           ),
-          const Marker(
-            markerId: MarkerId('destinationLocation'),
-            icon: BitmapDescriptor.defaultMarker,
-            position: mountainView,
-          )
-        },
-        //polylines: Set<Polyline>.of(polylines.values),
+          Positioned(
+            top: MediaQuery.of(context).size.height * 0.05,
+            right: MediaQuery.of(context).size.width * 0.05,
+            left: MediaQuery.of(context).size.width * 0.05,
+            child: Container(
+              color: Colors.white,
+              child: Row(
+                children: <Widget>[
+                  // IconButton(
+                  //   splashColor: Colors.grey,
+                  //   icon: const Icon(Icons.menu),
+                  //   onPressed: () {},
+                  // ),
+                  Expanded(
+                    child: TextField(
+                      cursorColor: Colors.black,
+                      keyboardType: TextInputType.text,
+                      textInputAction: TextInputAction.go,
+                      decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 15),
+                          hintText: "Search..."),
+                    ),
+                  ),
+                  // const Padding(
+                  //   padding: EdgeInsets.only(right: 8.0),
+                  //   child: CircleAvatar(
+                  //     backgroundColor: Colors.deepPurple,
+                  //     child: Text('RD'),
+                  //   ),
+                  // ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: Column(
+        children: [
+          SizedBox(height: MediaQuery.of(context).size.height * 0.05),
+          FloatingActionButton(
+            onPressed: () async {
+              getUserCurrentLocation().then(
+                (value) async {
+                  _markers.add(
+                    Marker(
+                      markerId: const MarkerId("currentLocation"),
+                      position: LatLng(value.latitude, value.longitude),
+                      infoWindow: const InfoWindow(
+                        title: 'Mein Standort',
+                      ),
+                    ),
+                  );
+
+                  CameraPosition cameraPosition = CameraPosition(
+                    target: LatLng(value.latitude, value.longitude),
+                    zoom: 14,
+                  );
+
+                  final GoogleMapController controller =
+                      await _controller.future;
+                  controller.animateCamera(
+                      CameraUpdate.newCameraPosition(cameraPosition));
+                  setState(
+                    () {},
+                  );
+                },
+              );
+            },
+            child: const Icon(Icons.local_activity),
+          ),
+          SizedBox(height: spaceBetweenButtons),
+          FloatingActionButton(
+            onPressed: () async {
+              getUserCurrentLocation().then(
+                (value) async {
+                  setState(
+                    () {
+                      _mapType = MapType.normal;
+                    },
+                  );
+                },
+              );
+            },
+            child: const Icon(Icons.location_on),
+          ),
+          SizedBox(height: spaceBetweenButtons),
+          FloatingActionButton(
+            onPressed: () async {
+              setState(
+                () {
+                  _mapType = MapType.hybrid;
+                },
+              );
+            },
+            child: const Icon(Icons.satellite_alt),
+          ),
+          SizedBox(height: spaceBetweenButtons),
+          FloatingActionButton(
+            onPressed: () async {
+              setState(
+                () {
+                  _mapType = MapType.terrain;
+                },
+              );
+            },
+            child: const Icon(Icons.terrain),
+          ),
+        ],
       ),
     );
   }
