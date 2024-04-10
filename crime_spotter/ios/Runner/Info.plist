@@ -29,6 +29,10 @@
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
 	<key>UISupportedInterfaceOrientations</key>
+	<string>NSLocationWhenInUseUsageDescription</string>
+	<key>To display and track location</key>
+	<string>NSLocationAlwaysAndWhenInUseUsageDescription</string>
+	<key>To display and track location</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
@@ -45,5 +49,16 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	  <key>CFBundleURLTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleTypeRole</key>
+      <string>Editor</string>
+      <key>CFBundleURLSchemes</key>
+      <array>
+        <string>io.supabase.flutterquickstart</string>
+      </array>
+    </dict>
+  </array>
 </dict>
 </plist>
