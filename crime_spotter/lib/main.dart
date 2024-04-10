@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:crime_spotter/src/features/LogIn/presentation/register.dart';
 import 'package:crime_spotter/src/features/explore/1presentation/explore.dart';
+import 'package:crime_spotter/src/features/settings/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
@@ -48,6 +49,7 @@ class MyApp extends StatelessWidget {
         UIData.logIn: (BuildContext context) => const LogIn(),
         UIData.register: (BuildContext context) => const Register(),
         UIData.explore: (BuildContext context) => const Explore(),
+        UIData.settings: (BuildContext context) => const Settings(),
       },
     );
   }
@@ -73,77 +75,45 @@ class _MyHomePageState extends State<MyHomePage> {
 
   MapType _mapType = MapType.none;
 
-  // Future<void> generatePolyLineFromPoints(
-  //     List<LatLng> polylineCoordinates) async {
-  //   const id = PolylineId('polyline');
-
-  //   final polyline = Polyline(
-  //     polylineId: id,
-  //     color: Colors.blueAccent,
-  //     points: polylineCoordinates,
-  //     width: 5,
-  //   );
-
-  //   setState(() => polylines[id] = polyline);
-  // }
-
-  // Future<List<LatLng>> fetchPolyLinePoints() async {
-  //   final polylinePoints = PolylinePoints();
-
-  //   final result = await polylinePoints.getRouteBetweenCoordinates(
-  //     googleMapsApiKey,
-  //     PointLatLng(googlePlex.latitude, googlePlex.longitude),
-  //     PointLatLng(mountainView.latitude, mountainView.longitude),
-  //   );
-  //   if (result.points.isNotEmpty) {
-  //     return result.points
-  //         .map((point) => LatLng(point.latitude, point.longitude))
-  //         .toList();
-  //   } else {
-  //     debugPrint(result.errorMessage);
-  //     return [];
-  //   }
-  // }
-
-  // Future<void> fetchLocationUpdate() async {
-  //   bool serviceEnabled;
-  //   PermissionStatus permissionGranted;
-
-  //   serviceEnabled = await locationController.serviceEnabled();
-  //   if (!serviceEnabled) return;
-
-  //   serviceEnabled = await locationController.requestService();
-
-  //   permissionGranted = await locationController.hasPermission();
-  //   if (permissionGranted == PermissionStatus.denied) {
-  //     permissionGranted = await locationController.requestPermission();
-  //     if (permissionGranted != PermissionStatus.granted) return;
-  //   }
-
-  //   locationController.onLocationChanged.listen(
-  //     (currentLocation) {
-  //       if (currentLocation.latitude != null &&
-  //           currentLocation.longitude != null) {
-  //         setState(
-  //           () {
-  //             currentPosition =
-  //                 LatLng(currentLocation.latitude!, currentLocation.longitude!);
-  //           },
-  //         );
-  //         print(currentPosition);
-  //       }
-  //     },
-  //   );
-  // }
-
   Future<Position> getUserCurrentLocation() async {
-    await Geolocator.requestPermission()
-        .then((value) {})
-        .onError((error, stackTrace) async {
-      await Geolocator.requestPermission();
-      print("ERROR" + error.toString());
-    });
-    return await Geolocator.getCurrentPosition();
+    //TODO: Auf die Permission subscriben, falls diese im Browser angepasst wurde
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      permission = await Geolocator.requestPermission();
+    }
+
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Für diese App wird GPS benötigt!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return Position(
+          longitude: 0,
+          latitude: 0,
+          timestamp: DateTime.now(),
+          accuracy: 0,
+          altitude: 0,
+          altitudeAccuracy: 0,
+          heading: 0,
+          headingAccuracy: 0,
+          speed: 0,
+          speedAccuracy: 0);
+    }
+
+    return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
   }
 
   Future<void> initializeMap() async {
@@ -283,13 +253,9 @@ class _MyHomePageState extends State<MyHomePage> {
           SizedBox(height: spaceBetweenButtons),
           FloatingActionButton(
             onPressed: () async {
-              getUserCurrentLocation().then(
-                (value) async {
-                  setState(
-                    () {
-                      _mapType = MapType.normal;
-                    },
-                  );
+              setState(
+                () {
+                  _mapType = MapType.normal;
                 },
               );
             },
@@ -314,6 +280,14 @@ class _MyHomePageState extends State<MyHomePage> {
                   _mapType = MapType.terrain;
                 },
               );
+            },
+            child: const Icon(Icons.terrain),
+          ),
+          //TEST-BUTTON///////////////////////////////////////////////////////////////
+          SizedBox(height: spaceBetweenButtons),
+          FloatingActionButton(
+            onPressed: () async {
+              Navigator.pushReplacementNamed(context, UIData.settings);
             },
             child: const Icon(Icons.terrain),
           ),
