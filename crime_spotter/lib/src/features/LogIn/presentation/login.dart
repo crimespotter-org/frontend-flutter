@@ -115,7 +115,7 @@ class _LogInState extends State<LogIn> {
             height: MediaQuery.of(context).size.height * 0.6,
             child: Card(
               elevation: 4.0,
-              clipBehavior: Clip.antiAliasWithSaveLayer,
+              clipBehavior: Clip.antiAlias,
               child: Container(
                 decoration: const BoxDecoration(
                   image: DecorationImage(
