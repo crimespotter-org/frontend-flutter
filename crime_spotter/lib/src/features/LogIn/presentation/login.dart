@@ -46,7 +46,8 @@ class _LogInState extends State<LogIn> {
             backgroundColor: Colors.green,
           ),
         );
-        SupaBaseConst.currentUser = SupaBaseConst.supabase.auth.currentUser;
+        SupaBaseConst.currentUser ??= SupaBaseConst.supabase.auth.currentUser;
+
         _emailController.clear();
         _passwordController.clear();
       }
@@ -85,8 +86,7 @@ class _LogInState extends State<LogIn> {
     SupaBaseConst.supabase.auth.onAuthStateChange.listen(
       (data) {
         final event = data.event;
-        if (event == AuthChangeEvent.signedIn) {
-          print('In');
+        if (event == AuthChangeEvent.signedIn && mounted) {
           Navigator.of(context).pushReplacementNamed(UIData.homeRoute);
         }
       },

@@ -79,18 +79,19 @@ class _MapPageState extends State<MapPage> {
       speedAccuracy: 0);
 
   Future<void> initializeMap() async {
-    await getUserCurrentLocation().then((value) async {
-      CameraPosition cameraPosition = CameraPosition(
-        target: LatLng(value.latitude, value.longitude),
-        zoom: 14,
-      );
+    await getUserCurrentLocation().then(
+      (value) async {
+        CameraPosition cameraPosition = CameraPosition(
+          target: LatLng(value.latitude, value.longitude),
+          zoom: 14,
+        );
 
-      final GoogleMapController controller = await _controller.future;
-      controller.animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
+        final GoogleMapController controller = await _controller.future;
+        controller
+            .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
 
-      setState(
-        () {
-          _markers.add(
+        setState(
+          () => _markers.add(
             Marker(
               markerId: const MarkerId("currentLocation2"),
               position: LatLng(value.latitude, value.longitude),
@@ -98,23 +99,38 @@ class _MapPageState extends State<MapPage> {
                 title: 'Mein Standort',
               ),
             ),
-          );
-          startposition = value;
-        },
-      );
-    });
+          ),
+        );
+        startposition = value;
+      },
+    );
+  }
+
+  @override
+  void setState(fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
   }
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) async => await SupaBaseConst.userIsAuthenticated(context).then(
-        (loggedIn) async => loggedIn
-            ? await initializeMap()
-            : await Navigator.popAndPushNamed(context, UIData.logIn),
-      ),
+      (_) async {
+        if (mounted && SupaBaseConst.supabase.auth.currentSession == null) {
+          Navigator.popAndPushNamed(context, UIData.logIn);
+        } else {
+          await initializeMap();
+        }
+      },
     );
+  }
+
+  @override
+  void dispose() {
+    _markers.clear();
+    super.dispose();
   }
 
   final List<Marker> _markers = <Marker>[
@@ -140,7 +156,7 @@ class _MapPageState extends State<MapPage> {
           SupaBaseConst.supabase.auth.signOut();
           Navigator.pushReplacementNamed(context, UIData.logIn);
         },
-        tooltip: "Weis noch nicht",
+        tooltip: "Ausloggen",
         child: const Icon(Icons.add),
       ),
       FloatingActionButton(
