@@ -1,17 +1,13 @@
 import 'dart:async';
-import 'dart:developer';
-import 'dart:js_interop';
-import 'dart:js_util';
-import 'package:crime_spotter/main.dart';
+import 'package:crime_spotter/src/features/LogIn/presentation/login.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
+import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:flutter/material.dart';
 
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:radial_button/widget/circle_floating_button.dart'
     as radial_button;
-
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key, required this.title});
@@ -23,7 +19,6 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
-  late final StreamSubscription<AuthState> _authStateSubscription;
   final Completer<GoogleMapController> _controller = Completer();
 
   final double spaceBetweenButtons = 5;
@@ -112,25 +107,14 @@ class _MapPageState extends State<MapPage> {
 
   @override
   void initState() {
-    _authStateSubscription = supabase.auth.onAuthStateChange.listen(
-      (data) {
-        final session = data.session;
-
-        if (session == null) {
-          Navigator.of(context).pushReplacementNamed(UIData.logIn);
-        }
-      },
-    );
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) async => await initializeMap(),
+      (_) async => await SupaBaseConst.userIsAuthenticated(context).then(
+        (loggedIn) async => loggedIn
+            ? await initializeMap()
+            : await Navigator.popAndPushNamed(context, UIData.logIn),
+      ),
     );
-  }
-
-  @override
-  void dispose() {
-    _authStateSubscription.cancel();
-    super.dispose();
   }
 
   final List<Marker> _markers = <Marker>[
@@ -150,12 +134,17 @@ class _MapPageState extends State<MapPage> {
   Widget build(BuildContext context) {
     var itemsActionBar = [
       FloatingActionButton(
+        heroTag: "signOut",
         backgroundColor: Colors.greenAccent,
-        onPressed: () {},
+        onPressed: () {
+          SupaBaseConst.supabase.auth.signOut();
+          Navigator.pushReplacementNamed(context, UIData.logIn);
+        },
         tooltip: "Weis noch nicht",
         child: const Icon(Icons.add),
       ),
       FloatingActionButton(
+        heroTag: "explore",
         backgroundColor: Colors.blueAccent,
         onPressed: () async {
           Navigator.pushReplacementNamed(context, UIData.explore);
@@ -164,6 +153,7 @@ class _MapPageState extends State<MapPage> {
         child: const Icon(Icons.explore),
       ),
       FloatingActionButton(
+        heroTag: "settings",
         backgroundColor: Colors.grey,
         onPressed: () async {
           Navigator.pushReplacementNamed(context, UIData.settings);
@@ -248,6 +238,7 @@ class _MapPageState extends State<MapPage> {
         children: [
           SizedBox(height: MediaQuery.of(context).size.height * 0.05),
           FloatingActionButton(
+            heroTag: "currentLocation",
             onPressed: () async {
               getUserCurrentLocation().then(
                 (value) async {
@@ -280,6 +271,7 @@ class _MapPageState extends State<MapPage> {
           ),
           SizedBox(height: spaceBetweenButtons),
           FloatingActionButton(
+            heroTag: "mapNormal",
             onPressed: () async {
               setState(
                 () {
@@ -291,6 +283,7 @@ class _MapPageState extends State<MapPage> {
           ),
           SizedBox(height: spaceBetweenButtons),
           FloatingActionButton(
+            heroTag: "mapHybrid",
             onPressed: () async {
               setState(
                 () {
@@ -302,6 +295,7 @@ class _MapPageState extends State<MapPage> {
           ),
           SizedBox(height: spaceBetweenButtons),
           FloatingActionButton(
+            heroTag: "mapTerrain",
             onPressed: () async {
               setState(
                 () {

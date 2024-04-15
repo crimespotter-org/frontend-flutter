@@ -15,22 +15,24 @@ class _RadialButtonState extends State<RadialButton> {
   }
 }
 
-
 var itemsActionBar = [
   FloatingActionButton(
+    heroTag: "firstMenu",
     backgroundColor: Colors.greenAccent,
     onPressed: () {},
-    child: Icon(Icons.add),
+    child: const Icon(Icons.add),
   ),
   FloatingActionButton(
+    heroTag: "secondMenu",
     backgroundColor: Colors.indigoAccent,
     onPressed: () {},
-    child: Icon(Icons.camera),
+    child: const Icon(Icons.camera),
   ),
   FloatingActionButton(
+    heroTag: "thirdMenu",
     backgroundColor: Colors.orangeAccent,
     onPressed: () {},
-    child: Icon(Icons.card_giftcard),
+    child: const Icon(Icons.card_giftcard),
   ),
 ];
 

@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:crime_spotter/main.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
+import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -14,7 +14,6 @@ class Register extends StatefulWidget {
 
 class _RegisterState extends State<Register> {
   bool _isLoading = false;
-  bool _redirect = false;
   bool _hidePassword = true;
 
   late final TextEditingController _emailController = TextEditingController();
@@ -23,10 +22,6 @@ class _RegisterState extends State<Register> {
   late final TextEditingController _reapeatedPasswordController =
       TextEditingController();
 
-  late final StreamSubscription<AuthState> _authStateSubscription;
-
-  final _listViewKey = GlobalKey<FormState>();
-
   Future<void> _register() async {
     setState(() {
       _isLoading = true;
@@ -34,7 +29,7 @@ class _RegisterState extends State<Register> {
     final sm = ScaffoldMessenger.of(context);
     final theme = Theme.of(context);
     try {
-      await supabase.auth.signUp(
+      await SupaBaseConst.supabase.auth.signUp(
         email: _emailController.text.trim(),
         password: _passwordController.text,
         // emailRedirectTo:

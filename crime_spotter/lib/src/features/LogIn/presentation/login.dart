@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:crime_spotter/main.dart';
 import 'package:crime_spotter/src/features/LogIn/presentation/register.dart';
+import 'package:crime_spotter/src/features/map/1presentation/map.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
+import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -14,14 +16,12 @@ class LogIn extends StatefulWidget {
 
 class _LogInState extends State<LogIn> {
   bool _isLoading = false;
-  bool _redirect = false;
   bool _hidePassword = true;
   bool _register = false;
 
   late final TextEditingController _emailController = TextEditingController();
   late final TextEditingController _passwordController =
       TextEditingController();
-  late final StreamSubscription<AuthState> _authStateSubscription;
 
   final _listViewKey = GlobalKey<FormState>();
 
@@ -29,43 +29,48 @@ class _LogInState extends State<LogIn> {
     setState(() {
       _isLoading = true;
     });
+    final currentContext = Theme.of(context);
+    final sn = ScaffoldMessenger.of(context);
     try {
-      await supabase.auth.signInWithPassword(
+      await SupaBaseConst.supabase.auth.signInWithPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text,
         // emailRedirectTo:
         //     kIsWeb ? null : 'io.supabase.flutterquickstart://login-callback/',
       );
 
-      if (mounted) {
+      if (mounted && SupaBaseConst.supabase.auth.currentSession != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('WIllkommen bei CrimeSpotter!'),
+            content: Text('Willkommen bei CrimeSpotter!'),
             backgroundColor: Colors.green,
           ),
         );
+        SupaBaseConst.currentUser = SupaBaseConst.supabase.auth.currentUser;
         _emailController.clear();
         _passwordController.clear();
       }
     } on AuthException catch (ex) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      sn.showSnackBar(
         SnackBar(
           content: const Text('Überprüfen Sie Ihre Eingaben'),
-          backgroundColor: Theme.of(context).colorScheme.error,
+          backgroundColor: currentContext.colorScheme.error,
         ),
       );
     } catch (ex) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      sn.showSnackBar(
         SnackBar(
           content: const Text('Ein unerwarteter Fehler ist aufgetreten!'),
-          backgroundColor: Theme.of(context).colorScheme.error,
+          backgroundColor: currentContext.colorScheme.error,
         ),
       );
     } finally {
       if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+        setState(
+          () {
+            _isLoading = false;
+          },
+        );
       }
     }
   }
@@ -76,18 +81,21 @@ class _LogInState extends State<LogIn> {
     });
   }
 
+  Future<void> _setupAuthListener() async {
+    SupaBaseConst.supabase.auth.onAuthStateChange.listen(
+      (data) {
+        final event = data.event;
+        if (event == AuthChangeEvent.signedIn) {
+          print('In');
+          Navigator.of(context).pushReplacementNamed(UIData.homeRoute);
+        }
+      },
+    );
+  }
+
   @override
   void initState() {
-    _authStateSubscription = supabase.auth.onAuthStateChange.listen((data) {
-      if (_redirect) return;
-
-      final session = data.session;
-
-      if (session != null) {
-        _redirect = true;
-        Navigator.of(context).pushReplacementNamed(UIData.homeRoute);
-      }
-    });
+    _setupAuthListener();
     super.initState();
   }
 
@@ -95,7 +103,6 @@ class _LogInState extends State<LogIn> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
-    _authStateSubscription.cancel();
     super.dispose();
   }
 
@@ -133,7 +140,7 @@ class _LogInState extends State<LogIn> {
                           children: [
                             Center(
                               child: Image.asset(
-                                'assets/Login-Detective.png', //////////////////////// Richtiges Bild einsetzen
+                                'assets/Login-Detective.png',
                                 width: 100.0,
                                 height: 100.0,
                                 fit: BoxFit.contain,
