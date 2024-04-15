@@ -26,29 +26,47 @@ class _MapPageState extends State<MapPage> {
   MapType _mapType = MapType.none;
 
   Future<Position> getUserCurrentLocation() async {
-    //TODO: Auf die Permission subscriben, falls diese im Browser angepasst wurde
-    bool serviceEnabled;
-    LocationPermission permission;
+    try {
+      //TODO: Auf die Permission subscriben, falls diese im Browser angepasst wurde
+      bool serviceEnabled;
+      LocationPermission permission;
 
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      return Future.error('Location services are disabled.');
-    }
+      serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        return Future.error('Location services are disabled.');
+      }
 
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.deniedForever) {
-      permission = await Geolocator.requestPermission();
-    }
+      permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        permission = await Geolocator.requestPermission();
+      }
 
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.deniedForever) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Für diese App wird GPS benötigt!'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Für diese App wird GPS benötigt!'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return Position(
+            longitude: 0,
+            latitude: 0,
+            timestamp: DateTime.now(),
+            accuracy: 0,
+            altitude: 0,
+            altitudeAccuracy: 0,
+            heading: 0,
+            headingAccuracy: 0,
+            speed: 0,
+            speedAccuracy: 0);
+      }
+
+      return await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+    } catch (ex) {
+      print(ex);
       return Position(
           longitude: 0,
           latitude: 0,
@@ -61,9 +79,6 @@ class _MapPageState extends State<MapPage> {
           speed: 0,
           speedAccuracy: 0);
     }
-
-    return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
   }
 
   Position startposition = Position(
