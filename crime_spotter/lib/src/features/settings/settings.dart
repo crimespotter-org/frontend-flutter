@@ -1,3 +1,5 @@
+import 'package:crime_spotter/src/shared/4data/const.dart';
+import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:flutter/material.dart';
 
 class Settings extends StatefulWidget {
@@ -9,9 +11,20 @@ class Settings extends StatefulWidget {
 
 class _SettingsState extends State<Settings> {
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) async => await SupaBaseConst.userIsAuthenticated(context).then(
+        (loggedIn) async => loggedIn
+            ? null
+            : await Navigator.popAndPushNamed(context, UIData.logIn),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
       body: SafeArea(
         child: Column(
           children: [

@@ -1,5 +1,5 @@
-import 'package:crime_spotter/main.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
+import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:flutter/material.dart';
 
 class SplashPage extends StatefulWidget {
@@ -20,7 +20,7 @@ class _SplashPageState extends State<SplashPage> {
     await Future.delayed(Duration.zero);
     if (!mounted) return;
 
-    final session = supabase.auth.currentSession;
+    final session = SupaBaseConst.supabase.auth.currentSession;
 
     if (session != null) {
       Navigator.of(context).pushReplacementNamed(UIData.homeRoute);

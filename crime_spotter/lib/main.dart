@@ -1,21 +1,14 @@
-import 'dart:async';
 import 'package:crime_spotter/src/features/LogIn/presentation/register.dart';
 import 'package:crime_spotter/src/features/explore/1presentation/explore.dart';
 import 'package:crime_spotter/src/features/settings/settings.dart';
+import 'package:crime_spotter/src/features/splash/splash_page.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
-
-import 'package:geolocator/geolocator.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'src/features/LogIn/presentation/login.dart';
 import 'src/features/map/1presentation/map.dart';
 import 'src/shared/4data/const.dart';
-
-final supabase = Supabase.instance.client;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
