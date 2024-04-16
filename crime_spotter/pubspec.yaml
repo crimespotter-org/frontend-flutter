@@ -33,6 +33,7 @@ dependencies:
 
   supabase_flutter: ^2.0.0
   radial_button: ^1.0.1
+  #flutter_swiper: ^1.1.6
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -69,6 +70,7 @@ flutter:
   - assets/LogIn.jpg
   - assets/LogIn-Card.png
   - assets/Login-Detective.png
+  - assets/placeholder.jpg
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
