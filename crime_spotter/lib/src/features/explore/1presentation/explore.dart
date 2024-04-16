@@ -5,6 +5,7 @@ import 'dart:developer' as developer;
 
 import 'package:crime_spotter/main.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
+import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -20,7 +21,8 @@ class _ExploreState extends State<Explore> {
   List<ExploreCard> cases = <ExploreCard>[];
 
   Future<void> readData() async {
-    var response = await supabase.from('cases').select('*,furtherlinks (*)');
+    var response =
+        await SupaBaseConst.supabase.from('cases').select('*,furtherlinks (*)');
 
     List<ExploreCard> temp = <ExploreCard>[];
 
@@ -115,27 +117,66 @@ class _ExploreState extends State<Explore> {
                           height: 300.0,
                           fit: BoxFit.contain,
                         ),
+                      )
+                    else
+                      PageView.builder(
+                        itemCount: cases[currentIndex].imageUrls.length,
+                        itemBuilder: (context, index) {
+                          return Image.network(
+                            cases[currentIndex].imageUrls[index],
+                            fit: BoxFit.cover, // Adjust the image fit as needed
+                          );
+                        },
                       ),
-                    // else
-                    //   SizedBox(
-                    //     height: 300,
-                    //     child: Image.network(cases[currentIndex].imageUrls,
-                    //         fit: BoxFit.cover),
-                    //   ),
                     if (cases[currentIndex].buttons != null &&
                         cases[currentIndex].buttons!.isNotEmpty)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: cases[currentIndex].buttons!.map((button) {
-                          return Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: ElevatedButton(
-                              onPressed: () {},
-                              child: Text(button.type),
+                          IconData iconData;
+                          switch (button.type) {
+                            case "default":
+                              iconData = Icons.disabled_by_default;
+                              break;
+                            case "podcast":
+                              iconData = Icons.headphones;
+                              break;
+                            case "newspaper":
+                              iconData = Icons.newspaper;
+                              break;
+                            case "test":
+                              iconData = Icons.library_books;
+                              break;
+                            default:
+                              iconData =
+                                  Icons.error; // or any other default icon
+                          }
+
+                          return RawMaterialButton(
+                            onPressed: () {},
+                            elevation: 2.0,
+                            fillColor: Colors.white,
+                            padding: const EdgeInsets.all(10.0),
+                            shape: const CircleBorder(),
+                            child: Icon(
+                              iconData,
+                              size: 25.0,
                             ),
                           );
                         }).toList(),
                       ),
+                    Container(
+                      margin: EdgeInsets.only(top: 10),
+                      child: DefaultTextStyle.merge(
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        child: const Center(
+                          child: Text('Summary:'),
+                        ),
+                      ),
+                    ),
                     Expanded(
                       child: SingleChildScrollView(
                         padding: const EdgeInsets.all(16.0),
@@ -160,16 +201,16 @@ class _ExploreState extends State<Explore> {
 }
 
 class ExploreCard {
-  final List<String> imageUrls;
-  final List<MediaButton>? buttons;
-  final String text;
+  List<String> imageUrls;
+  List<MediaButton>? buttons;
+  String text;
 
   ExploreCard({required this.imageUrls, this.buttons, required this.text});
 }
 
 class MediaButton {
-  final String text;
-  final String type;
+  String text;
+  String type;
 
   MediaButton({required this.type, required this.text});
 }
