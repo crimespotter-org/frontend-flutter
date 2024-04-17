@@ -1,11 +1,14 @@
 import 'dart:async';
-import 'package:crime_spotter/src/features/LogIn/presentation/login.dart';
+import 'package:crime_spotter/src/features/map/4data/fetch_data.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
+import 'package:crime_spotter/src/shared/4data/helper_functions.dart';
 import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
+import 'package:crime_spotter/src/shared/constants/size.dart';
 import 'package:flutter/material.dart';
 
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:radial_button/widget/circle_floating_button.dart'
     as radial_button;
 
@@ -20,6 +23,8 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   final Completer<GoogleMapController> _controller = Completer();
+  final TextEditingController _searchController = TextEditingController();
+  final FetchData fetchData = FetchData();
 
   final double spaceBetweenButtons = 5;
 
@@ -106,15 +111,17 @@ class _MapPageState extends State<MapPage> {
             .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
 
         setState(
-          () => _markers.add(
-            Marker(
-              markerId: const MarkerId("currentLocation2"),
-              position: LatLng(value.latitude, value.longitude),
-              infoWindow: const InfoWindow(
-                title: 'Mein Standort',
+          () {
+            _markers.add(
+              Marker(
+                markerId: const MarkerId("currentLocation2"),
+                position: LatLng(value.latitude, value.longitude),
+                infoWindow: const InfoWindow(
+                  title: 'Mein Standort',
+                ),
               ),
-            ),
-          ),
+            );
+          },
         );
         startposition = value;
       },
@@ -128,8 +135,13 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
+  List<LocationData> _fetchedLocations = <LocationData>[];
   @override
   void initState() {
+    // fetchData
+    //     .searchLocation('Trossingen')
+    //     .then((value) => _fetchedLocations = _initialLocations = value);
+
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback(
       (_) async {
@@ -145,21 +157,28 @@ class _MapPageState extends State<MapPage> {
   @override
   void dispose() {
     _markers.clear();
+    _searchController.dispose();
     super.dispose();
   }
 
-  final List<Marker> _markers = <Marker>[
-    // const Marker(
-    //   markerId: MarkerId('sourceLocation'),
-    //   icon: BitmapDescriptor.defaultMarker,
-    //   position: googlePlex,
-    // ),
-    // const Marker(
-    //   markerId: MarkerId('destinationLocation'),
-    //   icon: BitmapDescriptor.defaultMarker,
-    //   position: mountainView,
-    // )
-  ];
+  final List<Marker> _markers = <Marker>[];
+
+  void _runFilter(String value) async {
+    List<LocationData> result = [];
+
+    if (value.isEmpty) {
+      result = [];
+    } else {
+      result = await fetchData.searchLocation(value);
+    }
+
+    setState(
+      () {
+        _fetchedLocations = result;
+        _fetchedLocations = TDeviceUtil.removeDuplicates(_fetchedLocations);
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -214,39 +233,69 @@ class _MapPageState extends State<MapPage> {
             right: MediaQuery.of(context).size.width * 0.05,
             left: MediaQuery.of(context).size.width * 0.05,
             child: Container(
+              height: 200,
               color: Colors.white,
-              child: Row(
-                children: <Widget>[
-                  // IconButton(
-                  //   splashColor: Colors.grey,
-                  //   icon: const Icon(Icons.menu),
-                  //   onPressed: () {},
-                  // ),
-                  Expanded(
-                    child: TextField(
-                      cursorColor: Colors.black,
-                      keyboardType: TextInputType.text,
-                      textInputAction: TextInputAction.go,
-                      decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                          contentPadding:
-                              const EdgeInsets.symmetric(horizontal: 15),
-                          hintText: "Search..."),
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  children: [
+                    const SizedBox(
+                      height: 20,
                     ),
-                  ),
-                  // const Padding(
-                  //   padding: EdgeInsets.only(right: 8.0),
-                  //   child: CircleAvatar(
-                  //     backgroundColor: Colors.deepPurple,
-                  //     child: Text('RD'),
-                  //   ),
-                  // ),
-                ],
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: TSize.defaultSpace),
+                      child: Container(
+                        width: TDeviceUtil.getScreenWidth(context),
+                        padding: const EdgeInsets.all(TSize.md),
+                        decoration: BoxDecoration(
+                            color: Colors.white, ///////////////////
+                            borderRadius:
+                                BorderRadius.circular(15), //////////////
+                            border: Border.all(color: Colors.grey)),
+                        child: TextField(
+                          onSubmitted: (value) => _runFilter(value),
+                          decoration: const InputDecoration(
+                            labelText: 'Suche',
+                            suffixIcon: Icon(
+                              Iconsax.search_favorite,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: _fetchedLocations.length,
+                        itemBuilder: (context, index) => Card(
+                          key: Key(_fetchedLocations[index].addressType),
+                          color: Colors.blue,
+                          elevation: 4,
+                          margin: const EdgeInsets.symmetric(vertical: 10),
+                          child: ListTile(
+                            leading: Text(
+                              _fetchedLocations[index].name,
+                              style: const TextStyle(
+                                  fontSize: 24, color: Colors.white),
+                            ),
+                            subtitle: Text(
+                              'Lat: ${_fetchedLocations[index].lat}, Lon: ${_fetchedLocations[index].lon}',
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
+
           // Radial Button
           Align(
             alignment: Alignment.bottomRight,
@@ -337,6 +386,44 @@ class _MapPageState extends State<MapPage> {
             child: const Icon(Icons.terrain),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class TSearchContainer extends StatelessWidget {
+  const TSearchContainer({
+    super.key,
+    required this.text,
+    this.icon = Iconsax.search_normal,
+  });
+
+  final String text;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = TDeviceUtil.isDarkMode(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: TSize.defaultSpace),
+      child: Container(
+        width: TDeviceUtil.getScreenWidth(context),
+        padding: const EdgeInsets.all(TSize.md),
+        decoration: BoxDecoration(
+            color: dark ? Colors.black : Colors.white, ///////////////////
+            borderRadius: BorderRadius.circular(15), //////////////
+            border: Border.all(color: Colors.grey)),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: Colors.grey,
+            ), //////////////////////
+            const SizedBox(width: TSize.spaceBtwItems),
+            Text('Suche nach einer Stadt',
+                style: Theme.of(context).textTheme.bodySmall),
+          ],
+        ),
       ),
     );
   }
