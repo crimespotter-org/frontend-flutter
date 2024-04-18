@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'src/features/LogIn/presentation/login.dart';
-import 'src/features/map/1presentation/map.dart';
+import 'src/features/map/views/map.dart';
 import 'src/shared/4data/const.dart';
 
 void main() async {
