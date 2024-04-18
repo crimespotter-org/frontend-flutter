@@ -1,13 +1,7 @@
-import 'dart:io';
-import 'dart:math' as math;
-import 'dart:ui';
-import 'dart:developer' as developer;
-
-import 'package:crime_spotter/main.dart';
-import 'package:crime_spotter/src/shared/4data/const.dart';
+import 'package:crime_spotter/src/features/explore/1presentation/case_tile_short.dart';
+import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
+import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class Explore extends StatefulWidget {
   const Explore({super.key});
@@ -20,7 +14,8 @@ class _ExploreState extends State<Explore> {
   List<ExploreCard> cases = <ExploreCard>[];
 
   Future<void> readData() async {
-    var response = await supabase.from('cases').select('*,furtherlinks (*)');
+    var response =
+        await SupaBaseConst.supabase.from('cases').select('*,furtherlinks (*)');
 
     List<ExploreCard> temp = <ExploreCard>[];
 
@@ -52,7 +47,12 @@ class _ExploreState extends State<Explore> {
         summary = item['summary'] as String;
       }
 
-      List<String> mediaUrl = <String>["assets/placeholder.png"];
+      String title = "no title";
+      if (item['title'] != null) {
+        title = item['title'] as String;
+      }
+
+      List<String> mediaUrl = <String>["assets/placeholder.jpg"];
       if (item['url'] != null) {
         //mediaUrl = item['url'] as String;
       }
@@ -61,7 +61,8 @@ class _ExploreState extends State<Explore> {
         ExploreCard(
           imageUrls: mediaUrl,
           buttons: buttons.isEmpty ? null : buttons,
-          text: summary,
+          summary: summary,
+          title: title,
         ),
       );
       // developer.log(temp.length.toString(), name: 'my.other.category');
@@ -87,69 +88,14 @@ class _ExploreState extends State<Explore> {
         title: const Text('Explore'),
       ),
       body: cases.isNotEmpty
-          ? GestureDetector(
-              onHorizontalDragEnd: (details) {
-                if (details.primaryVelocity! > 0 && currentIndex > 0) {
-                  setState(() {
-                    currentIndex--;
-                  });
-                } else if (details.primaryVelocity! < 0 &&
-                    currentIndex < cases.length - 1) {
-                  setState(() {
-                    currentIndex++;
-                  });
-                }
-              },
-              child: Card(
-                child: Column(
-                  children: [
-                    if (cases[currentIndex]
-                        .imageUrls
-                        .first
-                        .contains("placeholder"))
-                      SizedBox(
-                        height: 300,
-                        child: Image.asset(
-                          'assets/placeholder.jpg',
-                          width: 300.0,
-                          height: 300.0,
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    // else
-                    //   SizedBox(
-                    //     height: 300,
-                    //     child: Image.network(cases[currentIndex].imageUrls,
-                    //         fit: BoxFit.cover),
-                    //   ),
-                    if (cases[currentIndex].buttons != null &&
-                        cases[currentIndex].buttons!.isNotEmpty)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: cases[currentIndex].buttons!.map((button) {
-                          return Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: ElevatedButton(
-                              onPressed: () {},
-                              child: Text(button.type),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(16.0),
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.vertical,
-                          child: Text(
-                            cases[currentIndex].text,
-                            textAlign: TextAlign.justify,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+          ? Expanded(
+              child: ListView.builder(
+                itemCount: cases.length,
+                itemBuilder: (context, index) {
+                  return CaseTileShort(
+                    shownCase: cases[index],
+                  );
+                },
               ),
             )
           : const Center(
@@ -157,19 +103,4 @@ class _ExploreState extends State<Explore> {
             ),
     );
   }
-}
-
-class ExploreCard {
-  final List<String> imageUrls;
-  final List<MediaButton>? buttons;
-  final String text;
-
-  ExploreCard({required this.imageUrls, this.buttons, required this.text});
-}
-
-class MediaButton {
-  final String text;
-  final String type;
-
-  MediaButton({required this.type, required this.text});
 }
