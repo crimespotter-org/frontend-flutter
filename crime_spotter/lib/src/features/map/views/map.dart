@@ -3,6 +3,7 @@ import 'package:crime_spotter/src/common/widget/widget/searchBar.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
 import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:flutter/material.dart';
+import 'package:crime_spotter/src/features/map/views/mapView.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key, required this.title});
@@ -43,6 +44,7 @@ class _MapPageState extends State<MapPage> {
     return Scaffold(
       body: Stack(
         children: <Widget>[
+          TMap(),
           Positioned(
             top: MediaQuery.of(context).size.height * 0.05,
             right: MediaQuery.of(context).size.width * 0.05,
