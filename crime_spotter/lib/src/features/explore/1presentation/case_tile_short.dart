@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
+import 'package:crime_spotter/src/shared/4data/const.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
@@ -38,7 +39,7 @@ class CaseTileShort extends StatelessWidget {
               padding: const EdgeInsets.all(8),
               child: Text(
                 shownCase.title,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.red,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -56,7 +57,10 @@ class CaseTileShort extends StatelessWidget {
                         icon: const Icon(Icons.edit),
                         iconSize: 50,
                         color: Colors.red,
-                        onPressed: () {},
+                        onPressed: () async {
+                          Navigator.pushReplacementNamed(
+                              context, UIData.single_case);
+                        },
                       ),
                       IconButton(
                         icon: const Icon(Icons.arrow_forward_ios),
