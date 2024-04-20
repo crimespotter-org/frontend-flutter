@@ -33,10 +33,7 @@ class _ExploreState extends State<Explore> {
             type = link['type'] as String;
           }
           buttons.add(
-            MediaButton(
-              text: url,
-              type: type,
-            ),
+            MediaButton(type, url),
           );
         }
       }

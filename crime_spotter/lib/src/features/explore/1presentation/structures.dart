@@ -14,8 +14,15 @@ class ExploreCardData {
 }
 
 class MediaButton {
-  String text;
+  String url;
   String type;
 
-  MediaButton({required this.type, required this.text});
+  MediaButton(this.type, this.url);
+
+  MediaButton copyWith({String? type, String? url}) {
+    return MediaButton(
+      type ?? this.type,
+      url ?? this.url,
+    );
+  }
 }

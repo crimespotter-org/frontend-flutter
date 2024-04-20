@@ -59,8 +59,8 @@ class CaseTileShort extends StatelessWidget {
                         iconSize: 50,
                         color: Colors.red,
                         onPressed: () async {
-                          // Navigator.pushNamed(context, UIData.single_case,
-                          //     arguments: shownCase);
+                          Navigator.pushNamed(context, UIData.edit_case,
+                              arguments: shownCase);
                         },
                       ),
                       IconButton(
