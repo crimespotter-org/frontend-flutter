@@ -1,12 +1,13 @@
 import 'dart:ui';
 
+import 'package:crime_spotter/src/features/explore/1presentation/single_case.dart';
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 class CaseTileShort extends StatelessWidget {
-  final ExploreCard shownCase;
+  final ExploreCardData shownCase;
   Function(BuildContext)? deleteFunction;
 
   CaseTileShort({
@@ -58,15 +59,18 @@ class CaseTileShort extends StatelessWidget {
                         iconSize: 50,
                         color: Colors.red,
                         onPressed: () async {
-                          Navigator.pushReplacementNamed(
-                              context, UIData.single_case);
+                          // Navigator.pushNamed(context, UIData.single_case,
+                          //     arguments: shownCase);
                         },
                       ),
                       IconButton(
                         icon: const Icon(Icons.arrow_forward_ios),
                         iconSize: 50,
                         color: Colors.red,
-                        onPressed: () {},
+                        onPressed: () async {
+                          Navigator.pushNamed(context, UIData.single_case,
+                              arguments: shownCase);
+                        },
                       ),
                     ],
                   ),

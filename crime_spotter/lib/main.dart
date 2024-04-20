@@ -1,5 +1,6 @@
 import 'package:crime_spotter/src/features/LogIn/presentation/register.dart';
 import 'package:crime_spotter/src/features/explore/1presentation/explore.dart';
+import 'package:crime_spotter/src/features/explore/1presentation/single_case.dart';
 import 'package:crime_spotter/src/features/settings/settings.dart';
 import 'package:crime_spotter/src/features/splash/splash_page.dart';
 import 'package:flutter/material.dart';
@@ -44,6 +45,7 @@ class MyApp extends StatelessWidget {
         UIData.register: (BuildContext context) => const Register(),
         UIData.explore: (BuildContext context) => const Explore(),
         UIData.settings: (BuildContext context) => const Settings(),
+        UIData.single_case: (BuildContext context) => const Single_case(),
       },
     );
   }

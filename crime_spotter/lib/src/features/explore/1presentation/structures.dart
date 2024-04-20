@@ -1,14 +1,16 @@
-class ExploreCard {
+class ExploreCardData {
   List<String> imageUrls;
   List<MediaButton>? buttons;
   String summary;
   String title;
+  String id;
 
-  ExploreCard(
+  ExploreCardData(
       {required this.imageUrls,
       this.buttons,
       required this.summary,
-      required this.title});
+      required this.title,
+      required this.id});
 }
 
 class MediaButton {
