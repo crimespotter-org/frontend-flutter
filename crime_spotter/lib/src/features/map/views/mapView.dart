@@ -1,41 +1,74 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 
-class TMap extends StatelessWidget {
-  TMap({
-    super.key,
-  });
-  final Completer<GoogleMapController> _controller = Completer();
-  final List<Marker> _markers = [];
-  final MapType _mapType = MapType.none;
-  Position startposition = Position(
-      latitude: 48.44548688211155,
-      longitude: 8.696868994581505,
-      timestamp: DateTime.now(),
-      accuracy: 0,
-      altitude: 0,
-      altitudeAccuracy: 0,
-      heading: 0,
-      headingAccuracy: 0,
-      speed: 0,
-      speedAccuracy: 0);
+class TOpenStreetMap extends StatefulWidget {
+  const TOpenStreetMap({super.key});
+
+  @override
+  State<TOpenStreetMap> createState() => _TOpenStreetMapState();
+}
+
+class _TOpenStreetMapState extends State<TOpenStreetMap> {
+  final _controller = MapController.customLayer(
+    initPosition: GeoPoint(
+      latitude: 47.4358055,
+      longitude: 8.4737324,
+    ),
+    customTile: CustomTile(
+      sourceName: "opentopomap",
+      tileExtension: ".png",
+      minZoomLevel: 2,
+      maxZoomLevel: 19,
+      urlsServers: [
+        TileURLs(
+          url: "https://tile.opentopomap.org/",
+          subdomains: [],
+        )
+      ],
+      tileSize: 256,
+    ),
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return GoogleMap(
-      initialCameraPosition: CameraPosition(
-        target: LatLng(startposition.latitude, startposition.longitude),
-        zoom: 13,
+    return OSMFlutter(
+      controller: _controller,
+      osmOption: OSMOption(
+        userTrackingOption: const UserTrackingOption(
+          enableTracking: true,
+          unFollowUser: false,
+        ),
+        zoomOption: const ZoomOption(
+          initZoom: 8,
+          minZoomLevel: 3,
+          maxZoomLevel: 19,
+          stepZoom: 1.0,
+        ),
+        userLocationMarker: UserLocationMaker(
+          personMarker: const MarkerIcon(
+            icon: Icon(
+              Icons.location_history_rounded,
+              color: Colors.red,
+              size: 48,
+            ),
+          ),
+          directionArrowMarker: const MarkerIcon(
+            icon: Icon(
+              Icons.double_arrow,
+              size: 48,
+            ),
+          ),
+        ),
+        roadConfiguration: const RoadOption(
+          roadColor: Colors.yellowAccent,
+        ),
       ),
-      mapType: _mapType,
-      markers: Set<Marker>.of(_markers),
-      onMapCreated: (GoogleMapController controller) {
-        _controller.complete(controller);
-      },
-      zoomControlsEnabled: false,
     );
   }
 }
