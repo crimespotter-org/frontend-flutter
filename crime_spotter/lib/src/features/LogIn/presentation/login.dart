@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:crime_spotter/main.dart';
 import 'package:crime_spotter/src/features/LogIn/presentation/register.dart';
-import 'package:crime_spotter/src/features/map/1presentation/map.dart';
+import 'package:crime_spotter/src/features/map/views/map.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
 import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:flutter/material.dart';
