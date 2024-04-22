@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
-import 'package:geocode/geocode.dart' as geocode;
-import 'package:get/get.dart';
+import 'package:geocoding/geocoding.dart';
 
 class TOpenStreetMap extends StatefulWidget {
   const TOpenStreetMap({super.key});
@@ -11,11 +10,8 @@ class TOpenStreetMap extends StatefulWidget {
 }
 
 class _TOpenStreetMapState extends State<TOpenStreetMap> {
-  Map<GeoPoint, geocode.Address> markerMap = {};
-  final geocode.GeoCode _geoCode = geocode.GeoCode();
-  // final con = MapController.customLayer(customTile:
+  Map<GeoPoint, List<Placemark>> markerMap = {};
 
-  // )
   final _controller = MapController.customLayer(
     customTile: CustomTile(
       sourceName: "opentopomap",
@@ -55,9 +51,19 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
                   ),
                 ),
               );
-              var cityName = await _geoCode.reverseGeocoding(
-                  latitude: posistion.latitude, longitude: posistion.longitude);
-              markerMap[posistion] = cityName;
+              placemarkFromCoordinates(posistion.latitude, posistion.longitude)
+                  .then(
+                (value) => {
+                  if (value.isNotEmpty)
+                    {
+                      setState(
+                        () {
+                          markerMap[posistion] = value;
+                        },
+                      ),
+                    },
+                },
+              );
             }
           },
         );
@@ -81,9 +87,10 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
       onGeoPointClicked: (geoPoint) {
         GeoPoint currentLocation = GeoPoint(
             latitude: geoPoint.latitude, longitude: geoPoint.longitude);
+        var currentContext = context;
         showModalBottomSheet(
-          context: context,
-          builder: (context) {
+          context: currentContext,
+          builder: (currentContext) {
             return Card(
               child: Padding(
                 padding: const EdgeInsets.all(8),
@@ -92,12 +99,19 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    GestureDetector(
+                      onTap: () => {
+                        _controller.removeMarker(geoPoint),
+                        Navigator.pop(currentContext)
+                      },
+                      child: const Icon(Icons.delete),
+                    ),
                     Expanded(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            markerMap[currentLocation]!.city!,
+                            markerMap[currentLocation]![0].locality!,
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -114,7 +128,7 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
                       ),
                     ),
                     GestureDetector(
-                      onTap: () => Navigator.pop(context),
+                      onTap: () => Navigator.pop(currentContext),
                       child: const Icon(Icons.clear),
                     )
                   ],
@@ -127,12 +141,9 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
       onMapIsReady: (isReady) async => {
         if (isReady)
           await Future.delayed(
-            const Duration(seconds: 1),
+            Duration.zero,
             () async {
-              await _controller.currentLocation().then((value) => {
-                    //_controller.setZoom(stepZoom: 2),
-                    _controller.zoomIn(),
-                  });
+              await _controller.currentLocation();
             },
           ),
       },
@@ -142,7 +153,7 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
           unFollowUser: false,
         ),
         zoomOption: const ZoomOption(
-          initZoom: 8,
+          initZoom: 15,
           minZoomLevel: 3,
           maxZoomLevel: 19,
           stepZoom: 1.0,

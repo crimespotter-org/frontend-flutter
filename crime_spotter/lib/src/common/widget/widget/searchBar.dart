@@ -41,26 +41,33 @@ class _TSearchBarState extends State<TSearchBar> {
 
   @override
   Widget build(BuildContext context) {
+    const maxCardsHeight = 2 * 80.0;
+    final availableHeight = _fetchedLocations.isEmpty
+        ? 165.0
+        : (_fetchedLocations.length <= 2
+            ? (_fetchedLocations.length * maxCardsHeight + 100.0)
+            : maxCardsHeight + 100.0);
+
     return Container(
-      height: 200,
-      color: Colors.white,
+      height: availableHeight,
+      color: const Color.fromARGB(0, 33, 149, 243),
       child: Padding(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(30),
         child: Column(
           children: [
-            const SizedBox(
-              height: 20,
-            ),
+            const SizedBox(height: 10),
             Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: TSize.defaultSpace),
               child: Container(
+                height: 75,
                 width: TDeviceUtil.getScreenWidth(context),
-                padding: const EdgeInsets.all(TSize.md),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                    color: Colors.white, ///////////////////
-                    borderRadius: BorderRadius.circular(15), //////////////
-                    border: Border.all(color: Colors.grey)),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(color: Colors.grey),
+                ),
                 child: TextField(
                   onSubmitted: (value) => _runFilter(value),
                   decoration: const InputDecoration(
@@ -73,30 +80,34 @@ class _TSearchBarState extends State<TSearchBar> {
                 ),
               ),
             ),
-            const SizedBox(
-              height: 20,
-            ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: _fetchedLocations.length,
-                itemBuilder: (context, index) => Card(
-                  key: Key(_fetchedLocations[index].addressType),
-                  color: Colors.blue,
-                  elevation: 4,
-                  margin: const EdgeInsets.symmetric(vertical: 10),
-                  child: ListTile(
-                    leading: Text(
-                      _fetchedLocations[index].name,
-                      style: const TextStyle(fontSize: 24, color: Colors.white),
-                    ),
-                    subtitle: Text(
-                      'Lat: ${_fetchedLocations[index].lat}, Lon: ${_fetchedLocations[index].lon}',
-                      style: const TextStyle(color: Colors.white),
+            const SizedBox(height: 20),
+            _fetchedLocations.isEmpty
+                ? Container() // If no locations, don't show the ListView
+                : Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 1),
+                      child: ListView.builder(
+                        itemCount: _fetchedLocations.length,
+                        itemBuilder: (context, index) => Card(
+                          key: Key(_fetchedLocations[index].addressType),
+                          color: Colors.white,
+                          elevation: 4,
+                          margin: const EdgeInsets.symmetric(vertical: 2),
+                          child: ListTile(
+                            leading: Text(
+                              _fetchedLocations[index].name,
+                              style: const TextStyle(
+                                  fontSize: 24, color: Colors.black),
+                            ),
+                            subtitle: Text(
+                              'Lat: ${_fetchedLocations[index].lat}, Lon: ${_fetchedLocations[index].lon}',
+                              style: const TextStyle(color: Colors.black),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-            ),
           ],
         ),
       ),

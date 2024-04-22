@@ -47,7 +47,7 @@ dependencies:
   get: ^4.6.5
   get_storage: ^2.1.1
   flutter_osm_plugin: ^1.0.3
-  geocode: ^1.0.3
+  geocoding: ^3.0.0
 
 dev_dependencies:
   flutter_test:
