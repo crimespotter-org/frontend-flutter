@@ -1,5 +1,10 @@
+import 'dart:io';
+
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
+import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class EditCase extends StatefulWidget {
   const EditCase({Key? key}) : super(key: key);
@@ -53,42 +58,48 @@ class _EditCaseState extends State<EditCase> {
   }
 
   Widget _buildSummaryTab(ExploreCardData shownCase) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            'Title:',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+    if (shownCase == null) {
+      return const Center(
+        child: Text('No data available'),
+      );
+    } else {
+      return SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'Title:',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-          TextFormField(
-            initialValue: shownCase.title,
-            onChanged: (value) {
-              shownCase.title = value;
-            },
-          ),
-          SizedBox(height: 20),
-          Text(
-            'Summary:',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+            TextFormField(
+              initialValue: shownCase.title,
+              onChanged: (value) {
+                shownCase.title = value;
+              },
             ),
-          ),
-          TextFormField(
-            initialValue: shownCase.summary,
-            onChanged: (value) {
-              shownCase.summary = value;
-            },
-            maxLines: null,
-          ),
-        ],
-      ),
-    );
+            SizedBox(height: 20),
+            const Text(
+              'Summary:',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            TextFormField(
+              initialValue: shownCase.summary,
+              onChanged: (value) {
+                shownCase.summary = value;
+              },
+              maxLines: null,
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   Widget _buildLinksTab(ExploreCardData shownCase) {
@@ -110,9 +121,9 @@ class _EditCaseState extends State<EditCase> {
                     : shownCase.buttons!.add(MediaButton('default', ''));
               });
             },
-            child: Text('Add Link'),
+            child: const Text('Add Link'),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           // List of links
           ListView.builder(
             shrinkWrap: true,
@@ -138,7 +149,7 @@ class _EditCaseState extends State<EditCase> {
               links[index] = link.copyWith(type: value); // Update the link type
             });
           },
-          items: ['Website', 'Video', 'Document', 'default']
+          items: ['website', 'podcast', 'newspaper', 'default']
               .map<DropdownMenuItem<String>>((String value) {
             return DropdownMenuItem<String>(
               value: value,
@@ -146,7 +157,7 @@ class _EditCaseState extends State<EditCase> {
             );
           }).toList(),
         ),
-        SizedBox(width: 10),
+        const SizedBox(width: 10),
         // Text field for link URL
         Expanded(
           child: TextFormField(
@@ -156,7 +167,7 @@ class _EditCaseState extends State<EditCase> {
                 links[index] = link.copyWith(url: value); // Update the link URL
               });
             },
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               hintText: 'Enter URL',
             ),
           ),
@@ -180,9 +191,90 @@ class _EditCaseState extends State<EditCase> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Implement images tab UI here
+          // Add Image button
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _selectAndUploadImage();
+              });
+            },
+            child: Text('Add Image'),
+          ),
+          const SizedBox(height: 20),
+          // List of images
+          GridView.builder(
+            shrinkWrap: true,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount:
+                  2, // Adjust the number of images per row as needed
+              crossAxisSpacing: 10.0,
+              mainAxisSpacing: 10.0,
+            ),
+            itemCount: shownCase.imageUrls.length,
+            itemBuilder: (context, index) {
+              return _buildImageItem(index, shownCase.imageUrls[index]);
+            },
+          ),
         ],
       ),
     );
+  }
+
+  Widget _buildImageItem(int index, String imageUrl) {
+    return Stack(
+      children: [
+        // Image
+        Image.network(
+          imageUrl,
+          width: double.infinity,
+          height: double.infinity,
+          fit: BoxFit.cover,
+        ),
+        // Remove image button
+        Positioned(
+          top: 5,
+          right: 5,
+          child: IconButton(
+            icon: const Icon(Icons.remove_circle),
+            onPressed: () {
+              setState(() {
+                // Add logic to remove image
+              });
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  final ImagePicker _picker = ImagePicker();
+  File? _imageFile;
+
+  Future<void> _selectAndUploadImage() async {
+    final XFile? pickedFile =
+        await _picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = File(pickedFile.path);
+      });
+
+      // Upload the selected image
+      final path = await uploadImageToSupabase(_imageFile!);
+      print('Uploaded image to Supabase: $path');
+    }
+  }
+
+  Future<String> uploadImageToSupabase(File imageFile) async {
+    final String fileName = imageFile.path.split('/').last;
+    final String path = await SupaBaseConst.supabase.storage
+        .from('media')
+        .upload(
+          fileName,
+          imageFile,
+          fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
+        );
+
+    return path;
   }
 }

@@ -55,9 +55,6 @@ class _Single_caseState extends State<Single_case> {
                     case "newspaper":
                       iconData = Icons.newspaper;
                       break;
-                    case "test":
-                      iconData = Icons.library_books;
-                      break;
                     default:
                       iconData = Icons.error; // or any other default icon
                   }

@@ -1,7 +1,12 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:crime_spotter/src/features/explore/1presentation/case_tile_short.dart';
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
 import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:flutter/material.dart';
+import 'package:format/format.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class Explore extends StatefulWidget {
   const Explore({super.key});
@@ -49,9 +54,24 @@ class _ExploreState extends State<Explore> {
         title = item['title'] as String;
       }
 
-      List<String> mediaUrl = <String>["assets/placeholder.jpg"];
-      if (item['url'] != null) {
-        //mediaUrl = item['url'] as String;
+      List<String> mediaUrl = [];
+      try {
+        String storageDir = 'case-${item['id']}';
+        print(storageDir);
+        List<FileObject> files = await SupaBaseConst.supabase.storage
+            .from('media')
+            .list(path: storageDir);
+        for (var x in files) {
+          final String signedUrl = await SupaBaseConst.supabase.storage
+              .from('media')
+              .createSignedUrl('case-${item['id']}/${x.name}', 300);
+          mediaUrl.add(signedUrl);
+        }
+        if (mediaUrl.length == 0) {
+          mediaUrl.add("assets/placeholder.jpg");
+        }
+      } catch (e) {
+        mediaUrl.add("assets/placeholder.jpg");
       }
 
       temp.add(

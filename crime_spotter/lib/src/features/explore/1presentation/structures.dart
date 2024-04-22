@@ -1,3 +1,5 @@
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 class ExploreCardData {
   List<String> imageUrls;
   List<MediaButton>? buttons;
