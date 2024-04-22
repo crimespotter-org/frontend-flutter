@@ -46,7 +46,7 @@ class MyApp extends StatelessWidget {
         UIData.register: (BuildContext context) => const Register(),
         UIData.explore: (BuildContext context) => const Explore(),
         UIData.settings: (BuildContext context) => const Settings(),
-        UIData.single_case: (BuildContext context) => const Single_case(),
+        UIData.single_case: (BuildContext context) => const SingleCase(),
         UIData.edit_case: (BuildContext context) => const EditCase(),
       },
     );

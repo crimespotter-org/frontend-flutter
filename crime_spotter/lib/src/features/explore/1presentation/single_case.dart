@@ -1,14 +1,14 @@
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
 import 'package:flutter/material.dart';
 
-class Single_case extends StatefulWidget {
-  const Single_case({super.key});
+class SingleCase extends StatefulWidget {
+  const SingleCase({super.key});
 
   @override
-  State<Single_case> createState() => _Single_caseState();
+  State<SingleCase> createState() => _SingleCaseState();
 }
 
-class _Single_caseState extends State<Single_case> {
+class _SingleCaseState extends State<SingleCase> {
   @override
   Widget build(BuildContext context) {
     final shownCase =
@@ -23,22 +23,27 @@ class _Single_caseState extends State<Single_case> {
             if (shownCase.imageUrls.length < 2)
               SizedBox(
                 height: 300,
-                child: Image.asset(
-                  shownCase.imageUrls.first,
-                  width: 300.0,
-                  height: 300.0,
-                  fit: BoxFit.contain,
-                ),
+                child: shownCase.imageUrls.isEmpty
+                    ? const Placeholder()
+                    : Image.memory(
+                        shownCase.imageUrls.first,
+                        width: 300.0,
+                        height: 300.0,
+                        fit: BoxFit.contain,
+                      ),
               )
             else
-              PageView.builder(
-                itemCount: shownCase.imageUrls.length,
-                itemBuilder: (context, index) {
-                  return Image.network(
-                    shownCase.imageUrls[index],
-                    fit: BoxFit.cover, // Adjust the image fit as needed
-                  );
-                },
+              SizedBox(
+                height: MediaQuery.of(context).size.width * 0.5,
+                child: PageView.builder(
+                  itemCount: shownCase.imageUrls.length,
+                  itemBuilder: (context, index) {
+                    return Image.memory(
+                      shownCase.imageUrls[index],
+                      fit: BoxFit.cover,
+                    );
+                  },
+                ),
               ),
             if (shownCase.buttons != null && shownCase.buttons!.isNotEmpty)
               Row(
@@ -73,7 +78,7 @@ class _Single_caseState extends State<Single_case> {
                 }).toList(),
               ),
             Container(
-              margin: EdgeInsets.only(top: 10),
+              margin: const EdgeInsets.only(top: 10),
               child: DefaultTextStyle.merge(
                 style: const TextStyle(
                   fontSize: 20,

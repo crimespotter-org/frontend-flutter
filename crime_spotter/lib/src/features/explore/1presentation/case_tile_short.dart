@@ -1,19 +1,15 @@
-import 'dart:ui';
-
-import 'package:crime_spotter/src/features/explore/1presentation/single_case.dart';
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 class CaseTileShort extends StatelessWidget {
   final ExploreCardData shownCase;
   Function(BuildContext)? deleteFunction;
 
   CaseTileShort({
-    Key? key,
+    super.key,
     required this.shownCase,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -28,11 +24,12 @@ class CaseTileShort extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: Stack(
           children: [
-            Image.asset(
-              shownCase.imageUrls.first,
-              fit: BoxFit.cover,
-              width: double.infinity,
-            ),
+            shownCase.imageUrls.isEmpty
+                ? const Placeholder()
+                : Image.memory(
+                    shownCase.imageUrls.first,
+                    fit: BoxFit.cover,
+                  ),
             Container(
               width: double.infinity,
               color: const Color.fromARGB(255, 202, 202, 202)

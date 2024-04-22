@@ -1,11 +1,9 @@
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:crime_spotter/src/features/explore/1presentation/case_tile_short.dart';
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
 import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:flutter/material.dart';
-import 'package:format/format.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class Explore extends StatefulWidget {
@@ -16,13 +14,13 @@ class Explore extends StatefulWidget {
 }
 
 class _ExploreState extends State<Explore> {
-  List<ExploreCardData> cases = <ExploreCardData>[];
+  List<ExploreCardData> cases = [];
 
   Future<void> readData() async {
     var response =
         await SupaBaseConst.supabase.from('cases').select('*,furtherlinks (*)');
 
-    List<ExploreCardData> temp = <ExploreCardData>[];
+    List<ExploreCardData> temp = [];
 
     for (var item in response) {
       List<MediaButton> buttons = <MediaButton>[];
@@ -43,7 +41,6 @@ class _ExploreState extends State<Explore> {
         }
       }
 
-      // developer.log('log me 1', name: 'my.other.category');
       String summary = "no summary jet";
       if (item['summary'] != null) {
         summary = item['summary'] as String;
@@ -54,26 +51,22 @@ class _ExploreState extends State<Explore> {
         title = item['title'] as String;
       }
 
-      List<String> mediaUrl = [];
-      try {
-        String storageDir = 'case-${item['id']}';
-        print(storageDir);
-        List<FileObject> files = await SupaBaseConst.supabase.storage
-            .from('media')
-            .list(path: storageDir);
-        for (var x in files) {
-          final String signedUrl = await SupaBaseConst.supabase.storage
-              .from('media')
-              .createSignedUrl('case-${item['id']}/${x.name}', 300);
-          mediaUrl.add(signedUrl);
-        }
-        if (mediaUrl.length == 0) {
-          mediaUrl.add("assets/placeholder.jpg");
-        }
-      } catch (e) {
-        mediaUrl.add("assets/placeholder.jpg");
-      }
+      List<Uint8List> mediaUrl = [];
 
+      String storageDir = 'case-${item['id']}';
+      List<FileObject> files = await SupaBaseConst.supabase.storage
+          .from('media')
+          .list(path: storageDir);
+      for (var x in files) {
+        try {
+          var signedUrl = await SupaBaseConst.supabase.storage
+              .from('media')
+              .download('$storageDir/${x.name}');
+          mediaUrl.add(signedUrl);
+        } catch (ex) {
+          continue;
+        }
+      }
       temp.add(
         ExploreCardData(
           imageUrls: mediaUrl,
@@ -83,11 +76,10 @@ class _ExploreState extends State<Explore> {
           id: item['id'],
         ),
       );
-      // developer.log(temp.length.toString(), name: 'my.other.category');
     }
 
     setState(() {
-      cases = temp;
+      cases.addAll(temp);
     });
   }
 
@@ -117,7 +109,15 @@ class _ExploreState extends State<Explore> {
               ),
             )
           : const Center(
-              child: Text("No cases found"),
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("Fallakten werden geladen"),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    CircularProgressIndicator(),
+                  ]),
             ),
     );
   }

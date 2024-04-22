@@ -1,7 +1,7 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:typed_data';
 
 class ExploreCardData {
-  List<String> imageUrls;
+  List<Uint8List> imageUrls;
   List<MediaButton>? buttons;
   String summary;
   String title;

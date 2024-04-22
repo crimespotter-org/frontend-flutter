@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
 import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
@@ -7,7 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class EditCase extends StatefulWidget {
-  const EditCase({Key? key}) : super(key: key);
+  const EditCase({super.key});
 
   @override
   State<EditCase> createState() => _EditCaseState();
@@ -24,7 +25,7 @@ class _EditCaseState extends State<EditCase> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(shownCase.title),
-          bottom: TabBar(
+          bottom: const TabBar(
             tabs: [
               Tab(text: 'Summary'),
               Tab(text: 'Links'),
@@ -48,7 +49,7 @@ class _EditCaseState extends State<EditCase> {
                 onPressed: () {
                   //_saveCase();
                 },
-                child: Text('Save'),
+                child: const Text('Save'),
               ),
             ),
           ],
@@ -81,7 +82,7 @@ class _EditCaseState extends State<EditCase> {
                 shownCase.title = value;
               },
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             const Text(
               'Summary:',
               style: TextStyle(
@@ -174,7 +175,7 @@ class _EditCaseState extends State<EditCase> {
         ),
         // Remove link button
         IconButton(
-          icon: Icon(Icons.remove_circle),
+          icon: const Icon(Icons.remove_circle),
           onPressed: () {
             setState(() {
               links.removeAt(index); // Remove the link from the list
@@ -198,7 +199,7 @@ class _EditCaseState extends State<EditCase> {
                 _selectAndUploadImage();
               });
             },
-            child: Text('Add Image'),
+            child: const Text('Add Image'),
           ),
           const SizedBox(height: 20),
           // List of images
@@ -220,11 +221,11 @@ class _EditCaseState extends State<EditCase> {
     );
   }
 
-  Widget _buildImageItem(int index, String imageUrl) {
+  Widget _buildImageItem(int index, Uint8List imageUrl) {
     return Stack(
       children: [
         // Image
-        Image.network(
+        Image.memory(
           imageUrl,
           width: double.infinity,
           height: double.infinity,
