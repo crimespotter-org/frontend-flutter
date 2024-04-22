@@ -11,13 +11,13 @@ class Explore extends StatefulWidget {
 }
 
 class _ExploreState extends State<Explore> {
-  List<ExploreCard> cases = <ExploreCard>[];
+  List<ExploreCardData> cases = <ExploreCardData>[];
 
   Future<void> readData() async {
     var response =
         await SupaBaseConst.supabase.from('cases').select('*,furtherlinks (*)');
 
-    List<ExploreCard> temp = <ExploreCard>[];
+    List<ExploreCardData> temp = <ExploreCardData>[];
 
     for (var item in response) {
       List<MediaButton> buttons = <MediaButton>[];
@@ -33,10 +33,7 @@ class _ExploreState extends State<Explore> {
             type = link['type'] as String;
           }
           buttons.add(
-            MediaButton(
-              text: url,
-              type: type,
-            ),
+            MediaButton(type, url),
           );
         }
       }
@@ -58,11 +55,12 @@ class _ExploreState extends State<Explore> {
       }
 
       temp.add(
-        ExploreCard(
+        ExploreCardData(
           imageUrls: mediaUrl,
           buttons: buttons.isEmpty ? null : buttons,
           summary: summary,
           title: title,
+          id: item['id'],
         ),
       );
       // developer.log(temp.length.toString(), name: 'my.other.category');

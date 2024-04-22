@@ -1,19 +1,28 @@
-class ExploreCard {
+class ExploreCardData {
   List<String> imageUrls;
   List<MediaButton>? buttons;
   String summary;
   String title;
+  String id;
 
-  ExploreCard(
+  ExploreCardData(
       {required this.imageUrls,
       this.buttons,
       required this.summary,
-      required this.title});
+      required this.title,
+      required this.id});
 }
 
 class MediaButton {
-  String text;
+  String url;
   String type;
 
-  MediaButton({required this.type, required this.text});
+  MediaButton(this.type, this.url);
+
+  MediaButton copyWith({String? type, String? url}) {
+    return MediaButton(
+      type ?? this.type,
+      url ?? this.url,
+    );
+  }
 }
