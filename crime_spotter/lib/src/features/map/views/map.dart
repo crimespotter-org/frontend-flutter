@@ -2,6 +2,7 @@ import 'package:crime_spotter/src/common/widget/widget/radioButton.dart';
 import 'package:crime_spotter/src/common/widget/widget/searchBar.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
 import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
+import 'package:crime_spotter/src/shared/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:crime_spotter/src/features/map/views/mapView.dart';
 import 'package:flutter/widgets.dart';
@@ -55,7 +56,7 @@ class _MapPageState extends State<MapPage> {
             child: ClipOval(
               child: Container(
                 height: MediaQuery.of(context).size.height * 0.4,
-                color: const Color.fromARGB(255, 83, 173, 247),
+                color: TColor.searchColor,
               ),
             ),
           ),
