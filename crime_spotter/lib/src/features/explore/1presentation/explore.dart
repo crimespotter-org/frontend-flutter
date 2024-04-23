@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:crime_spotter/src/features/explore/1presentation/case_tile_short.dart';
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
+import 'package:crime_spotter/src/shared/4data/const.dart';
 import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -23,7 +24,7 @@ class _ExploreState extends State<Explore> {
     List<ExploreCardData> temp = [];
 
     for (var item in response) {
-      List<Links> buttons = <Links>[];
+      List<Links> links = <Links>[];
 
       if (item['furtherlinks'] != null) {
         for (var link in item['furtherlinks']) {
@@ -35,7 +36,7 @@ class _ExploreState extends State<Explore> {
           if (link['link_type'] != null) {
             type = link['link_type'] as String;
           }
-          buttons.add(
+          links.add(
             Links(type, url, link['id']),
           );
         }
@@ -70,9 +71,10 @@ class _ExploreState extends State<Explore> {
       temp.add(
         ExploreCardData(
           images: media,
-          furtherLinks: buttons.isEmpty ? null : buttons,
+          furtherLinks: links.isEmpty ? [] : links,
           summary: summary,
           title: title,
+          case_type: item['case_type'],
           id: item['id'],
         ),
       );
@@ -97,28 +99,46 @@ class _ExploreState extends State<Explore> {
       appBar: AppBar(
         title: const Text('Explore'),
       ),
-      body: cases.isNotEmpty
-          ? Expanded(
-              child: ListView.builder(
-                itemCount: cases.length,
-                itemBuilder: (context, index) {
-                  return CaseTileShort(
-                    shownCase: cases[index],
-                  );
-                },
-              ),
-            )
-          : const Center(
-              child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text("Fallakten werden geladen"),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    CircularProgressIndicator(),
-                  ]),
+      body: Stack(
+        children: [
+          cases.isNotEmpty
+              ? Expanded(
+                  child: ListView.builder(
+                    itemCount: cases.length,
+                    itemBuilder: (context, index) {
+                      return CaseTileShort(
+                        shownCase: cases[index],
+                      );
+                    },
+                  ),
+                )
+              : const Center(
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text("Fallakten werden geladen"),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        CircularProgressIndicator(),
+                      ]),
+                ),
+          Positioned(
+            bottom: 16.0,
+            right: 16.0,
+            child: FloatingActionButton(
+              backgroundColor: Colors.blueAccent,
+              onPressed: () async {
+                var caseToCreate = ExploreCardData.createNew();
+                Navigator.pushNamed(context, UIData.edit_case,
+                    arguments: caseToCreate);
+              },
+              tooltip: "Neuen Fall hinzufügen",
+              child: const Icon(Icons.add),
             ),
+          ),
+        ],
+      ),
     );
   }
 }

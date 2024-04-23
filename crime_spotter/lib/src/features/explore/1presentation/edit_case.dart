@@ -25,7 +25,9 @@ class _EditCaseState extends State<EditCase> {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(shownCase.title),
+          title: shownCase.isNew
+              ? Text(shownCase.title)
+              : const Text("Neuen Fall erstellen"),
           bottom: const TabBar(
             tabs: [
               Tab(text: 'Summary'),
@@ -51,6 +53,18 @@ class _EditCaseState extends State<EditCase> {
                   _saveCase();
                 },
                 child: const Text('Save'),
+              ),
+            ),
+            Positioned(
+              bottom: 16.0,
+              left: 16.0,
+              child: FloatingActionButton(
+                backgroundColor: Colors.red,
+                onPressed: () async {
+                  _deleteCase();
+                },
+                tooltip: "Fall löschen",
+                child: const Icon(Icons.delete),
               ),
             ),
           ],
@@ -82,6 +96,29 @@ class _EditCaseState extends State<EditCase> {
               onChanged: (value) {
                 shownCase.title = value;
               },
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Typ:',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            DropdownButton<String>(
+              value: shownCase.case_type,
+              onChanged: (value) {
+                setState(() {
+                  shownCase.case_type = value!; // Update the link type
+                });
+              },
+              items: ['murder', 'theft', 'robbery-murder', 'brawl', 'rape']
+                  .map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
             ),
             const SizedBox(height: 20),
             const Text(
@@ -123,20 +160,7 @@ class _EditCaseState extends State<EditCase> {
           // Add Link button
           ElevatedButton(
             onPressed: () {
-              setState(() {
-                shownCase.furtherLinks == null
-                    ? {
-                        shownCase.furtherLinks = [],
-                        shownCase.furtherLinks!
-                            .add(Links.createNew('default', '')),
-                        _linksToAdd.add(shownCase.furtherLinks!.last)
-                      }
-                    : {
-                        shownCase.furtherLinks!
-                            .add(Links.createNew('default', '')),
-                        _linksToAdd.add(shownCase.furtherLinks!.last)
-                      };
-              });
+              _addLink();
             },
             child: const Text('Add Link'),
           ),
@@ -256,8 +280,6 @@ class _EditCaseState extends State<EditCase> {
   final ImagePicker _picker = ImagePicker();
   final List<MediaToAdd> _imagesToAdd = [];
   final List<Media> _imagesTodelete = [];
-  final List<Links> _linksToDelete = [];
-  final List<Links> _linksToAdd = [];
 
   Future<void> _uploadImage() async {
     final XFile? pickedFile =
@@ -281,6 +303,13 @@ class _EditCaseState extends State<EditCase> {
     }
   }
 
+  Future<void> _addLink() async {
+    setState(() {
+      shownCase.furtherLinks ??= [];
+      shownCase.furtherLinks!.add(Links.createNew());
+    });
+  }
+
   Future<String> _uploadImageToSupabase(File imageFile) async {
     final String fileName = imageFile.path.split('/').last;
     String storageDir = 'case-${shownCase.id}';
@@ -296,7 +325,9 @@ class _EditCaseState extends State<EditCase> {
   }
 
   Future<void> _deleteImage(int index) async {
-    _imagesTodelete?.add(shownCase.images[index]);
+    if (_isNotInAddImageList(shownCase.images[index])) {
+      _imagesTodelete.add(shownCase.images[index]);
+    }
     setState(() {
       shownCase.images.removeAt(index);
     });
@@ -311,7 +342,9 @@ class _EditCaseState extends State<EditCase> {
   }
 
   Future<void> _deleteLink(int index) async {
-    _linksToDelete.add(links[index]);
+    if (_isNotInAddLinkList(links[index])) {
+      links[index].delete = true;
+    }
     setState(() {
       links.removeAt(index); // Remove the link from the list
     });
@@ -325,9 +358,11 @@ class _EditCaseState extends State<EditCase> {
   }
 
   Future<void> _saveLinkToSupaBase(Links link) async {
-    await SupaBaseConst.supabase
-        .from('furtherlinks')
-        .insert({'case_id': shownCase.id, 'url': link.url, 'type': link.type});
+    await SupaBaseConst.supabase.from('furtherlinks').insert({
+      'case_id': shownCase.id,
+      'url': link.url,
+      'link_type': link.type,
+    });
   }
 
   Future<void> _updateLinkInSupabase(Links link) async {
@@ -338,8 +373,17 @@ class _EditCaseState extends State<EditCase> {
   }
 
   bool _isNotInAddLinkList(Links linkToCheck) {
-    for (var link in _linksToAdd) {
-      if (link.url == linkToCheck.url && link.type == linkToCheck.type) {
+    for (var link in links.where((element) => element.isNew)) {
+      if (link.hashCode == linkToCheck.hashCode) {
+        return false; // Found a matching link, so it's in the list
+      }
+    }
+    return true; // No matching link found, so it's not in the list
+  }
+
+  bool _isNotInAddImageList(Media imageToCheck) {
+    for (var image in _imagesToAdd) {
+      if (image.hashCode == imageToCheck.hashCode) {
         return false; // Found a matching link, so it's in the list
       }
     }
@@ -348,13 +392,23 @@ class _EditCaseState extends State<EditCase> {
 
   Future<void> _saveCase() async {
     //case
+    if (shownCase.isNew) {
+      _saveNewCase();
+    } else {
+      _updateCase();
+    }
+  }
+
+  Future<void> _updateCase() async {
+    //case
     await SupaBaseConst.supabase.from('cases').update({
       'title': shownCase.title,
       'summary': shownCase.summary,
+      'case_type': shownCase.case_type,
     }).match({'id': shownCase.id});
 
     //links
-    for (var link in _linksToAdd) {
+    for (var link in links.where((element) => element.isNew)) {
       _saveLinkToSupaBase(link);
     }
     for (var link in links) {
@@ -362,7 +416,7 @@ class _EditCaseState extends State<EditCase> {
         await _updateLinkInSupabase(link);
       }
     }
-    for (var link in _linksToDelete) {
+    for (var link in links.where((element) => element.delete)) {
       await _deleteLinkFromSupabase(link);
     }
 
@@ -381,5 +435,58 @@ class _EditCaseState extends State<EditCase> {
         backgroundColor: Colors.green,
       ),
     );
+  }
+
+  Future<void> _saveNewCase() async {
+    //case
+    var createdCase = await SupaBaseConst.supabase.from('cases').insert({
+      'title': shownCase.title,
+      'summary': shownCase.summary,
+      'case_type': shownCase.case_type,
+    }).select();
+
+    shownCase.id = createdCase.first['id'];
+    //links
+    for (var link in links.where((element) => element.isNew)) {
+      _saveLinkToSupaBase(link);
+    }
+
+    //images
+    for (var image in _imagesToAdd) {
+      final path = await _uploadImageToSupabase(image.file);
+      print('Uploaded image to Supabase: $path');
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Speichern erfolgreich!'),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
+
+  Future<void> _deleteCase() async {
+    //links
+    for (var link in shownCase.furtherLinks!) {
+      _deleteLinkFromSupabase(link);
+    }
+
+    //images
+    for (var image in shownCase.images) {
+      await _deleteImageFromBucket(image);
+    }
+    //case
+    await SupaBaseConst.supabase
+        .from('cases')
+        .delete()
+        .match({'id': shownCase.id});
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Löschen erfolgreich!'),
+        backgroundColor: Colors.red,
+      ),
+    );
+    Navigator.pop(context);
   }
 }
