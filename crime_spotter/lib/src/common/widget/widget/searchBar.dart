@@ -135,6 +135,8 @@ class _TSearchBarState extends State<TSearchBar> {
                                               },
                                             ),
                                             Navigator.pop(context),
+                                            widget.controller
+                                                .setZoom(zoomLevel: 13),
                                           },
                                         ),
                                   },
