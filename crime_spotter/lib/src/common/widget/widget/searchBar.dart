@@ -2,12 +2,17 @@ import 'package:crime_spotter/src/features/map/4data/fetch_data.dart';
 import 'package:crime_spotter/src/shared/4data/helper_functions.dart';
 import 'package:crime_spotter/src/shared/constants/colors.dart';
 import 'package:crime_spotter/src/shared/constants/size.dart';
+import 'package:crime_spotter/src/shared/model/predictionResponse.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:iconsax/iconsax.dart';
 
 class TSearchBar extends StatefulWidget {
-  const TSearchBar({super.key});
+  final MapController controller;
+  final Map<GeoPoint, List<Placemark>> markerMap;
+  const TSearchBar(
+      {super.key, required this.controller, required this.markerMap});
 
   @override
   State<TSearchBar> createState() => _TSearchBarState();
@@ -36,6 +41,7 @@ class _TSearchBarState extends State<TSearchBar> {
 
   @override
   void dispose() {
+    widget.controller.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -62,6 +68,7 @@ class _TSearchBarState extends State<TSearchBar> {
                 backgroundColor: TColor.searchColor,
                 context: context,
                 builder: (context) {
+                  GeoPoint position;
                   return Card(
                     color: TColor.searchColor,
                     child: Padding(
@@ -79,9 +86,59 @@ class _TSearchBarState extends State<TSearchBar> {
                                   ? 0
                                   : _fetchedLocations!.predictions.length,
                               itemBuilder: (context, index) => GestureDetector(
-                                // onTap: (item) => {
-                                //TODO: On Tap Change Camera position
-                                // },
+                                onTap: () async => {
+                                  {
+                                    await fetchData
+                                        .detailedAdress(_fetchedLocations!
+                                            .predictions[index]
+                                            .structuredFormatting
+                                            .mainText)
+                                        .then(
+                                          (value) => {
+                                            position = GeoPoint(
+                                                latitude: value
+                                                    .predictions[index]
+                                                    .geometry
+                                                    .location
+                                                    .lat,
+                                                longitude: value
+                                                    .predictions[index]
+                                                    .geometry
+                                                    .location
+                                                    .lng),
+                                            widget.controller.moveTo(position,
+                                                animate: true),
+                                            widget.controller.addMarker(
+                                              position,
+                                              markerIcon: const MarkerIcon(
+                                                icon: Icon(
+                                                  Icons.pin_drop,
+                                                  color: Colors.blue,
+                                                  size: 48,
+                                                ),
+                                              ),
+                                            ),
+                                            placemarkFromCoordinates(
+                                                    position.latitude,
+                                                    position.longitude)
+                                                .then(
+                                              (value) => {
+                                                if (value.isNotEmpty)
+                                                  {
+                                                    setState(
+                                                      () {
+                                                        widget.markerMap[
+                                                            position] = value;
+                                                      },
+                                                    ),
+                                                  },
+                                              },
+                                            ),
+                                            Navigator.pop(context),
+                                          },
+                                        ),
+                                  },
+                                },
                                 child: Card(
                                   key: Key(_fetchedLocations!.predictions[index]
                                       .structuredFormatting.mainText),

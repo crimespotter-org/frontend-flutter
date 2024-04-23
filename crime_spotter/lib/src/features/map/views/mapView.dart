@@ -3,45 +3,27 @@ import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:geocoding/geocoding.dart';
 
 class TOpenStreetMap extends StatefulWidget {
-  const TOpenStreetMap({super.key});
+  final MapController controller;
+  final Map<GeoPoint, List<Placemark>> markerMap;
+  const TOpenStreetMap(
+      {super.key, required this.controller, required this.markerMap});
 
   @override
   State<TOpenStreetMap> createState() => _TOpenStreetMapState();
 }
 
 class _TOpenStreetMapState extends State<TOpenStreetMap> {
-  Map<GeoPoint, List<Placemark>> markerMap = {};
-
-  final MapController _controller = MapController.customLayer(
-    customTile: CustomTile(
-      sourceName: "opentopomap",
-      tileExtension: ".png",
-      minZoomLevel: 2,
-      maxZoomLevel: 19,
-      urlsServers: [
-        TileURLs(
-          url: "https://tile.openstreetmap.org/",
-          subdomains: [],
-        )
-      ],
-      tileSize: 256,
-    ),
-    initMapWithUserPosition: const UserTrackingOption(
-      unFollowUser: false,
-      enableTracking: true,
-    ),
-  );
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback(
       (timeStamp) {
-        _controller.listenerMapSingleTapping.addListener(
+        widget.controller.listenerMapSingleTapping.addListener(
           () async {
-            GeoPoint? posistion = _controller.listenerMapSingleTapping.value;
+            GeoPoint? posistion =
+                widget.controller.listenerMapSingleTapping.value;
             if (posistion != null) {
-              await _controller.addMarker(
+              await widget.controller.addMarker(
                 posistion,
                 markerIcon: const MarkerIcon(
                   icon: Icon(
@@ -58,7 +40,7 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
                     {
                       setState(
                         () {
-                          markerMap[posistion] = value;
+                          widget.markerMap[posistion] = value;
                         },
                       ),
                     },
@@ -73,7 +55,7 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
 
   @override
   void dispose() {
-    _controller.dispose();
+    widget.controller.dispose();
     super.dispose();
   }
 
@@ -82,7 +64,7 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
     return Stack(
       children: [
         OSMFlutter(
-          controller: _controller,
+          controller: widget.controller,
           mapIsLoading: const Center(
             child: CircularProgressIndicator(),
           ),
@@ -103,7 +85,7 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
                       children: [
                         GestureDetector(
                           onTap: () => {
-                            _controller.removeMarker(geoPoint),
+                            widget.controller.removeMarker(geoPoint),
                             Navigator.pop(currentContext)
                           },
                           child: const Icon(Icons.delete),
@@ -113,7 +95,7 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                markerMap[currentLocation]![0].locality!,
+                                widget.markerMap[currentLocation]![0].locality!,
                                 style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
@@ -145,7 +127,7 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
               await Future.delayed(
                 Duration.zero,
                 () async {
-                  await _controller.currentLocation();
+                  await widget.controller.currentLocation();
                 },
               ),
           },
@@ -186,9 +168,9 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
             padding: const EdgeInsets.all(20.0),
             child: FloatingActionButton(
               onPressed: () => {
-                _controller.myLocation().then(
+                widget.controller.myLocation().then(
                       (posistion) => {
-                        _controller.addMarker(
+                        widget.controller.addMarker(
                           posistion,
                           markerIcon: const MarkerIcon(
                             icon: Icon(
@@ -206,7 +188,7 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
                               {
                                 setState(
                                   () {
-                                    markerMap[posistion] = value;
+                                    widget.markerMap[posistion] = value;
                                   },
                                 ),
                               },
