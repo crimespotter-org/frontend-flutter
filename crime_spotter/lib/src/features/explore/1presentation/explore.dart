@@ -81,7 +81,7 @@ class _ExploreState extends State<Explore> {
     }
 
     setState(() {
-      cases.addAll(temp);
+      cases = temp;
     });
   }
 
