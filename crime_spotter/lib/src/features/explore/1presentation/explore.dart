@@ -129,9 +129,11 @@ class _ExploreState extends State<Explore> {
             child: FloatingActionButton(
               backgroundColor: Colors.blueAccent,
               onPressed: () async {
-                var caseToCreate = ExploreCardData.createNew();
-                Navigator.pushNamed(context, UIData.edit_case,
-                    arguments: caseToCreate);
+                setState(() {
+                  var caseToCreate = ExploreCardData.createNew();
+                  Navigator.pushNamed(context, UIData.edit_case,
+                      arguments: caseToCreate);
+                });
               },
               tooltip: "Neuen Fall hinzufügen",
               child: const Icon(Icons.add),
