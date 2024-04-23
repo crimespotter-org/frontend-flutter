@@ -5,7 +5,6 @@ import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:crime_spotter/src/shared/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:crime_spotter/src/features/map/views/mapView.dart';
-import 'package:flutter/widgets.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key, required this.title});
