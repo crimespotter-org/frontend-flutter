@@ -1,14 +1,14 @@
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
 import 'package:flutter/material.dart';
 
-class Single_case extends StatefulWidget {
-  const Single_case({super.key});
+class SingleCase extends StatefulWidget {
+  const SingleCase({super.key});
 
   @override
-  State<Single_case> createState() => _Single_caseState();
+  State<SingleCase> createState() => _SingleCaseState();
 }
 
-class _Single_caseState extends State<Single_case> {
+class _SingleCaseState extends State<SingleCase> {
   @override
   Widget build(BuildContext context) {
     final shownCase =
@@ -20,43 +20,42 @@ class _Single_caseState extends State<Single_case> {
       body: Card(
         child: Column(
           children: [
-            if (shownCase.imageUrls.length < 2)
+            if (shownCase.images.isEmpty)
               SizedBox(
-                height: 300,
-                child: Image.asset(
-                  shownCase.imageUrls.first,
-                  width: 300.0,
-                  height: 300.0,
-                  fit: BoxFit.contain,
-                ),
-              )
+                  height: 300,
+                  child: Image.asset(
+                    "assets/placeholder.jpg",
+                    fit: BoxFit.fitHeight,
+                  ))
             else
-              PageView.builder(
-                itemCount: shownCase.imageUrls.length,
-                itemBuilder: (context, index) {
-                  return Image.network(
-                    shownCase.imageUrls[index],
-                    fit: BoxFit.cover, // Adjust the image fit as needed
-                  );
-                },
+              SizedBox(
+                height: MediaQuery.of(context).size.width * 0.5,
+                child: PageView.builder(
+                  itemCount: shownCase.images.length,
+                  itemBuilder: (context, index) {
+                    return Image.memory(
+                      shownCase.images[index].image,
+                      fit: BoxFit.fitHeight,
+                    );
+                  },
+                ),
               ),
-            if (shownCase.buttons != null && shownCase.buttons!.isNotEmpty)
+            const SizedBox(height: 10),
+            if (shownCase.furtherLinks != null &&
+                shownCase.furtherLinks!.isNotEmpty)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: shownCase.buttons!.map((button) {
+                children: shownCase.furtherLinks!.map((button) {
                   IconData iconData;
                   switch (button.type) {
-                    case "default":
-                      iconData = Icons.disabled_by_default;
+                    case "book":
+                      iconData = Icons.book;
                       break;
                     case "podcast":
                       iconData = Icons.headphones;
                       break;
                     case "newspaper":
                       iconData = Icons.newspaper;
-                      break;
-                    case "test":
-                      iconData = Icons.library_books;
                       break;
                     default:
                       iconData = Icons.error; // or any other default icon
@@ -75,16 +74,14 @@ class _Single_caseState extends State<Single_case> {
                   );
                 }).toList(),
               ),
-            Container(
-              margin: EdgeInsets.only(top: 10),
-              child: DefaultTextStyle.merge(
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-                child: const Center(
-                  child: Text('Summary:'),
-                ),
+            const SizedBox(height: 10),
+            DefaultTextStyle.merge(
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+              child: const Center(
+                child: Text('Summary:'),
               ),
             ),
             Expanded(

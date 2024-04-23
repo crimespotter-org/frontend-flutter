@@ -19,7 +19,7 @@ class ButtonController {
         heroTag: "explore",
         backgroundColor: Colors.blueAccent,
         onPressed: () async {
-          Navigator.pushReplacementNamed(context, UIData.explore);
+          Navigator.pushNamed(context, UIData.explore);
         },
         tooltip: "Entdecken",
         child: const Icon(Icons.explore),
@@ -28,7 +28,7 @@ class ButtonController {
         heroTag: "settings",
         backgroundColor: Colors.grey,
         onPressed: () async {
-          Navigator.pushReplacementNamed(context, UIData.settings);
+          Navigator.pushNamed(context, UIData.settings);
         },
         tooltip: "Einstellungen",
         child: const Icon(Icons.settings),
