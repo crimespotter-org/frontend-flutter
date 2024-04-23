@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
 import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -15,10 +16,10 @@ class EditCase extends StatefulWidget {
 }
 
 class _EditCaseState extends State<EditCase> {
+  late ExploreCardData shownCase;
   @override
   Widget build(BuildContext context) {
-    final shownCase =
-        ModalRoute.of(context)!.settings.arguments as ExploreCardData;
+    shownCase = ModalRoute.of(context)!.settings.arguments as ExploreCardData;
 
     return DefaultTabController(
       length: 3,
@@ -47,7 +48,7 @@ class _EditCaseState extends State<EditCase> {
               right: 16.0,
               child: ElevatedButton(
                 onPressed: () {
-                  //_saveCase();
+                  _saveCase();
                 },
                 child: const Text('Save'),
               ),
@@ -104,42 +105,48 @@ class _EditCaseState extends State<EditCase> {
   }
 
   Widget _buildLinksTab(ExploreCardData shownCase) {
-    links = shownCase.buttons!;
+    links = shownCase.furtherLinks!;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // List of links
+          ListView.builder(
+            shrinkWrap: true,
+            itemCount: shownCase.furtherLinks!.length,
+            itemBuilder: (context, index) {
+              return _buildLinkItem(index, shownCase.furtherLinks![index]);
+            },
+          ),
+          const SizedBox(height: 20),
           // Add Link button
           ElevatedButton(
             onPressed: () {
               setState(() {
-                shownCase.buttons == null
+                shownCase.furtherLinks == null
                     ? {
-                        shownCase.buttons = [],
-                        shownCase.buttons!.add(MediaButton('default', ''))
+                        shownCase.furtherLinks = [],
+                        shownCase.furtherLinks!
+                            .add(Links.createNew('default', '')),
+                        _linksToAdd.add(shownCase.furtherLinks!.last)
                       }
-                    : shownCase.buttons!.add(MediaButton('default', ''));
+                    : {
+                        shownCase.furtherLinks!
+                            .add(Links.createNew('default', '')),
+                        _linksToAdd.add(shownCase.furtherLinks!.last)
+                      };
               });
             },
             child: const Text('Add Link'),
-          ),
-          const SizedBox(height: 20),
-          // List of links
-          ListView.builder(
-            shrinkWrap: true,
-            itemCount: shownCase.buttons!.length,
-            itemBuilder: (context, index) {
-              return _buildLinkItem(index, shownCase.buttons![index]);
-            },
           ),
         ],
       ),
     );
   }
 
-  List<MediaButton> links = [];
-  Widget _buildLinkItem(int index, MediaButton link) {
+  List<Links> links = [];
+  Widget _buildLinkItem(int index, Links link) {
     return Row(
       children: [
         // Dropdown for link type
@@ -150,7 +157,7 @@ class _EditCaseState extends State<EditCase> {
               links[index] = link.copyWith(type: value); // Update the link type
             });
           },
-          items: ['website', 'podcast', 'newspaper', 'default']
+          items: ['book', 'podcast', 'newspaper']
               .map<DropdownMenuItem<String>>((String value) {
             return DropdownMenuItem<String>(
               value: value,
@@ -177,9 +184,7 @@ class _EditCaseState extends State<EditCase> {
         IconButton(
           icon: const Icon(Icons.remove_circle),
           onPressed: () {
-            setState(() {
-              links.removeAt(index); // Remove the link from the list
-            });
+            _deleteLink(index);
           },
         ),
       ],
@@ -192,16 +197,6 @@ class _EditCaseState extends State<EditCase> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Add Image button
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                _selectAndUploadImage();
-              });
-            },
-            child: const Text('Add Image'),
-          ),
-          const SizedBox(height: 20),
           // List of images
           GridView.builder(
             shrinkWrap: true,
@@ -211,10 +206,20 @@ class _EditCaseState extends State<EditCase> {
               crossAxisSpacing: 10.0,
               mainAxisSpacing: 10.0,
             ),
-            itemCount: shownCase.imageUrls.length,
+            itemCount: shownCase.images.length,
             itemBuilder: (context, index) {
-              return _buildImageItem(index, shownCase.imageUrls[index]);
+              return _buildImageItem(index, shownCase.images[index].image);
             },
+          ),
+          const SizedBox(height: 20),
+          // Add Image button
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _uploadImage();
+              });
+            },
+            child: const Text('Add Image'),
           ),
         ],
       ),
@@ -239,7 +244,7 @@ class _EditCaseState extends State<EditCase> {
             icon: const Icon(Icons.remove_circle),
             onPressed: () {
               setState(() {
-                // Add logic to remove image
+                _deleteImage(index);
               });
             },
           ),
@@ -249,33 +254,132 @@ class _EditCaseState extends State<EditCase> {
   }
 
   final ImagePicker _picker = ImagePicker();
-  File? _imageFile;
+  final List<MediaToAdd> _imagesToAdd = [];
+  final List<Media> _imagesTodelete = [];
+  final List<Links> _linksToDelete = [];
+  final List<Links> _linksToAdd = [];
 
-  Future<void> _selectAndUploadImage() async {
+  Future<void> _uploadImage() async {
     final XFile? pickedFile =
         await _picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       setState(() {
-        _imageFile = File(pickedFile.path);
+        _imagesToAdd.add(
+            MediaToAdd(pickedFile.path.split('/').last, File(pickedFile.path)));
       });
 
-      // Upload the selected image
-      final path = await uploadImageToSupabase(_imageFile!);
-      print('Uploaded image to Supabase: $path');
+      // Read the selected image file as bytes
+      List<int> imageBytes = await _imagesToAdd!.last.file.readAsBytes();
+      String fileName = pickedFile.path.split('/').last;
+
+      // Add the image bytes to your list
+      setState(() {
+        shownCase.images
+            .add(Media(image: Uint8List.fromList(imageBytes), name: fileName));
+      });
     }
   }
 
-  Future<String> uploadImageToSupabase(File imageFile) async {
+  Future<String> _uploadImageToSupabase(File imageFile) async {
     final String fileName = imageFile.path.split('/').last;
+    String storageDir = 'case-${shownCase.id}';
     final String path = await SupaBaseConst.supabase.storage
         .from('media')
         .upload(
-          fileName,
+          '$storageDir/$fileName',
           imageFile,
           fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
         );
 
     return path;
+  }
+
+  Future<void> _deleteImage(int index) async {
+    _imagesTodelete?.add(shownCase.images[index]);
+    setState(() {
+      shownCase.images.removeAt(index);
+    });
+  }
+
+  Future<void> _deleteImageFromBucket(Media image) async {
+    String storageDir = 'case-${shownCase.id}';
+    final String fileName = image.name;
+    final List<FileObject> objects = await SupaBaseConst.supabase.storage
+        .from('media')
+        .remove(['$storageDir/$fileName']);
+  }
+
+  Future<void> _deleteLink(int index) async {
+    _linksToDelete.add(links[index]);
+    setState(() {
+      links.removeAt(index); // Remove the link from the list
+    });
+  }
+
+  Future<void> _deleteLinkFromSupabase(Links link) async {
+    await SupaBaseConst.supabase
+        .from('furtherlinks')
+        .delete()
+        .match({'id': link.id});
+  }
+
+  Future<void> _saveLinkToSupaBase(Links link) async {
+    await SupaBaseConst.supabase
+        .from('furtherlinks')
+        .insert({'case_id': shownCase.id, 'url': link.url, 'type': link.type});
+  }
+
+  Future<void> _updateLinkInSupabase(Links link) async {
+    await SupaBaseConst.supabase.from('furtherlinks').update({
+      'url': link.url,
+      'type': link.type,
+    }).match({'id': link.id});
+  }
+
+  bool _isNotInAddLinkList(Links linkToCheck) {
+    for (var link in _linksToAdd) {
+      if (link.url == linkToCheck.url && link.type == linkToCheck.type) {
+        return false; // Found a matching link, so it's in the list
+      }
+    }
+    return true; // No matching link found, so it's not in the list
+  }
+
+  Future<void> _saveCase() async {
+    //case
+    await SupaBaseConst.supabase.from('cases').update({
+      'title': shownCase.title,
+      'summary': shownCase.summary,
+    }).match({'id': shownCase.id});
+
+    //links
+    for (var link in _linksToAdd) {
+      _saveLinkToSupaBase(link);
+    }
+    for (var link in links) {
+      if (link.updated && _isNotInAddLinkList(link)) {
+        await _updateLinkInSupabase(link);
+      }
+    }
+    for (var link in _linksToDelete) {
+      await _deleteLinkFromSupabase(link);
+    }
+
+    //images
+    for (var image in _imagesToAdd) {
+      final path = await _uploadImageToSupabase(image.file);
+      print('Uploaded image to Supabase: $path');
+    }
+    for (var image in _imagesTodelete) {
+      await _deleteImageFromBucket(image);
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Speichern erfolgreich!'),
+        backgroundColor: Colors.green,
+      ),
+    );
   }
 }

@@ -24,11 +24,16 @@ class CaseTileShort extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: Stack(
           children: [
-            shownCase.imageUrls.isEmpty
-                ? const Placeholder()
-                : Image.memory(
-                    shownCase.imageUrls.first,
+            shownCase.images.isEmpty
+                ? Image.asset(
+                    "assets/placeholder.jpg",
                     fit: BoxFit.cover,
+                    width: double.infinity,
+                  )
+                : Image.memory(
+                    shownCase.images.first.image,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
                   ),
             Container(
               width: double.infinity,

@@ -23,7 +23,7 @@ class _ExploreState extends State<Explore> {
     List<ExploreCardData> temp = [];
 
     for (var item in response) {
-      List<MediaButton> buttons = <MediaButton>[];
+      List<Links> buttons = <Links>[];
 
       if (item['furtherlinks'] != null) {
         for (var link in item['furtherlinks']) {
@@ -32,11 +32,11 @@ class _ExploreState extends State<Explore> {
           if (link['url'] != null) {
             url = link['url'] as String;
           }
-          if (link['type'] != null) {
-            type = link['type'] as String;
+          if (link['link_type'] != null) {
+            type = link['link_type'] as String;
           }
           buttons.add(
-            MediaButton(type, url),
+            Links(type, url, link['id']),
           );
         }
       }
@@ -51,7 +51,7 @@ class _ExploreState extends State<Explore> {
         title = item['title'] as String;
       }
 
-      List<Uint8List> mediaUrl = [];
+      List<Media> media = [];
 
       String storageDir = 'case-${item['id']}';
       List<FileObject> files = await SupaBaseConst.supabase.storage
@@ -62,15 +62,15 @@ class _ExploreState extends State<Explore> {
           var signedUrl = await SupaBaseConst.supabase.storage
               .from('media')
               .download('$storageDir/${x.name}');
-          mediaUrl.add(signedUrl);
+          media.add(Media(image: signedUrl, name: x.name));
         } catch (ex) {
           continue;
         }
       }
       temp.add(
         ExploreCardData(
-          imageUrls: mediaUrl,
-          buttons: buttons.isEmpty ? null : buttons,
+          images: media,
+          furtherLinks: buttons.isEmpty ? null : buttons,
           summary: summary,
           title: title,
           id: item['id'],

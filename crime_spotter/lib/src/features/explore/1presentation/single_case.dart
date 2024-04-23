@@ -20,39 +20,36 @@ class _SingleCaseState extends State<SingleCase> {
       body: Card(
         child: Column(
           children: [
-            if (shownCase.imageUrls.length < 2)
+            if (shownCase.images.isEmpty)
               SizedBox(
-                height: 300,
-                child: shownCase.imageUrls.isEmpty
-                    ? const Placeholder()
-                    : Image.memory(
-                        shownCase.imageUrls.first,
-                        width: 300.0,
-                        height: 300.0,
-                        fit: BoxFit.contain,
-                      ),
-              )
+                  height: 300,
+                  child: Image.asset(
+                    "assets/placeholder.jpg",
+                    fit: BoxFit.fitHeight,
+                  ))
             else
               SizedBox(
                 height: MediaQuery.of(context).size.width * 0.5,
                 child: PageView.builder(
-                  itemCount: shownCase.imageUrls.length,
+                  itemCount: shownCase.images.length,
                   itemBuilder: (context, index) {
                     return Image.memory(
-                      shownCase.imageUrls[index],
-                      fit: BoxFit.cover,
+                      shownCase.images[index].image,
+                      fit: BoxFit.fitHeight,
                     );
                   },
                 ),
               ),
-            if (shownCase.buttons != null && shownCase.buttons!.isNotEmpty)
+            const SizedBox(height: 10),
+            if (shownCase.furtherLinks != null &&
+                shownCase.furtherLinks!.isNotEmpty)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: shownCase.buttons!.map((button) {
+                children: shownCase.furtherLinks!.map((button) {
                   IconData iconData;
                   switch (button.type) {
-                    case "default":
-                      iconData = Icons.disabled_by_default;
+                    case "book":
+                      iconData = Icons.book;
                       break;
                     case "podcast":
                       iconData = Icons.headphones;
@@ -77,16 +74,14 @@ class _SingleCaseState extends State<SingleCase> {
                   );
                 }).toList(),
               ),
-            Container(
-              margin: const EdgeInsets.only(top: 10),
-              child: DefaultTextStyle.merge(
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-                child: const Center(
-                  child: Text('Summary:'),
-                ),
+            const SizedBox(height: 10),
+            DefaultTextStyle.merge(
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+              child: const Center(
+                child: Text('Summary:'),
               ),
             ),
             Expanded(
