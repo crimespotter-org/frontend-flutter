@@ -50,6 +50,8 @@ dependencies:
   flutter_osm_plugin: ^1.0.3
   geocoding: ^3.0.0
   format: ^1.5.1
+  provider: ^6.0.1
+  fluttertoast: ^8.2.5
 
 
 dev_dependencies:

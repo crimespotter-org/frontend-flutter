@@ -1,10 +1,12 @@
 import 'package:crime_spotter/src/common/widget/widget/radioButton.dart';
 import 'package:crime_spotter/src/common/widget/widget/searchBar.dart';
+import 'package:crime_spotter/src/features/map/views/mapToggleButton.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
 import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:crime_spotter/src/shared/constants/colors.dart';
+import 'package:crime_spotter/src/shared/constants/size.dart';
 import 'package:flutter/material.dart';
-import 'package:crime_spotter/src/features/map/views/mapView.dart';
+import 'package:crime_spotter/src/features/map/views/openStreetMap.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:geocoding/geocoding.dart';
 
@@ -83,7 +85,19 @@ class _MapPageState extends State<MapPage> {
               ),
             ),
           ),
-          TSearchBar(controller: controller, markerMap: markerMap),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 50),
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: TSize.defaultSpace),
+              child: Column(
+                children: [
+                  TSearchBar(controller: controller, markerMap: markerMap),
+                  TMapToggleButton(controller: controller),
+                ],
+              ),
+            ),
+          ),
           const TRadioButton(),
         ],
       ),
