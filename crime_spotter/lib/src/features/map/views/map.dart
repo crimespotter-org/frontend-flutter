@@ -5,7 +5,7 @@ import 'package:crime_spotter/src/features/map/views/mapSwipeCases.dart';
 import 'package:crime_spotter/src/features/map/views/mapToggleButton.dart';
 import 'package:crime_spotter/src/shared/4data/cardProvider.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
-import 'package:crime_spotter/src/shared/4data/heatMapProvider.dart';
+import 'package:crime_spotter/src/shared/4data/mapProvider.dart';
 import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:crime_spotter/src/shared/constants/colors.dart';
 import 'package:flutter/material.dart';

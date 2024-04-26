@@ -1,5 +1,5 @@
 import 'package:crime_spotter/src/features/map/views/mapOption.dart';
-import 'package:crime_spotter/src/shared/4data/heatMapProvider.dart';
+import 'package:crime_spotter/src/shared/4data/mapProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:provider/provider.dart';

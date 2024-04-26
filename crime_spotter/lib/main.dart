@@ -4,7 +4,7 @@ import 'package:crime_spotter/src/features/explore/1presentation/explore.dart';
 import 'package:crime_spotter/src/features/explore/1presentation/single_case.dart';
 import 'package:crime_spotter/src/features/settings/settings.dart';
 import 'package:crime_spotter/src/shared/4data/cardProvider.dart';
-import 'package:crime_spotter/src/shared/4data/heatMapProvider.dart';
+import 'package:crime_spotter/src/shared/4data/mapProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
