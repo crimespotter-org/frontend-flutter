@@ -1,14 +1,18 @@
 import 'package:crime_spotter/src/common/widget/widget/radioButton.dart';
 import 'package:crime_spotter/src/common/widget/widget/searchBar.dart';
+import 'package:crime_spotter/src/features/map/views/fleaFletMap.dart';
+import 'package:crime_spotter/src/features/map/views/mapSwipeCases.dart';
 import 'package:crime_spotter/src/features/map/views/mapToggleButton.dart';
+import 'package:crime_spotter/src/shared/4data/cardProvider.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
+import 'package:crime_spotter/src/shared/4data/heatMapProvider.dart';
 import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:crime_spotter/src/shared/constants/colors.dart';
-import 'package:crime_spotter/src/shared/constants/size.dart';
 import 'package:flutter/material.dart';
 import 'package:crime_spotter/src/features/map/views/openStreetMap.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:provider/provider.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key, required this.title});
@@ -20,6 +24,8 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
+  bool isHeatMap = false;
+
   @override
   void setState(fn) {
     if (mounted) {
@@ -68,10 +74,13 @@ class _MapPageState extends State<MapPage> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<MapProvider>(context);
     return Scaffold(
       body: Stack(
         children: <Widget>[
-          TOpenStreetMap(controller: controller, markerMap: markerMap),
+          provider.isHeatmap
+              ? OpenStreetMap(controller: controller)
+              : TOpenStreetMap(controller: controller, markerMap: markerMap),
           Positioned(
             left: -MediaQuery.of(context).size.width /
                 2, // Adjust the left position as needed
@@ -86,21 +95,167 @@ class _MapPageState extends State<MapPage> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 50),
-            child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: TSize.defaultSpace),
-              child: Column(
-                children: [
-                  TSearchBar(controller: controller, markerMap: markerMap),
-                  TMapToggleButton(controller: controller),
-                ],
-              ),
+            padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 20),
+            child: Column(
+              children: [
+                TSearchBar(controller: controller, markerMap: markerMap),
+                const SizedBox(
+                  height: 10,
+                ),
+                TMapToggleButton(controller: controller),
+              ],
             ),
           ),
           const TRadioButton(),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 30),
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.75,
+                height: MediaQuery.of(context).size.height * 0.5,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 50),
+                  child: Visibility(
+                    visible: provider.showSwipeableCases,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Stack(
+                        alignment: Alignment.bottomCenter,
+                        children: [
+                          buildCases(),
+                          Align(
+                            alignment: Alignment.bottomCenter,
+                            child: buildButtons(),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  Widget buildCases() {
+    final provider = Provider.of<CaseProvider>(context);
+    final urlImages = provider.urlImages;
+
+    return urlImages.isEmpty
+        ? Center(
+            child: ElevatedButton(
+              child: const Text('Neu beginnen'),
+              onPressed: () {
+                final provider =
+                    Provider.of<CaseProvider>(context, listen: false);
+
+                provider.resetCases();
+              },
+            ),
+          )
+        : Stack(
+            children: urlImages
+                .map((urlImage) => TMapSwipeCases(
+                      image: urlImage,
+                      isFront: urlImages.last == urlImage,
+                    ))
+                .toList(),
+          );
+  }
+
+  Widget buildButtons() {
+    final provider = Provider.of<CaseProvider>(context);
+    final status = provider.getStatus();
+    final isLike = status == CaseStatus.like;
+    final isDislike = status == CaseStatus.dislike;
+
+    return
+        // cases.isEmpty
+        //     ? ElevatedButton(
+        //         style: ElevatedButton.styleFrom(
+        //           shape: RoundedRectangleBorder(
+        //             borderRadius: BorderRadius.circular(16),
+        //           ),
+        //         ),
+        //         child: const Text('Neu beginnen'),
+        //         onPressed: () {
+        //           final provider =
+        //               Provider.of<CaseProvider>(context, listen: false);
+
+        //           provider.resetCases();
+        //         },
+        //       )
+        //     :
+        Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        ElevatedButton(
+          onPressed: () {
+            final provider = Provider.of<CaseProvider>(context, listen: false);
+
+            provider.dislike();
+          },
+          style: ButtonStyle(
+            overlayColor: getColor(Colors.white, Colors.red, isDislike),
+            foregroundColor: getColor(Colors.white, Colors.red, isDislike),
+            backgroundColor: getColor(Colors.white, Colors.red, isDislike),
+          ),
+          child: const Icon(
+            Icons.clear,
+            color: Colors.red,
+            size: 20,
+          ),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            final provider = Provider.of<CaseProvider>(context, listen: false);
+            provider.like();
+          },
+          style: ButtonStyle(
+            overlayColor: getColor(Colors.white, Colors.green, isLike),
+            foregroundColor: getColor(Colors.white, Colors.green, isLike),
+            backgroundColor: getColor(Colors.white, Colors.green, isLike),
+          ),
+          child: const Icon(
+            Icons.favorite,
+            color: Colors.teal,
+            size: 20,
+          ),
+        ),
+      ],
+    );
+  }
+
+  MaterialStateProperty<Color> getColor(
+      Color color, Color colorPressed, bool force) {
+    getColor(Set<MaterialState> states) {
+      if (force || states.contains(MaterialState.pressed)) {
+        return colorPressed;
+      } else {
+        return color;
+      }
+    }
+
+    return MaterialStateProperty.resolveWith(getColor);
+  }
+
+  MaterialStateProperty<BorderSide> getBorder(
+      Color color, Color colorPressed, bool force) {
+    getBorder(Set<MaterialState> states) {
+      if (force || states.contains(MaterialState.pressed)) {
+        return const BorderSide(color: Colors.transparent);
+      } else {
+        return BorderSide(color: color, width: 3);
+      }
+    }
+
+    return MaterialStateProperty.resolveWith(getBorder);
   }
 }
