@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter_osm_plugin/flutter_osm_plugin.dart' as osm;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -8,8 +7,7 @@ import 'package:flutter_map_heatmap/flutter_map_heatmap.dart';
 import 'package:latlong2/latlong.dart';
 
 class OpenStreetMap extends StatefulWidget {
-  final osm.MapController controller;
-  const OpenStreetMap({super.key, required this.controller});
+  const OpenStreetMap({super.key});
 
   @override
   State<OpenStreetMap> createState() => _OpenStreetMapState();
@@ -40,29 +38,34 @@ class _OpenStreetMapState extends State<OpenStreetMap> {
   Future<void> _loadData() async {
     await rootBundle.loadString('assets/initial_data.json').then(
           (value) => {
-            setState(
-              () {
-                data = (jsonDecode(value) as List<dynamic>)
-                    .map((e) => e as List<dynamic>)
-                    .map((e) => WeightedLatLng(LatLng(e[0], e[1]), 1))
-                    .toList();
-              },
-            ),
+            if (mounted)
+              {
+                setState(
+                  () {
+                    data = (jsonDecode(value) as List<dynamic>)
+                        .map((e) => e as List<dynamic>)
+                        .map((e) => WeightedLatLng(LatLng(e[0], e[1]), 1))
+                        .toList();
+                  },
+                ),
+              }
           },
         );
   }
 
   void _incrementCounter() {
-    setState(
-      () {
-        index = index == 0 ? 1 : 0;
-        WidgetsBinding.instance.addPostFrameCallback(
-          (timeStamp) {
-            _rebuildStream.add(null);
-          },
-        );
-      },
-    );
+    if (mounted) {
+      setState(
+        () {
+          index = index == 0 ? 1 : 0;
+          WidgetsBinding.instance.addPostFrameCallback(
+            (timeStamp) {
+              _rebuildStream.add(null);
+            },
+          );
+        },
+      );
+    }
   }
 
   @override
@@ -97,7 +100,7 @@ class _OpenStreetMapState extends State<OpenStreetMap> {
       children: [
         Center(child: map),
         Padding(
-          padding: EdgeInsets.all(20),
+          padding: const EdgeInsets.all(20),
           child: Align(
             alignment: Alignment.bottomLeft,
             child: FloatingActionButton(

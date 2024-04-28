@@ -78,9 +78,11 @@ class _MapPageState extends State<MapPage> {
     return Scaffold(
       body: Stack(
         children: <Widget>[
-          provider.isHeatmap
-              ? OpenStreetMap(controller: controller)
-              : TOpenStreetMap(controller: controller, markerMap: markerMap),
+          TOpenStreetMap(controller: controller, markerMap: markerMap),
+          Visibility(
+            visible: provider.isHeatmap,
+            child: const OpenStreetMap(),
+          ),
           Positioned(
             left: -MediaQuery.of(context).size.width /
                 2, // Adjust the left position as needed

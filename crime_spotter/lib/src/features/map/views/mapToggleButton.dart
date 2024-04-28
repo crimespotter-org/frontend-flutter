@@ -26,14 +26,16 @@ class _TMapToggleButtonState extends State<TMapToggleButton> {
         ToggleButtons(
           direction: Axis.horizontal,
           onPressed: (int index) {
-            setState(
-              () {
-                // The button that is tapped is set to true, and the others to false.
-                for (int i = 0; i < _selectedToggle.length; i++) {
-                  _selectedToggle[i] = i == index;
-                }
-              },
-            );
+            if (mounted) {
+              setState(
+                () {
+                  for (int i = 0; i < _selectedToggle.length; i++) {
+                    _selectedToggle[i] = i == index;
+                  }
+                },
+              );
+            }
+
             if (index == ToggleButton.map.index) {
               provider.changeToMap();
               provider.hideCases();

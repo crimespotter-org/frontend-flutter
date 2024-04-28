@@ -31,11 +31,13 @@ class _TSearchBarState extends State<TSearchBar> {
       result = await fetchData.searchLocation(value);
     }
 
-    setState(
-      () {
-        _fetchedLocations = result;
-      },
-    );
+    if (mounted) {
+      setState(
+        () {
+          _fetchedLocations = result;
+        },
+      );
+    }
   }
 
   @override
@@ -114,12 +116,15 @@ class _TSearchBarState extends State<TSearchBar> {
                                           (value) => {
                                             if (value.isNotEmpty)
                                               {
-                                                setState(
-                                                  () {
-                                                    widget.markerMap[position] =
-                                                        value;
-                                                  },
-                                                ),
+                                                if (mounted)
+                                                  {
+                                                    setState(
+                                                      () {
+                                                        widget.markerMap[
+                                                            position] = value;
+                                                      },
+                                                    ),
+                                                  }
                                               },
                                           },
                                         ),
