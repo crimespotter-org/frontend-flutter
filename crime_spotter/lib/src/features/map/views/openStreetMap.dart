@@ -38,11 +38,14 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
                 (value) => {
                   if (value.isNotEmpty)
                     {
-                      setState(
-                        () {
-                          widget.markerMap[posistion] = value;
-                        },
-                      ),
+                      if (mounted)
+                        {
+                          setState(
+                            () {
+                              widget.markerMap[posistion] = value;
+                            },
+                          ),
+                        }
                     },
                 },
               );
@@ -186,11 +189,14 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
                           (value) => {
                             if (value.isNotEmpty)
                               {
-                                setState(
-                                  () {
-                                    widget.markerMap[posistion] = value;
-                                  },
-                                ),
+                                if (mounted)
+                                  {
+                                    setState(
+                                      () {
+                                        widget.markerMap[posistion] = value;
+                                      },
+                                    ),
+                                  }
                               },
                           },
                         ),

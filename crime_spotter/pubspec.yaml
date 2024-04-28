@@ -50,6 +50,12 @@ dependencies:
   flutter_osm_plugin: ^1.0.3
   geocoding: ^3.0.0
   format: ^1.5.1
+  provider: ^6.0.1
+  fluttertoast: ^8.2.5
+  flutter_map: ^6.0.0
+  flutter_map_heatmap: ^0.0.7
+  latlong2: ^0.9.1
+
 
 
 dev_dependencies:
@@ -76,6 +82,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+  - assets/initial_data.json
   - assets/ #add all
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
