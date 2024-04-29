@@ -71,6 +71,8 @@ class _MapPageState extends State<MapPage> {
   );
 
   final Map<GeoPoint, List<Placemark>> markerMap = {};
+  bool mapLoaded =
+      false; //Die Marker auf der Map müssen erst gezeichnet werden, bevor navigiert werden darf
 
   @override
   Widget build(BuildContext context) {
@@ -108,7 +110,10 @@ class _MapPageState extends State<MapPage> {
               ],
             ),
           ),
-          const TRadioButton(),
+          Visibility(
+            visible: provider.mapLoaded,
+            child: const TRadioButton(),
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 30),
             child: Align(

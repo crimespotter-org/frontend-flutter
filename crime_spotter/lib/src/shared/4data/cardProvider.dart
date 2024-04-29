@@ -7,9 +7,9 @@ import 'package:flutter/services.dart';
 
 enum CaseVoting { like, dislike }
 
-enum CaseType { murder, theft, robberyMurder, brawl, rape }
+enum CaseType { murder, theft, robberyMurder, brawl, rape, unknown }
 
-enum CaseStatus { open, closed }
+enum CaseStatus { open, closed, unknown }
 
 class CaseProvider extends ChangeNotifier {
   CaseProvider() {
@@ -32,23 +32,6 @@ class CaseProvider extends ChangeNotifier {
   double get angle => _angle;
 
   void setScreenSize(Size screenSize) => _screenSize = screenSize;
-
-  CaseType getCrimeTypeFromString(String crimeString) {
-    switch (crimeString) {
-      case "murder":
-        return CaseType.murder;
-      case "theft":
-        return CaseType.theft;
-      case "robbery-murder":
-        return CaseType.robberyMurder;
-      case "brawl":
-        return CaseType.brawl;
-      case "rape":
-        return CaseType.rape;
-      default:
-        throw Exception("Ungültiger Verbrechens-Typ: $crimeString");
-    }
-  }
 
   CaseVoting? getStatus({bool force = false}) {
     final x = _position.dx;

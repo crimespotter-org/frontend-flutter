@@ -6,12 +6,24 @@ class MapProvider extends ChangeNotifier {
   }
   bool _isHeatMap = false;
   bool _showSwipeableCases = false;
+  bool _mapLoaded = false;
 
   bool get isHeatmap => _isHeatMap;
   bool get showSwipeableCases => _showSwipeableCases;
+  bool get mapLoaded => _mapLoaded;
 
   void showCases() {
     _showSwipeableCases = true;
+    notifyListeners();
+  }
+
+  void mapIsLoaded() {
+    _mapLoaded = true;
+    notifyListeners();
+  }
+
+  void unloadMap() {
+    _mapLoaded = false;
     notifyListeners();
   }
 
