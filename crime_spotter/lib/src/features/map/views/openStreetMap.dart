@@ -138,13 +138,7 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
                       GeoPoint(
                           latitude: singleCase.latitude,
                           longitude: singleCase.longitude),
-                      markerIcon: const MarkerIcon(
-                        icon: Icon(
-                          Icons.pin_drop,
-                          color: Colors.blue,
-                          size: 48,
-                        ),
-                      ),
+                      markerIcon: buildMarker(singleCase.caseType, provider),
                     );
                     placemarkFromCoordinates(
                             singleCase.latitude, singleCase.longitude)
@@ -244,6 +238,46 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
           ),
         ),
       ],
+    );
+  }
+
+  MarkerIcon buildMarker(String type, CaseProvider provider) {
+    IconData icon;
+    MaterialColor color;
+    var convertedType = provider.getCrimeTypeFromString(type);
+
+    switch (convertedType) {
+      case CaseType.murder:
+        icon = Icons.directions_run;
+        color = Colors.red;
+        break;
+      case CaseType.theft:
+        icon = Icons.report;
+        color = Colors.grey;
+        break;
+      case CaseType.robberyMurder:
+        icon = Icons.local_atm;
+        color = Colors.green;
+        break;
+      case CaseType.brawl:
+        icon = Icons.groups;
+        color = Colors.brown;
+        break;
+      case CaseType.rape:
+        icon = Icons.pan_tool;
+        color = Colors.purple;
+        break;
+      default:
+        icon = Icons.pin_drop;
+        color = Colors.blue;
+        break;
+    }
+    return MarkerIcon(
+      icon: Icon(
+        icon,
+        color: color,
+        size: 48,
+      ),
     );
   }
 }

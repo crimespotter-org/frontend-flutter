@@ -33,6 +33,23 @@ class CaseProvider extends ChangeNotifier {
 
   void setScreenSize(Size screenSize) => _screenSize = screenSize;
 
+  CaseType getCrimeTypeFromString(String crimeString) {
+    switch (crimeString) {
+      case "murder":
+        return CaseType.murder;
+      case "theft":
+        return CaseType.theft;
+      case "robbery-murder":
+        return CaseType.robberyMurder;
+      case "brawl":
+        return CaseType.brawl;
+      case "rape":
+        return CaseType.rape;
+      default:
+        throw Exception("Ungültiger Verbrechens-Typ: $crimeString");
+    }
+  }
+
   CaseVoting? getStatus({bool force = false}) {
     final x = _position.dx;
 
