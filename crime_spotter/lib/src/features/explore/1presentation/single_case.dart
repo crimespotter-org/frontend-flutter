@@ -126,7 +126,7 @@ class SingleCaseBodyWidget extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
               child: const Center(
-                child: Text('Summary:'),
+                child: Text('Zusammenfassung:'),
               ),
             ),
             Expanded(
