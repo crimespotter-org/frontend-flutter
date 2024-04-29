@@ -20,24 +20,17 @@ class TSearchBar extends StatefulWidget {
 class _TSearchBarState extends State<TSearchBar> {
   final TextEditingController _searchController = TextEditingController();
   final FetchData fetchData = FetchData();
-  PredictionResponse? _fetchedLocations;
 
-  void _runFilter(String value) async {
+  Future<PredictionResponse?> _runFilter(String value) async {
     PredictionResponse? result;
 
     if (value.isEmpty) {
-      result = null;
+      result = PredictionResponse(predictions: [], status: 'Nicht gefunden');
     } else {
       result = await fetchData.searchLocation(value);
     }
 
-    if (mounted) {
-      setState(
-        () {
-          _fetchedLocations = result;
-        },
-      );
-    }
+    return result;
   }
 
   @override
@@ -60,109 +53,125 @@ class _TSearchBarState extends State<TSearchBar> {
       ),
       child: TextField(
         onSubmitted: (value) => {
-          _runFilter(value),
-          showModalBottomSheet(
-            backgroundColor: TColor.searchColor,
-            context: context,
-            builder: (context) {
-              GeoPoint position;
-              return Card(
-                color: TColor.searchColor,
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      GestureDetector(
-                        onTap: () => Navigator.pop(context),
-                        child: const Icon(Icons.clear),
-                      ),
-                      Expanded(
-                        child: ListView.builder(
-                          itemCount: _fetchedLocations == null
-                              ? 0
-                              : _fetchedLocations!.predictions.length,
-                          itemBuilder: (context, index) => GestureDetector(
-                            onTap: () async => {
-                              {
-                                await fetchData
-                                    .detailedAdress(_fetchedLocations!
-                                        .predictions[index]
-                                        .structuredFormatting
-                                        .mainText)
-                                    .then(
-                                      (value) => {
-                                        position = GeoPoint(
-                                            latitude: value.predictions[index]
-                                                .geometry.location.lat,
-                                            longitude: value.predictions[index]
-                                                .geometry.location.lng),
-                                        widget.controller
-                                            .moveTo(position, animate: true),
-                                        widget.controller.addMarker(
-                                          position,
-                                          markerIcon: const MarkerIcon(
-                                            icon: Icon(
-                                              Icons.pin_drop,
-                                              color: Colors.blue,
-                                              size: 48,
-                                            ),
-                                          ),
-                                        ),
-                                        placemarkFromCoordinates(
-                                                position.latitude,
-                                                position.longitude)
-                                            .then(
+          _runFilter(value).then(
+            (prediction) {
+              showModalBottomSheet(
+                backgroundColor: TColor.searchColor,
+                context: context,
+                builder: (context) {
+                  GeoPoint position;
+                  return Card(
+                    color: TColor.searchColor,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          GestureDetector(
+                            onTap: () => Navigator.pop(context),
+                            child: const Icon(Icons.clear),
+                          ),
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount: prediction == null
+                                  ? 0
+                                  : prediction.predictions.length,
+                              itemBuilder: (context, index) => GestureDetector(
+                                onTap: () async => {
+                                  {
+                                    await fetchData
+                                        .detailedAdress(prediction
+                                            .predictions[index]
+                                            .structuredFormatting
+                                            .mainText)
+                                        .then(
                                           (value) => {
-                                            if (value.isNotEmpty)
+                                            if (value.status != 'ZERO_RESULTS')
                                               {
-                                                if (mounted)
-                                                  {
-                                                    setState(
-                                                      () {
-                                                        widget.markerMap[
-                                                            position] = value;
-                                                      },
+                                                position = GeoPoint(
+                                                    latitude: value
+                                                        .predictions[0]
+                                                        .geometry
+                                                        .location
+                                                        .lat,
+                                                    longitude: value
+                                                        .predictions[0]
+                                                        .geometry
+                                                        .location
+                                                        .lng),
+                                                widget.controller.moveTo(
+                                                    position,
+                                                    animate: true),
+                                                widget.controller.addMarker(
+                                                  position,
+                                                  markerIcon: const MarkerIcon(
+                                                    icon: Icon(
+                                                      Icons.pin_drop,
+                                                      color: Colors.blue,
+                                                      size: 48,
                                                     ),
-                                                  }
+                                                  ),
+                                                ),
+                                                placemarkFromCoordinates(
+                                                        position.latitude,
+                                                        position.longitude)
+                                                    .then(
+                                                  (value) => {
+                                                    if (value.isNotEmpty)
+                                                      {
+                                                        if (mounted)
+                                                          {
+                                                            setState(
+                                                              () {
+                                                                widget.markerMap[
+                                                                        position] =
+                                                                    value;
+                                                              },
+                                                            ),
+                                                          }
+                                                      },
+                                                  },
+                                                ),
+                                                Navigator.pop(context),
+                                                widget.controller
+                                                    .setZoom(zoomLevel: 13),
                                               },
                                           },
                                         ),
-                                        Navigator.pop(context),
-                                        widget.controller
-                                            .setZoom(zoomLevel: 13),
-                                      },
-                                    ),
-                              },
-                            },
-                            child: Card(
-                              key: Key(_fetchedLocations!.predictions[index]
-                                  .structuredFormatting.mainText),
-                              color: Colors.white,
-                              elevation: 4,
-                              margin: const EdgeInsets.symmetric(vertical: 10),
-                              child: Column(
-                                children: [
-                                  Text(
-                                    _fetchedLocations!.predictions[index]
-                                        .structuredFormatting.mainText,
-                                    style: const TextStyle(
-                                        fontSize: 24, color: Colors.black),
+                                  },
+                                },
+                                child: Card(
+                                  key: Key(prediction!.predictions[index]
+                                      .structuredFormatting.mainText),
+                                  color: Colors.white,
+                                  elevation: 4,
+                                  margin:
+                                      const EdgeInsets.symmetric(vertical: 10),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        prediction.predictions[index]
+                                            .structuredFormatting.mainText,
+                                        style: const TextStyle(
+                                            fontSize: 24, color: Colors.black),
+                                      ),
+                                      const SizedBox(height: 1),
+                                      Text(
+                                        'Land: ${prediction.predictions[index].structuredFormatting.secondaryText}',
+                                        style: const TextStyle(
+                                            color: Colors.black),
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(height: 1),
-                                  Text(
-                                    'Land: ${_fetchedLocations!.predictions[index].structuredFormatting.secondaryText}',
-                                    style: const TextStyle(color: Colors.black),
-                                  ),
-                                ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                },
               );
             },
           ),
