@@ -1,6 +1,8 @@
+import 'package:crime_spotter/src/shared/4data/cardProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:provider/provider.dart';
 
 class TOpenStreetMap extends StatefulWidget {
   final MapController controller;
@@ -64,6 +66,7 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<CaseProvider>(context);
     return Stack(
       children: [
         OSMFlutter(
@@ -130,7 +133,40 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
               await Future.delayed(
                 Duration.zero,
                 () async {
-                  await widget.controller.currentLocation();
+                  for (var singleCase in provider.filteredCases) {
+                    await widget.controller.addMarker(
+                      GeoPoint(
+                          latitude: singleCase.latitude,
+                          longitude: singleCase.longitude),
+                      markerIcon: const MarkerIcon(
+                        icon: Icon(
+                          Icons.pin_drop,
+                          color: Colors.blue,
+                          size: 48,
+                        ),
+                      ),
+                    );
+                    placemarkFromCoordinates(
+                            singleCase.latitude, singleCase.longitude)
+                        .then(
+                      (value) => {
+                        if (value.isNotEmpty)
+                          {
+                            if (mounted)
+                              {
+                                setState(
+                                  () {
+                                    widget.markerMap[GeoPoint(
+                                            latitude: singleCase.latitude,
+                                            longitude: singleCase.longitude)] =
+                                        value;
+                                  },
+                                ),
+                              }
+                          },
+                      },
+                    );
+                  }
                 },
               ),
           },

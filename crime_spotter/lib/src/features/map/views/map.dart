@@ -148,26 +148,27 @@ class _MapPageState extends State<MapPage> {
 
   Widget buildCases() {
     final provider = Provider.of<CaseProvider>(context);
-    final urlImages = provider.urlImages;
+    final cases = provider.casesForVoting;
 
-    return urlImages.isEmpty
+    return cases.isEmpty
         ? Center(
             child: ElevatedButton(
               child: const Text('Neu beginnen'),
               onPressed: () {
                 final provider =
                     Provider.of<CaseProvider>(context, listen: false);
-
                 provider.resetCases();
               },
             ),
           )
         : Stack(
-            children: urlImages
-                .map((urlImage) => TMapSwipeCases(
-                      image: urlImage,
-                      isFront: urlImages.last == urlImage,
-                    ))
+            children: cases
+                .map(
+                  (image) => TMapSwipeCases(
+                    image: image,
+                    isFront: cases.last == image,
+                  ),
+                )
                 .toList(),
           );
   }
@@ -175,8 +176,8 @@ class _MapPageState extends State<MapPage> {
   Widget buildButtons() {
     final provider = Provider.of<CaseProvider>(context);
     final status = provider.getStatus();
-    final isLike = status == CaseStatus.like;
-    final isDislike = status == CaseStatus.dislike;
+    final isLike = status == CaseVoting.like;
+    final isDislike = status == CaseVoting.dislike;
 
     return
         // cases.isEmpty
