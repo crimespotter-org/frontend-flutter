@@ -16,10 +16,10 @@ class EditCase extends StatefulWidget {
 }
 
 class _EditCaseState extends State<EditCase> {
-  late ExploreCardData shownCase;
+  late CaseDetails shownCase;
   @override
   Widget build(BuildContext context) {
-    shownCase = ModalRoute.of(context)!.settings.arguments as ExploreCardData;
+    shownCase = ModalRoute.of(context)!.settings.arguments as CaseDetails;
 
     return DefaultTabController(
       length: 3,
@@ -73,7 +73,7 @@ class _EditCaseState extends State<EditCase> {
     );
   }
 
-  Widget _buildSummaryTab(ExploreCardData shownCase) {
+  Widget _buildSummaryTab(CaseDetails shownCase) {
     if (shownCase == null) {
       return const Center(
         child: Text('No data available'),
@@ -106,10 +106,10 @@ class _EditCaseState extends State<EditCase> {
               ),
             ),
             DropdownButton<String>(
-              value: shownCase.case_type,
+              value: shownCase.caseType,
               onChanged: (value) {
                 setState(() {
-                  shownCase.case_type = value!; // Update the link type
+                  shownCase.caseType = value!; // Update the link type
                 });
               },
               items: ['murder', 'theft', 'robbery-murder', 'brawl', 'rape']
@@ -141,19 +141,18 @@ class _EditCaseState extends State<EditCase> {
     }
   }
 
-  Widget _buildLinksTab(ExploreCardData shownCase) {
-    links = shownCase.furtherLinks!;
+  Widget _buildLinksTab(CaseDetails shownCase) {
+    links = shownCase.furtherLinks ?? [];
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // List of links
           ListView.builder(
             shrinkWrap: true,
-            itemCount: shownCase.furtherLinks!.length,
+            itemCount: shownCase.furtherLinks.length,
             itemBuilder: (context, index) {
-              return _buildLinkItem(index, shownCase.furtherLinks![index]);
+              return _buildLinkItem(index, shownCase.furtherLinks[index]);
             },
           ),
           const SizedBox(height: 20),
@@ -215,7 +214,7 @@ class _EditCaseState extends State<EditCase> {
     );
   }
 
-  Widget _buildImagesTab(ExploreCardData shownCase) {
+  Widget _buildImagesTab(CaseDetails shownCase) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -292,13 +291,13 @@ class _EditCaseState extends State<EditCase> {
       });
 
       // Read the selected image file as bytes
-      List<int> imageBytes = await _imagesToAdd!.last.file.readAsBytes();
+      List<int> imageBytes = await _imagesToAdd.last.file.readAsBytes();
       String fileName = pickedFile.path.split('/').last;
 
       // Add the image bytes to your list
       setState(() {
         shownCase.images
-            .add(Media(image: Uint8List.fromList(imageBytes), name: fileName));
+            ?.add(Media(image: Uint8List.fromList(imageBytes), name: fileName));
       });
     }
   }
@@ -306,7 +305,7 @@ class _EditCaseState extends State<EditCase> {
   Future<void> _addLink() async {
     setState(() {
       shownCase.furtherLinks ??= [];
-      shownCase.furtherLinks!.add(Links.createNew());
+      shownCase.furtherLinks.add(Links.createNew());
     });
   }
 
@@ -325,11 +324,11 @@ class _EditCaseState extends State<EditCase> {
   }
 
   Future<void> _deleteImage(int index) async {
-    if (_isNotInAddImageList(shownCase.images[index])) {
-      _imagesTodelete.add(shownCase.images[index]);
+    if (_isNotInAddImageList(shownCase.images![index])) {
+      _imagesTodelete.add(shownCase.images![index]);
     }
     setState(() {
-      shownCase.images.removeAt(index);
+      shownCase.images!.removeAt(index);
     });
   }
 
@@ -404,7 +403,7 @@ class _EditCaseState extends State<EditCase> {
     await SupaBaseConst.supabase.from('cases').update({
       'title': shownCase.title,
       'summary': shownCase.summary,
-      'case_type': shownCase.case_type,
+      'case_type': shownCase.caseType,
     }).match({'id': shownCase.id});
 
     //links
@@ -442,7 +441,7 @@ class _EditCaseState extends State<EditCase> {
     var createdCase = await SupaBaseConst.supabase.from('cases').insert({
       'title': shownCase.title,
       'summary': shownCase.summary,
-      'case_type': shownCase.case_type,
+      'case_type': shownCase.caseType,
     }).select();
 
     shownCase.id = createdCase.first['id'];
@@ -467,7 +466,7 @@ class _EditCaseState extends State<EditCase> {
 
   Future<void> _deleteCase() async {
     //links
-    for (var link in shownCase.furtherLinks!) {
+    for (var link in shownCase.furtherLinks) {
       _deleteLinkFromSupabase(link);
     }
 
