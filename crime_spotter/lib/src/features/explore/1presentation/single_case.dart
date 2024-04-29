@@ -1,6 +1,7 @@
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
 import 'package:crime_spotter/src/shared/4data/caseService.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SingleCase extends StatefulWidget {
   const SingleCase({super.key});
@@ -57,6 +58,10 @@ class SingleCaseBodyWidget extends StatelessWidget {
 
   const SingleCaseBodyWidget({required this.shownCase});
 
+  _launchURL(String link) async {
+    await launchUrl(Uri.parse(link));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,7 +92,7 @@ class SingleCaseBodyWidget extends StatelessWidget {
                 ),
               ),
             const SizedBox(height: 10),
-            if (shownCase!.furtherLinks.isNotEmpty)
+            if (shownCase.furtherLinks.isNotEmpty)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: shownCase.furtherLinks.map((button) {
@@ -107,7 +112,9 @@ class SingleCaseBodyWidget extends StatelessWidget {
                   }
 
                   return RawMaterialButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      _launchURL(button.url);
+                    },
                     elevation: 2.0,
                     fillColor: Colors.white,
                     padding: const EdgeInsets.all(10.0),

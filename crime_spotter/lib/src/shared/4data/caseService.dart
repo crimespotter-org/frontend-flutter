@@ -52,9 +52,8 @@ class CaseService {
     CaseDetails newItem = CaseDetails.fromJson(response.first);
 
     //links
-    List<Links> links = <Links>[];
     for (var link in response) {
-      links.add(
+      newItem.furtherLinks.add(
         Links.fromJson(link),
       );
     }
