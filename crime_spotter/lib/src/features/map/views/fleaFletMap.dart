@@ -1,10 +1,11 @@
 import 'dart:async';
-import 'dart:convert';
+import 'package:crime_spotter/src/shared/4data/cardProvider.dart';
+import 'package:crime_spotter/src/shared/4data/mapProvider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_heatmap/flutter_map_heatmap.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:provider/provider.dart';
 
 class OpenStreetMap extends StatefulWidget {
   const OpenStreetMap({super.key});
@@ -25,7 +26,6 @@ class _OpenStreetMapState extends State<OpenStreetMap> {
 
   @override
   initState() {
-    _loadData();
     super.initState();
   }
 
@@ -33,24 +33,6 @@ class _OpenStreetMapState extends State<OpenStreetMap> {
   dispose() {
     _rebuildStream.close();
     super.dispose();
-  }
-
-  Future<void> _loadData() async {
-    await rootBundle.loadString('assets/initial_data.json').then(
-          (value) => {
-            if (mounted)
-              {
-                setState(
-                  () {
-                    data = (jsonDecode(value) as List<dynamic>)
-                        .map((e) => e as List<dynamic>)
-                        .map((e) => WeightedLatLng(LatLng(e[0], e[1]), 1))
-                        .toList();
-                  },
-                ),
-              }
-          },
-        );
   }
 
   void _incrementCounter() {
@@ -70,6 +52,16 @@ class _OpenStreetMapState extends State<OpenStreetMap> {
 
   @override
   Widget build(BuildContext context) {
+    final caseProvider = Provider.of<CaseProvider>(context);
+    final mapProvider = Provider.of<MapProvider>(context);
+    setState(
+      () {
+        data = caseProvider.cases
+            .map((e) => WeightedLatLng(LatLng(e.latitude, e.longitude), 10000))
+            .toList();
+      },
+    );
+
     WidgetsBinding.instance.addPostFrameCallback(
       (timeStamp) {
         _rebuildStream.add(null);
@@ -77,8 +69,9 @@ class _OpenStreetMapState extends State<OpenStreetMap> {
     );
 
     final map = FlutterMap(
-      options: const MapOptions(
-        initialCenter: LatLng(57.8827, -6.0400),
+      options: MapOptions(
+        initialCenter: LatLng(mapProvider.currentPosition.latitude,
+            mapProvider.currentPosition.longitude),
         initialZoom: 8.0,
       ),
       children: [

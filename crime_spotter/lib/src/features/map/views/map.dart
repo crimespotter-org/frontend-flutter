@@ -98,16 +98,19 @@ class _MapPageState extends State<MapPage> {
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 20),
-            child: Column(
-              children: [
-                TSearchBar(controller: controller, markerMap: markerMap),
-                const SizedBox(
-                  height: 10,
-                ),
-                TMapToggleButton(controller: controller),
-              ],
+          Visibility(
+            visible: provider.mapLoaded,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 20),
+              child: Column(
+                children: [
+                  TSearchBar(controller: controller, markerMap: markerMap),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  TMapToggleButton(controller: controller),
+                ],
+              ),
             ),
           ),
           Visibility(

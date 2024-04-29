@@ -136,6 +136,9 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
                 Duration.zero,
                 () async {
                   mapProvider.mapIsLoaded();
+                  widget.controller.myLocation().then(
+                        (value) => mapProvider.updateCurrentPosition(value),
+                      );
                   for (var singleCase in caseProvider.filteredCases) {
                     if (mounted) {
                       await widget.controller.addMarker(
@@ -211,6 +214,7 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
                 onPressed: () => {
                   widget.controller.myLocation().then(
                         (posistion) => {
+                          mapProvider.updateCurrentPosition(posistion),
                           widget.controller.addMarker(
                             posistion,
                             markerIcon: const MarkerIcon(
