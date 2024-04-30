@@ -16,13 +16,16 @@ class Explore extends StatefulWidget {
 }
 
 class _ExploreState extends State<Explore> {
-  List<ExploreCardData> cases = [];
+  List<CaseDetails> cases = [];
 
   Future<void> loadData() async {
-    List<ExploreCardData> loadedCases = await CaseService.readData();
-    setState(() {
-      cases = loadedCases;
-    });
+    List<CaseDetails> loadedCases =
+        await CaseService.getCasesIncludingFirstImage();
+    if (mounted) {
+      setState(() {
+        cases = loadedCases;
+      });
+    }
   }
 
   @override
@@ -37,31 +40,30 @@ class _ExploreState extends State<Explore> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Explore'),
+        title: const Text('Fälle erkunden'),
       ),
       body: Stack(
         children: [
           cases.isNotEmpty
-              ? Expanded(
-                  child: ListView.builder(
-                    itemCount: cases.length,
-                    itemBuilder: (context, index) {
-                      return CaseTileShort(
-                        shownCase: cases[index],
-                      );
-                    },
-                  ),
+              ? ListView.builder(
+                  itemCount: cases.length,
+                  itemBuilder: (context, index) {
+                    return CaseTileShort(
+                      shownCase: cases[index],
+                    );
+                  },
                 )
               : const Center(
                   child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text("Fallakten werden geladen"),
-                        SizedBox(
-                          height: 20,
-                        ),
-                        CircularProgressIndicator(),
-                      ]),
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text("Fallakten werden geladen"),
+                      SizedBox(
+                        height: 20,
+                      ),
+                      CircularProgressIndicator(),
+                    ],
+                  ),
                 ),
           Positioned(
             bottom: 16.0,
@@ -69,11 +71,13 @@ class _ExploreState extends State<Explore> {
             child: FloatingActionButton(
               backgroundColor: Colors.blueAccent,
               onPressed: () async {
-                setState(() {
-                  var caseToCreate = ExploreCardData.createNew();
-                  Navigator.pushNamed(context, UIData.edit_case,
-                      arguments: caseToCreate);
-                });
+                setState(
+                  () {
+                    var caseToCreate = CaseDetails.createNew();
+                    Navigator.pushNamed(context, UIData.edit_case,
+                        arguments: caseToCreate);
+                  },
+                );
               },
               tooltip: "Neuen Fall hinzufügen",
               child: const Icon(Icons.add),

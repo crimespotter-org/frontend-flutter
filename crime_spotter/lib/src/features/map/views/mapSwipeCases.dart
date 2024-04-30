@@ -112,12 +112,12 @@ class _TMapSwipeCasesState extends State<TMapSwipeCases> {
     final opacity = provider.getStatusOpacity();
 
     switch (status) {
-      case CaseStatus.like:
+      case CaseVoting.like:
         final child = buildStamp(
             angle: -0.5, color: Colors.green, text: 'LIKE', opacity: opacity);
         return Positioned(top: 10, left: 10, child: child);
 
-      case CaseStatus.dislike:
+      case CaseVoting.dislike:
         final child = buildStamp(
             angle: 0.5, color: Colors.red, text: 'DISLIKE', opacity: opacity);
         return Positioned(top: 10, left: 10, child: child);

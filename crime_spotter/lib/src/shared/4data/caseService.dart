@@ -3,68 +3,135 @@ import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class CaseService {
-  static Future<List<ExploreCardData>> readData() async {
-    var response =
-        await SupaBaseConst.supabase.from('cases').select('*,furtherlinks (*)');
+  static Future<List<CaseDetails>> getAllCases() async {
+    // var response = await SupaBaseConst.supabase.from('cases').select(
+    //     'id, title, summary, ST_Y(location::geometry) as lat, ST_X(location::geometry) as long, created_by, created_at, place_name, zip_code, case_type, crime_date_time, status');
 
-    List<ExploreCardData> temp = [];
+    var response = await SupaBaseConst.supabase.rpc('get_all_cases_flutter');
+
+    List<CaseDetails> temp = [];
 
     for (var item in response) {
-      List<Links> links = <Links>[];
-
-      if (item['furtherlinks'] != null) {
-        for (var link in item['furtherlinks']) {
-          String url = "no url";
-          String type = "default";
-          if (link['url'] != null) {
-            url = link['url'] as String;
-          }
-          if (link['link_type'] != null) {
-            type = link['link_type'] as String;
-          }
-          links.add(
-            Links(type, url, link['id']),
-          );
-        }
-      }
-
-      String summary = "no summary jet";
-      if (item['summary'] != null) {
-        summary = item['summary'] as String;
-      }
-
-      String title = "no title";
-      if (item['title'] != null) {
-        title = item['title'] as String;
-      }
-
-      List<Media> media = [];
-
-      String storageDir = 'case-${item['id']}';
-      List<FileObject> files = await SupaBaseConst.supabase.storage
-          .from('media')
-          .list(path: storageDir);
-      for (var x in files) {
-        try {
-          var signedUrl = await SupaBaseConst.supabase.storage
-              .from('media')
-              .download('$storageDir/${x.name}');
-          media.add(Media(image: signedUrl, name: x.name));
-        } catch (ex) {
-          continue;
-        }
-      }
       temp.add(
-        ExploreCardData(
-          images: media,
-          furtherLinks: links.isEmpty ? [] : links,
-          summary: summary,
-          title: title,
-          case_type: item['case_type'],
-          id: item['id'],
-        ),
+        CaseDetails.fromJson(item),
       );
     }
     return temp;
   }
+
+  static Future<List<CaseDetails>> getCasesIncludingFirstImage() async {
+    var response = await SupaBaseConst.supabase.rpc('get_all_cases_flutter');
+
+    List<CaseDetails> temp = [];
+
+    for (var item in response) {
+      CaseDetails newItem = CaseDetails.fromJson(item);
+
+      String storageDir = 'case-${newItem.id}';
+      List<FileObject> files = await SupaBaseConst.supabase.storage
+          .from('media')
+          .list(path: storageDir);
+      try {
+        var signedUrl = await SupaBaseConst.supabase.storage
+            .from('media')
+            .download('$storageDir/${files.first.name}');
+        newItem.images.add(Media(image: signedUrl, name: files.first.name));
+      } catch (ex) {
+        continue;
+      } finally {
+        temp.add(newItem);
+      }
+    }
+
+    return temp;
+  }
+
+  static Future<CaseDetails> getCaseDetailedById(String id) async {
+    var response = await SupaBaseConst.supabase
+        .rpc('get_case_detailed_flutter', params: {'case_id': id});
+    CaseDetails newItem = CaseDetails.fromJson(response.first);
+
+    //links
+    List<Links> links = <Links>[];
+    for (var link in response) {
+      links.add(
+        Links.fromJson(link),
+      );
+    }
+
+    //images
+    String storageDir = 'case-${newItem.id}';
+    List<FileObject> files = await SupaBaseConst.supabase.storage
+        .from('media')
+        .list(path: storageDir);
+    for (var x in files) {
+      try {
+        var signedUrl = await SupaBaseConst.supabase.storage
+            .from('media')
+            .download('$storageDir/${x.name}');
+        newItem.images.add(Media(image: signedUrl, name: x.name));
+      } catch (ex) {
+        continue;
+      }
+    }
+    return newItem;
+  }
+
+  // static Future<List<CaseDetails>> readData() async {
+  //   var response =
+  //       await SupaBaseConst.supabase.from('cases').select('*,furtherlinks (*)');
+
+  //   List<CaseDetails> temp = [];
+
+  //   for (var item in response) {
+  //     List<Links> links = <Links>[];
+
+  //     if (item['furtherlinks'] != null) {
+  //       for (var link in item['furtherlinks']) {
+  //         String url = "no url";
+  //         String type = "default";
+  //         if (link['url'] != null) {
+  //           url = link['url'] as String;
+  //         }
+  //         if (link['link_type'] != null) {
+  //           type = link['link_type'] as String;
+  //         }
+  //         links.add(
+  //           Links(type, url, link['id']),
+  //         );
+  //       }
+  //     }
+
+  //     String summary = "no summary jet";
+  //     if (item['summary'] != null) {
+  //       summary = item['summary'] as String;
+  //     }
+
+  //     String title = "no title";
+  //     if (item['title'] != null) {
+  //       title = item['title'] as String;
+  //     }
+
+  //     List<Media> media = [];
+
+  //     String storageDir = 'case-${item['id']}';
+  //     List<FileObject> files = await SupaBaseConst.supabase.storage
+  //         .from('media')
+  //         .list(path: storageDir);
+  //     for (var x in files) {
+  //       try {
+  //         var signedUrl = await SupaBaseConst.supabase.storage
+  //             .from('media')
+  //             .download('$storageDir/${x.name}');
+  //         media.add(Media(image: signedUrl, name: x.name));
+  //       } catch (ex) {
+  //         continue;
+  //       }
+  //     }
+  //     temp.add(
+  //       CaseDetails.fromJson(item),
+  //     );
+  //   }
+  //   return temp;
+  // }
 }

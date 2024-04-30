@@ -1,4 +1,5 @@
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
+import 'package:crime_spotter/src/shared/4data/caseService.dart';
 import 'package:flutter/material.dart';
 
 class SingleCase extends StatefulWidget {
@@ -9,10 +10,55 @@ class SingleCase extends StatefulWidget {
 }
 
 class _SingleCaseState extends State<SingleCase> {
+  late Future<CaseDetails> _caseFuture;
+  String? caseID;
+
+  Future<void> loadData() async {
+    caseID = ModalRoute.of(context)?.settings.arguments as String?;
+    _caseFuture = CaseService.getCaseDetailedById(caseID!);
+  }
+
+  @override
+  void didChangeDependencies() {
+    loadData();
+    super.didChangeDependencies();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final shownCase =
-        ModalRoute.of(context)!.settings.arguments as ExploreCardData;
+    return FutureBuilder<CaseDetails>(
+      future: _caseFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          // Display a loading indicator while waiting for the data
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        } else if (snapshot.hasError) {
+          // Display an error message if something went wrong
+          return Scaffold(
+            appBar: AppBar(),
+            body: Center(
+              child: Text('Error: ${snapshot.error}'),
+            ),
+          );
+        } else {
+          // Data has been loaded successfully
+          final loadedCase = snapshot.data!;
+          return SingleCaseBodyWidget(shownCase: loadedCase);
+        }
+      },
+    );
+  }
+}
+
+class SingleCaseBodyWidget extends StatelessWidget {
+  final CaseDetails shownCase;
+
+  const SingleCaseBodyWidget({required this.shownCase});
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(shownCase.title),
@@ -41,11 +87,10 @@ class _SingleCaseState extends State<SingleCase> {
                 ),
               ),
             const SizedBox(height: 10),
-            if (shownCase.furtherLinks != null &&
-                shownCase.furtherLinks!.isNotEmpty)
+            if (shownCase!.furtherLinks.isNotEmpty)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: shownCase.furtherLinks!.map((button) {
+                children: shownCase.furtherLinks.map((button) {
                   IconData iconData;
                   switch (button.type) {
                     case "book":
@@ -81,7 +126,7 @@ class _SingleCaseState extends State<SingleCase> {
                 fontWeight: FontWeight.bold,
               ),
               child: const Center(
-                child: Text('Summary:'),
+                child: Text('Zusammenfassung:'),
               ),
             ),
             Expanded(
