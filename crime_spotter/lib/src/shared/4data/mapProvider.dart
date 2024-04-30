@@ -4,7 +4,7 @@ import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 
 class MapProvider extends ChangeNotifier {
   MapProvider() {
-    changeToMap();
+    _changeToMap();
   }
   bool _isHeatMap = false;
   bool _showSwipeableCases = false;
@@ -34,16 +34,16 @@ class MapProvider extends ChangeNotifier {
     }
 
     if (index == ToggleButton.map.index) {
-      changeToMap();
+      _changeToMap();
       hideCases();
     } else if (index == ToggleButton.heatMap.index) {
-      changeToHeatMap();
+      _changeToHeatMap();
       hideCases();
     } else if (index == ToggleButton.cases.index) {
-      changeToMap();
+      _changeToMap();
       showCases();
     } else if (index == ToggleButton.options.index) {
-      changeToMap();
+      _changeToMap();
       hideCases();
     }
     notifyListeners();
@@ -69,12 +69,12 @@ class MapProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void changeToMap() {
+  _changeToMap() {
     _isHeatMap = false;
     notifyListeners();
   }
 
-  void changeToHeatMap() {
+  _changeToHeatMap() {
     _isHeatMap = true;
     notifyListeners();
   }

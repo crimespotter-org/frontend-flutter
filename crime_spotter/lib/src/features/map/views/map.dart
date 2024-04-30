@@ -107,7 +107,10 @@ class _MapPageState extends State<MapPage> {
               padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 20),
               child: Column(
                 children: [
-                  TSearchBar(controller: controller, markerMap: markerMap),
+                  TSearchBar(
+                      controller: controller,
+                      heatController: heatController,
+                      markerMap: markerMap),
                   const SizedBox(
                     height: 10,
                   ),

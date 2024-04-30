@@ -29,9 +29,6 @@ class _TMapToggleButtonState extends State<TMapToggleButton> {
             provider.updateSelectedToggle(index);
 
             if (index == ToggleButton.options.index) {
-              provider.changeToMap();
-              provider.hideCases();
-
               showModalBottomSheet(
                 context: context,
                 builder: (context) {
