@@ -10,6 +10,7 @@ import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:crime_spotter/src/shared/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:crime_spotter/src/features/map/views/openStreetMap.dart';
+import 'package:flutter_map/flutter_map.dart' as heat;
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:provider/provider.dart';
@@ -50,6 +51,8 @@ class _MapPageState extends State<MapPage> {
     super.dispose();
   }
 
+  final heat.MapController heatController = heat.MapController();
+
   final MapController controller = MapController.customLayer(
     customTile: CustomTile(
       sourceName: "opentopomap",
@@ -83,7 +86,7 @@ class _MapPageState extends State<MapPage> {
           TOpenStreetMap(controller: controller, markerMap: markerMap),
           Visibility(
             visible: provider.isHeatmap,
-            child: const OpenStreetMap(),
+            child: OpenStreetMap(controller: heatController),
           ),
           Positioned(
             left: -MediaQuery.of(context).size.width /

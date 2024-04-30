@@ -8,41 +8,38 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 class OpenStreetMap extends StatefulWidget {
-  const OpenStreetMap({super.key});
+  final MapController controller;
+  const OpenStreetMap({super.key, required this.controller});
 
   @override
   State<OpenStreetMap> createState() => _OpenStreetMapState();
 }
 
 class _OpenStreetMapState extends State<OpenStreetMap> {
-  final StreamController<void> _rebuildStream = StreamController.broadcast();
+  LatLng currentLocation = const LatLng(48.769, 9.02);
   List<WeightedLatLng> data = [];
-  // List<Map<double, MaterialColor>> gradients = [
-  //   HeatMapOptions.defaultGradient,
-  //   {0.25: Colors.blue, 0.55: Colors.red, 0.85: Colors.pink, 1.0: Colors.purple}
-  // ];
 
-  LatLng currentLocation = const LatLng(0, 0);
-
-  Future<void> _getCurrentLocation() async {
+  Future<LatLng> _getCurrentLocation() async {
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
-    setState(
-      () {
-        currentLocation = LatLng(position.latitude, position.longitude);
-      },
-    );
+    if (mounted) {
+      setState(
+        () {
+          currentLocation = LatLng(position.latitude, position.longitude);
+          //controller.move(currentLocation, 15);
+        },
+      );
+    }
+    return currentLocation;
   }
 
   @override
   initState() {
     super.initState();
-    _getCurrentLocation();
   }
 
   @override
   dispose() {
-    _rebuildStream.close();
     super.dispose();
   }
 
@@ -57,21 +54,18 @@ class _OpenStreetMapState extends State<OpenStreetMap> {
       },
     );
 
-    WidgetsBinding.instance.addPostFrameCallback(
-      (timeStamp) {
-        _rebuildStream.add(null);
-      },
-    );
-
-    final controller = MapController();
     return Stack(
       children: [
         Center(
           child: FlutterMap(
-            mapController: controller,
+            mapController: widget.controller,
             options: MapOptions(
               initialCenter: currentLocation,
               initialZoom: 8.0,
+              // onMapReady: () async => {
+              //   currentLocation = await _getCurrentLocation(),
+              //   widget.controller.move(currentLocation, 15),
+              // },
             ),
             children: [
               TileLayer(
@@ -84,7 +78,6 @@ class _OpenStreetMapState extends State<OpenStreetMap> {
                     gradient: HeatMapOptions.defaultGradient,
                     minOpacity: 0.1,
                   ),
-                  reset: _rebuildStream.stream,
                 )
             ],
           ),
@@ -94,8 +87,9 @@ class _OpenStreetMapState extends State<OpenStreetMap> {
           child: Align(
             alignment: Alignment.bottomLeft,
             child: FloatingActionButton(
-              onPressed: () {
-                controller.move(currentLocation, 13.0);
+              onPressed: () async => {
+                currentLocation = await _getCurrentLocation(),
+                widget.controller.move(currentLocation, 15),
               },
               tooltip: 'Aktueller Standort',
               child: const Icon(Icons.my_location),
