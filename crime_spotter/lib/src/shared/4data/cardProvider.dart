@@ -147,7 +147,8 @@ class CaseProvider extends ChangeNotifier {
     );
   }
 
-  void filterTitlesAndSummary(String filter, bool deletFilter) {
+  void filterTitlesAndSummary(
+      {required String filter, bool deletFilter = false}) {
     if (deletFilter) {
       _filteredCases.map((e) => e.title.contains(filter)).toList(); //TODO
     } else {
@@ -157,7 +158,7 @@ class CaseProvider extends ChangeNotifier {
     }
   }
 
-  void filterCreatedBy(String filter, bool deletFilter) {
+  void filterCreatedBy({required String filter, bool deletFilter = false}) {
     if (deletFilter) {
       _filteredCases.map((e) => e.createdBy.contains(filter)).toList(); //TODO
     } else {
@@ -173,7 +174,7 @@ class CaseProvider extends ChangeNotifier {
     }
   }
 
-  void filterPlaceName(String filter, bool deletFilter) {
+  void filterPlaceName({required String filter, bool deletFilter = false}) {
     if (deletFilter) {
       _filteredCases.map((e) => e.placeName.contains(filter)).toList(); //TODO
     } else {
@@ -181,7 +182,7 @@ class CaseProvider extends ChangeNotifier {
     }
   }
 
-  void filterZipName(String filter, bool deletFilter) {
+  void filterZipName({required String filter, bool deletFilter = false}) {
     if (deletFilter) {
       _filteredCases
           .map((e) => (e.zipCode as String).contains(filter))
@@ -193,15 +194,15 @@ class CaseProvider extends ChangeNotifier {
     }
   }
 
-  void filterCaseType(CaseType filter, bool deletFilter) {
+  void filterCaseType({required CaseType filter, bool deletFilter = false}) {
     if (deletFilter) {
-      _filteredCases.map((r) => r.caseType == filter as String).toList(); //TODO
+      _filteredCases.map((r) => r.caseType == filter).toList(); //TODO
     } else {
-      _filteredCases.map((r) => r.caseType == filter as String).toList();
+      _filteredCases.map((r) => r.caseType == filter).toList();
     }
   }
 
-  void filterCrimeDate(DateTime filter, bool deletFilter) {
+  void filterCrimeDate({required DateTime filter, bool deletFilter = false}) {
     if (deletFilter) {
       _filteredCases.map((e) => e.crimeDateTime == filter).toList(); //TODO
     } else {
@@ -209,11 +210,12 @@ class CaseProvider extends ChangeNotifier {
     }
   }
 
-  void filterCaseStatus(CaseStatus filter, bool deletFilter) {
+  void filterCaseStatus(
+      {required CaseStatus filter, bool deletFilter = false}) {
     if (deletFilter) {
-      _filteredCases.map((e) => e.status == filter as String).toList(); //TODO
+      _filteredCases.map((e) => e.status == filter).toList(); //TODO
     } else {
-      _filteredCases.map((e) => e.status == filter as String).toList();
+      _filteredCases.map((e) => e.status == filter).toList();
     }
   }
 

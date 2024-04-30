@@ -1,5 +1,9 @@
+import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
+import 'package:crime_spotter/src/shared/4data/cardProvider.dart';
+import 'package:crime_spotter/src/shared/4data/helper_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
+import 'package:provider/provider.dart';
 
 class TMapOption extends StatefulWidget {
   final MapController controller;
@@ -55,27 +59,15 @@ class _TMapOptionState extends State<TMapOption> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Karternoptionen',
+          'Inhalt',
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.bold,
             color: Colors.blue,
           ),
         ),
-        buildDivider(text: 'Kartenoptionen'),
         const Text(
-          'Karternoptionen',
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.bold,
-            color: Colors.blue,
-          ),
-        ),
-        SizedBox(
-          height: spaceBetweenOptions,
-        ),
-        const Text(
-          'Karternoptionen',
+          'Ersteller*in',
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.bold,
@@ -86,7 +78,22 @@ class _TMapOptionState extends State<TMapOption> {
           height: spaceBetweenOptions,
         ),
         const Text(
-          'Karternoptionen',
+          'Tatzeitpunkt',
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+            color: Colors.blue,
+          ),
+        ),
+        SizedBox(
+          height: spaceBetweenOptions,
+        ),
+        buildTextbox(title: 'Tatort', filterType: FilterTypeTextbox.place),
+        SizedBox(
+          height: spaceBetweenOptions,
+        ),
+        const Text(
+          'Fallart',
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.bold,
@@ -97,7 +104,7 @@ class _TMapOptionState extends State<TMapOption> {
           height: spaceBetweenOptions,
         ),
         const Text(
-          'Karternoptionen',
+          'Status der Ermittlung',
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.bold,
@@ -111,19 +118,106 @@ class _TMapOptionState extends State<TMapOption> {
     );
   }
 
-  Widget buildDivider({required String text}) {
-    return Row(
-      children: <Widget>[
-        const Expanded(child: Divider()),
+  Widget buildTextbox({
+    required String title,
+    required FilterTypeTextbox filterType,
+  }) {
+    final provider = Provider.of<CaseProvider>(context);
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Text(title),
+        // const SizedBox(
+        //   height: 5,
+        // ),
+        TextFormField(
+          decoration: const InputDecoration(
+            border: UnderlineInputBorder(),
+            //labelText: 'Enter your username',
+          ),
+          onFieldSubmitted: (value) => {
+            switch (filterType) {
+              FilterTypeTextbox.creator =>
+                provider.filterCreatedBy(filter: value),
+              FilterTypeTextbox.summary =>
+                provider.filterTitlesAndSummary(filter: value),
+              FilterTypeTextbox.status => provider.filterCaseStatus(
+                  filter: TDeviceUtil.convertStringToCaseStatus(value)),
+              FilterTypeTextbox.caseType => provider.filterCaseType(
+                  filter: TDeviceUtil.convertStringtoCaseType(value)),
+              FilterTypeTextbox.place =>
+                provider.filterPlaceName(filter: value),
+            },
+          },
+        )
+      ],
+    );
+  }
+
+  Widget buildAutoComplete(
+      {required String title,
+      required List<CaseDetails> cases,
+      required String type}) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Text(title),
         const SizedBox(
-          width: 5,
+          height: 10,
         ),
-        Text(text),
-        const SizedBox(
-          width: 5,
+        Autocomplete<CaseDetails>(
+          optionsBuilder: (TextEditingValue textEditingValue) {
+            switch (type) {
+              case "caseType":
+                return cases.where(
+                  (suggestion) => suggestion.title.toLowerCase().contains(
+                        textEditingValue.text.toLowerCase(),
+                      ),
+                );
+              default:
+                return cases;
+            }
+          },
+          onSelected: (CaseDetails selection) {
+            print('You selected: ${selection.title}');
+          },
+          fieldViewBuilder: (BuildContext context,
+              TextEditingController textEditingController,
+              FocusNode focusNode,
+              VoidCallback onFieldSubmitted) {
+            return TextField(
+              controller: textEditingController,
+              focusNode: focusNode,
+              onChanged: (String value) {
+                onFieldSubmitted();
+              },
+              decoration: const InputDecoration(
+                labelText: 'Geben Sie Ihren Filter ein:',
+                border: OutlineInputBorder(),
+              ),
+            );
+          },
+          optionsViewBuilder: (BuildContext context,
+              AutocompleteOnSelected<CaseDetails> onSelected,
+              Iterable<CaseDetails> options) {
+            return Material(
+              elevation: 4.0,
+              child: ListView(
+                children: options
+                    .map((CaseDetails option) => ListTile(
+                          title: Text(option.title),
+                          onTap: () {
+                            onSelected(option);
+                          },
+                        ))
+                    .toList(),
+              ),
+            );
+          },
         ),
-        const Expanded(child: Divider()),
       ],
     );
   }
 }
+
+enum FilterTypeTextbox { summary, creator, place, caseType, status }

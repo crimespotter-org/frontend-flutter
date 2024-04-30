@@ -1,11 +1,13 @@
 import 'package:crime_spotter/src/features/map/4data/fetch_data.dart';
 import 'package:crime_spotter/src/shared/4data/helper_functions.dart';
+import 'package:crime_spotter/src/shared/4data/mapProvider.dart';
 import 'package:crime_spotter/src/shared/constants/colors.dart';
 import 'package:crime_spotter/src/shared/model/predictionResponse.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:provider/provider.dart';
 
 class TSearchBar extends StatefulWidget {
   final MapController controller;
@@ -42,6 +44,7 @@ class _TSearchBarState extends State<TSearchBar> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<MapProvider>(context);
     return Container(
       height: 75,
       width: TDeviceUtil.getScreenWidth(context),
@@ -79,6 +82,7 @@ class _TSearchBarState extends State<TSearchBar> {
                               itemBuilder: (context, index) => GestureDetector(
                                 onTap: () async => {
                                   {
+                                    provider.changeToMap(),
                                     await fetchData
                                         .detailedAdress(prediction
                                             .predictions[index]
