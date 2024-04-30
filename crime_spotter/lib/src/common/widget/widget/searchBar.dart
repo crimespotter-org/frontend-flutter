@@ -82,7 +82,8 @@ class _TSearchBarState extends State<TSearchBar> {
                               itemBuilder: (context, index) => GestureDetector(
                                 onTap: () async => {
                                   {
-                                    provider.changeToMap(),
+                                    // zurück zur Map switchen in ButtonToogle
+                                    provider.updateSelectedToggle(0),
                                     await fetchData
                                         .detailedAdress(prediction
                                             .predictions[index]

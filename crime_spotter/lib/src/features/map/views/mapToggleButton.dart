@@ -26,26 +26,9 @@ class _TMapToggleButtonState extends State<TMapToggleButton> {
         ToggleButtons(
           direction: Axis.horizontal,
           onPressed: (int index) {
-            if (mounted) {
-              setState(
-                () {
-                  for (int i = 0; i < _selectedToggle.length; i++) {
-                    _selectedToggle[i] = i == index;
-                  }
-                },
-              );
-            }
+            provider.updateSelectedToggle(index);
 
-            if (index == ToggleButton.map.index) {
-              provider.changeToMap();
-              provider.hideCases();
-            } else if (index == ToggleButton.heatMap.index) {
-              provider.changeToHeatMap();
-              provider.hideCases();
-            } else if (index == ToggleButton.cases.index) {
-              provider.changeToMap();
-              provider.showCases();
-            } else if (index == ToggleButton.options.index) {
+            if (index == ToggleButton.options.index) {
               provider.changeToMap();
               provider.hideCases();
 
@@ -66,7 +49,7 @@ class _TMapToggleButtonState extends State<TMapToggleButton> {
             minHeight: 40.0,
             minWidth: 80.0,
           ),
-          isSelected: _selectedToggle,
+          isSelected: provider.selectedToggle,
           children: const [
             Text('Karte'),
             Text('Heatmap'),
