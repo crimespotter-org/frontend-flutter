@@ -2,10 +2,13 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
+import 'package:crime_spotter/src/shared/4data/cardProvider.dart';
+import 'package:crime_spotter/src/shared/4data/helper_functions.dart';
 import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class EditCase extends StatefulWidget {
@@ -19,7 +22,11 @@ class _EditCaseState extends State<EditCase> {
   late CaseDetails shownCase;
   @override
   Widget build(BuildContext context) {
-    shownCase = ModalRoute.of(context)!.settings.arguments as CaseDetails;
+    final provider = Provider.of<CaseProvider>(context);
+    //MAAAAAAAARKUS create new und edit gehen beide hier auf dieses Widget. Habe das mal angepast, damit das
+    //wenigestens fürs Editieren wieder funktioniert
+    shownCase = provider.cases.firstWhere(
+        (element) => element.id == ModalRoute.of(context)!.settings.arguments);
 
     return DefaultTabController(
       length: 3,
@@ -30,9 +37,9 @@ class _EditCaseState extends State<EditCase> {
               : const Text("Neuen Fall erstellen"),
           bottom: const TabBar(
             tabs: [
-              Tab(text: 'Summary'),
+              Tab(text: 'Zusammenfassung'),
               Tab(text: 'Links'),
-              Tab(text: 'Images'),
+              Tab(text: 'Bilder'),
             ],
           ),
         ),
@@ -52,7 +59,7 @@ class _EditCaseState extends State<EditCase> {
                 onPressed: () {
                   _saveCase();
                 },
-                child: const Text('Save'),
+                child: const Text('Speichern'),
               ),
             ),
             Positioned(
@@ -76,7 +83,7 @@ class _EditCaseState extends State<EditCase> {
   Widget _buildSummaryTab(CaseDetails shownCase) {
     if (shownCase == null) {
       return const Center(
-        child: Text('No data available'),
+        child: Text('Keine Zusammenfassung verfügbar!'),
       );
     } else {
       return SingleChildScrollView(
@@ -85,7 +92,7 @@ class _EditCaseState extends State<EditCase> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
-              'Title:',
+              'Titel:',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -105,24 +112,24 @@ class _EditCaseState extends State<EditCase> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            DropdownButton<String>(
+            DropdownButton<CaseType>(
               value: shownCase.caseType,
               onChanged: (value) {
                 setState(() {
-                  shownCase.caseType = value!; // Update the link type
+                  shownCase.caseType = value!; // Update the case type
                 });
               },
-              items: ['murder', 'theft', 'robbery-murder', 'brawl', 'rape']
-                  .map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
+              items: CaseType.values
+                  .map<DropdownMenuItem<CaseType>>((CaseType value) {
+                return DropdownMenuItem<CaseType>(
                   value: value,
-                  child: Text(value),
+                  child: Text(TDeviceUtil.convertCaseTypeToGerman(value)),
                 );
               }).toList(),
             ),
             const SizedBox(height: 20),
             const Text(
-              'Summary:',
+              'Zusammenfassung:',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -161,7 +168,7 @@ class _EditCaseState extends State<EditCase> {
             onPressed: () {
               _addLink();
             },
-            child: const Text('Add Link'),
+            child: const Text('Link hinzufügen'),
           ),
         ],
       ),
@@ -199,7 +206,7 @@ class _EditCaseState extends State<EditCase> {
               });
             },
             decoration: const InputDecoration(
-              hintText: 'Enter URL',
+              hintText: 'URL eingeben',
             ),
           ),
         ),
@@ -242,7 +249,7 @@ class _EditCaseState extends State<EditCase> {
                 _uploadImage();
               });
             },
-            child: const Text('Add Image'),
+            child: const Text('Bild hinzufügen'),
           ),
         ],
       ),

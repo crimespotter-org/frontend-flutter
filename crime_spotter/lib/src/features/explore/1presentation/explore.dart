@@ -40,7 +40,7 @@ class _ExploreState extends State<Explore> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Explore'),
+        title: const Text('Fälle erkunden'),
       ),
       body: Stack(
         children: [

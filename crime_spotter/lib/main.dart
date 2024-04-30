@@ -3,8 +3,10 @@ import 'package:crime_spotter/src/features/explore/1presentation/edit_case.dart'
 import 'package:crime_spotter/src/features/explore/1presentation/explore.dart';
 import 'package:crime_spotter/src/features/explore/1presentation/single_case.dart';
 import 'package:crime_spotter/src/features/settings/settings.dart';
-import 'package:crime_spotter/src/features/splash/splash_page.dart';
+import 'package:crime_spotter/src/shared/4data/cardProvider.dart';
+import 'package:crime_spotter/src/shared/4data/mapProvider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -30,25 +32,31 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Crime Spotter',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.grey),
-        useMaterial3: true,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => CaseProvider()),
+        ChangeNotifierProvider(create: (_) => MapProvider()),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Crime Spotter',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.grey),
+          useMaterial3: true,
+        ),
+        home: const MapPage(title: 'Crime Spotter'),
+        initialRoute: UIData.logIn,
+        routes: <String, WidgetBuilder>{
+          UIData.homeRoute: (BuildContext context) =>
+              const MapPage(title: 'Crime Spotter'),
+          UIData.logIn: (BuildContext context) => const LogIn(),
+          UIData.register: (BuildContext context) => const Register(),
+          UIData.explore: (BuildContext context) => const Explore(),
+          UIData.settings: (BuildContext context) => const Settings(),
+          UIData.single_case: (BuildContext context) => const SingleCase(),
+          UIData.edit_case: (BuildContext context) => const EditCase(),
+        },
       ),
-      home: const MapPage(title: 'Crime Spotter'),
-      initialRoute: UIData.logIn,
-      routes: <String, WidgetBuilder>{
-        UIData.homeRoute: (BuildContext context) =>
-            const MapPage(title: 'Crime Spotter'),
-        UIData.logIn: (BuildContext context) => const LogIn(),
-        UIData.register: (BuildContext context) => const Register(),
-        UIData.explore: (BuildContext context) => const Explore(),
-        UIData.settings: (BuildContext context) => const Settings(),
-        UIData.single_case: (BuildContext context) => const SingleCase(),
-        UIData.edit_case: (BuildContext context) => const EditCase(),
-      },
     );
   }
 }

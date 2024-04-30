@@ -1,11 +1,17 @@
 import 'package:crime_spotter/src/features/map/4data/fetch_data.dart';
 import 'package:crime_spotter/src/shared/4data/helper_functions.dart';
-import 'package:crime_spotter/src/shared/constants/size.dart';
+import 'package:crime_spotter/src/shared/constants/colors.dart';
+import 'package:crime_spotter/src/shared/model/predictionResponse.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:iconsax/iconsax.dart';
 
 class TSearchBar extends StatefulWidget {
-  const TSearchBar({super.key});
+  final MapController controller;
+  final Map<GeoPoint, List<Placemark>> markerMap;
+  const TSearchBar(
+      {super.key, required this.controller, required this.markerMap});
 
   @override
   State<TSearchBar> createState() => _TSearchBarState();
@@ -14,27 +20,22 @@ class TSearchBar extends StatefulWidget {
 class _TSearchBarState extends State<TSearchBar> {
   final TextEditingController _searchController = TextEditingController();
   final FetchData fetchData = FetchData();
-  List<LocationData> _fetchedLocations = <LocationData>[];
 
-  void _runFilter(String value) async {
-    List<LocationData> result = [];
+  Future<PredictionResponse?> _runFilter(String value) async {
+    PredictionResponse? result;
 
     if (value.isEmpty) {
-      result = [];
+      result = PredictionResponse(predictions: [], status: 'Nicht gefunden');
     } else {
       result = await fetchData.searchLocation(value);
     }
 
-    setState(
-      () {
-        _fetchedLocations = result;
-        _fetchedLocations = TDeviceUtil.removeDuplicates(_fetchedLocations);
-      },
-    );
+    return result;
   }
 
   @override
   void dispose() {
+    widget.controller.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -42,62 +43,145 @@ class _TSearchBarState extends State<TSearchBar> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 200,
-      color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          children: [
-            const SizedBox(
-              height: 20,
-            ),
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: TSize.defaultSpace),
-              child: Container(
-                width: TDeviceUtil.getScreenWidth(context),
-                padding: const EdgeInsets.all(TSize.md),
-                decoration: BoxDecoration(
-                    color: Colors.white, ///////////////////
-                    borderRadius: BorderRadius.circular(15), //////////////
-                    border: Border.all(color: Colors.grey)),
-                child: TextField(
-                  onSubmitted: (value) => _runFilter(value),
-                  decoration: const InputDecoration(
-                    labelText: 'Suche',
-                    suffixIcon: Icon(
-                      Iconsax.search_favorite,
-                      color: Colors.grey,
+      height: 75,
+      width: TDeviceUtil.getScreenWidth(context),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: Colors.grey),
+      ),
+      child: TextField(
+        onSubmitted: (value) => {
+          _runFilter(value).then(
+            (prediction) {
+              showModalBottomSheet(
+                backgroundColor: TColor.searchColor,
+                context: context,
+                builder: (context) {
+                  GeoPoint position;
+                  return Card(
+                    color: TColor.searchColor,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          GestureDetector(
+                            onTap: () => Navigator.pop(context),
+                            child: const Icon(Icons.clear),
+                          ),
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount: prediction == null
+                                  ? 0
+                                  : prediction.predictions.length,
+                              itemBuilder: (context, index) => GestureDetector(
+                                onTap: () async => {
+                                  {
+                                    await fetchData
+                                        .detailedAdress(prediction
+                                            .predictions[index]
+                                            .structuredFormatting
+                                            .mainText)
+                                        .then(
+                                          (value) => {
+                                            if (value.status != 'ZERO_RESULTS')
+                                              {
+                                                position = GeoPoint(
+                                                    latitude: value
+                                                        .predictions[0]
+                                                        .geometry
+                                                        .location
+                                                        .lat,
+                                                    longitude: value
+                                                        .predictions[0]
+                                                        .geometry
+                                                        .location
+                                                        .lng),
+                                                widget.controller.moveTo(
+                                                    position,
+                                                    animate: true),
+                                                widget.controller.addMarker(
+                                                  position,
+                                                  markerIcon: const MarkerIcon(
+                                                    icon: Icon(
+                                                      Icons.pin_drop,
+                                                      color: Colors.blue,
+                                                      size: 48,
+                                                    ),
+                                                  ),
+                                                ),
+                                                placemarkFromCoordinates(
+                                                        position.latitude,
+                                                        position.longitude)
+                                                    .then(
+                                                  (value) => {
+                                                    if (value.isNotEmpty)
+                                                      {
+                                                        if (mounted)
+                                                          {
+                                                            setState(
+                                                              () {
+                                                                widget.markerMap[
+                                                                        position] =
+                                                                    value;
+                                                              },
+                                                            ),
+                                                          }
+                                                      },
+                                                  },
+                                                ),
+                                                Navigator.pop(context),
+                                                widget.controller
+                                                    .setZoom(zoomLevel: 13),
+                                              },
+                                          },
+                                        ),
+                                  },
+                                },
+                                child: Card(
+                                  key: Key(prediction!.predictions[index]
+                                      .structuredFormatting.mainText),
+                                  color: Colors.white,
+                                  elevation: 4,
+                                  margin:
+                                      const EdgeInsets.symmetric(vertical: 10),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        prediction.predictions[index]
+                                            .structuredFormatting.mainText,
+                                        style: const TextStyle(
+                                            fontSize: 24, color: Colors.black),
+                                      ),
+                                      const SizedBox(height: 1),
+                                      Text(
+                                        'Land: ${prediction.predictions[index].structuredFormatting.secondaryText}',
+                                        style: const TextStyle(
+                                            color: Colors.black),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(
-              height: 20,
-            ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: _fetchedLocations.length,
-                itemBuilder: (context, index) => Card(
-                  key: Key(_fetchedLocations[index].addressType),
-                  color: Colors.blue,
-                  elevation: 4,
-                  margin: const EdgeInsets.symmetric(vertical: 10),
-                  child: ListTile(
-                    leading: Text(
-                      _fetchedLocations[index].name,
-                      style: const TextStyle(fontSize: 24, color: Colors.white),
-                    ),
-                    subtitle: Text(
-                      'Lat: ${_fetchedLocations[index].lat}, Lon: ${_fetchedLocations[index].lon}',
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
+                  );
+                },
+              );
+            },
+          ),
+        },
+        decoration: const InputDecoration(
+          labelText: 'Suche',
+          suffixIcon: Icon(
+            Iconsax.search_favorite,
+            color: Colors.grey,
+          ),
         ),
       ),
     );

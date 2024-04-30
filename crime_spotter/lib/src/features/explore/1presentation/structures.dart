@@ -1,6 +1,9 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:crime_spotter/src/shared/4data/cardProvider.dart';
+import 'package:crime_spotter/src/shared/4data/helper_functions.dart';
+
 class CaseDetails {
   String? id;
   String title;
@@ -11,9 +14,9 @@ class CaseDetails {
   DateTime createdAt;
   String placeName;
   int zipCode;
-  String caseType;
+  CaseType caseType;
   DateTime crimeDateTime;
-  String status;
+  CaseStatus status;
 
   bool isNew = false;
 
@@ -46,9 +49,9 @@ class CaseDetails {
       createdAt: DateTime.parse(json['created_at']),
       placeName: json['place_name'] ?? '',
       zipCode: json['zip_code'] ?? 0,
-      caseType: json['case_type'] ?? '',
+      caseType: TDeviceUtil.convertStringtoCaseType(json['case_type']),
       crimeDateTime: DateTime.parse(json['crime_date_time']),
-      status: json['status'] ?? '',
+      status: TDeviceUtil.convertStringToCaseStatus(json['status']),
     );
   }
 
@@ -62,9 +65,9 @@ class CaseDetails {
         createdAt = DateTime.now(),
         placeName = '',
         zipCode = 0,
-        caseType = "murder",
+        caseType = CaseType.unknown,
         crimeDateTime = DateTime.now(),
-        status = '',
+        status = CaseStatus.unknown,
         isNew = true;
 }
 
