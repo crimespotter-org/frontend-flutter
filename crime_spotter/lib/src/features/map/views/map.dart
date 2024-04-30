@@ -114,7 +114,10 @@ class _MapPageState extends State<MapPage> {
                   const SizedBox(
                     height: 10,
                   ),
-                  TMapToggleButton(controller: controller),
+                  TMapToggleButton(
+                    controller: controller,
+                    markers: markerMap,
+                  ),
                 ],
               ),
             ),

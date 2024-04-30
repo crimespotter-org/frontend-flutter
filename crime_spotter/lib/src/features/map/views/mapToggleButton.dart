@@ -2,11 +2,14 @@ import 'package:crime_spotter/src/features/map/views/mapOption.dart';
 import 'package:crime_spotter/src/shared/4data/mapProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:provider/provider.dart';
 
 class TMapToggleButton extends StatefulWidget {
   final MapController controller;
-  const TMapToggleButton({super.key, required this.controller});
+  final Map<GeoPoint, List<Placemark>> markers;
+  const TMapToggleButton(
+      {super.key, required this.controller, required this.markers});
 
   @override
   State<TMapToggleButton> createState() => _TMapToggleButtonState();
@@ -15,8 +18,6 @@ class TMapToggleButton extends StatefulWidget {
 enum ToggleButton { map, heatMap, cases, options }
 
 class _TMapToggleButtonState extends State<TMapToggleButton> {
-  final List<bool> _selectedToggle = <bool>[true, false, false, false];
-
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<MapProvider>(context);
@@ -29,10 +30,15 @@ class _TMapToggleButtonState extends State<TMapToggleButton> {
             provider.updateSelectedToggle(index);
 
             if (index == ToggleButton.options.index) {
-              showModalBottomSheet(
+              showDialog(
                 context: context,
                 builder: (context) {
-                  return TMapOption(controller: widget.controller);
+                  return SingleChildScrollView(
+                    child: TMapOption(
+                      controller: widget.controller,
+                      markers: widget.markers,
+                    ),
+                  );
                 },
               );
             }
