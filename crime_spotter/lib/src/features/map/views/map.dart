@@ -107,6 +107,10 @@ class _MapPageState extends State<MapPage> {
               padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 20),
               child: Column(
                 children: [
+                  Text(SupaBaseConst.userRole ?? "Keine Rolle"),
+                  const SizedBox(
+                    height: 10,
+                  ),
                   TSearchBar(
                       controller: controller,
                       heatController: heatController,

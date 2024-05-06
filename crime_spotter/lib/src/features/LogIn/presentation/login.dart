@@ -1,7 +1,5 @@
 import 'dart:async';
-import 'package:crime_spotter/main.dart';
 import 'package:crime_spotter/src/features/LogIn/presentation/register.dart';
-import 'package:crime_spotter/src/features/map/views/map.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
 import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:flutter/material.dart';
@@ -20,9 +18,9 @@ class _LogInState extends State<LogIn> {
   bool _register = false;
 
   late final TextEditingController _emailController =
-      TextEditingController(text: 'markus.blattau@gmail.com');
+      TextEditingController(text: 'i21034@hb.dhbw-stuttgart.de');
   late final TextEditingController _passwordController =
-      TextEditingController(text: 'Markus');
+      TextEditingController(text: 'Test31');
 
   final _listViewKey = GlobalKey<FormState>();
 
@@ -33,7 +31,7 @@ class _LogInState extends State<LogIn> {
     final currentContext = Theme.of(context);
     final sn = ScaffoldMessenger.of(context);
     try {
-      await SupaBaseConst.supabase.auth.signInWithPassword(
+      var response = await SupaBaseConst.supabase.auth.signInWithPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text,
         // emailRedirectTo:
@@ -41,6 +39,8 @@ class _LogInState extends State<LogIn> {
       );
 
       if (mounted && SupaBaseConst.supabase.auth.currentSession != null) {
+        SupaBaseConst.userRole =
+            await SupaBaseConst.fetchUserRole(response.session!.accessToken);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Willkommen bei CrimeSpotter!'),

@@ -7,6 +7,8 @@ import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:provider/provider.dart';
 
+enum FilterType { title, createdBy, placeName, caseType, status }
+
 class TMapOption extends StatefulWidget {
   final MapController controller;
   final Map<GeoPoint, List<Placemark>> markers;
@@ -19,7 +21,7 @@ class TMapOption extends StatefulWidget {
 
 class _TMapOptionState extends State<TMapOption> {
   final double? spaceBetweenOptions = 8;
-  final List<Text> selectedFilters = [];
+  final Map<FilterType, String> selectedFilter = {};
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<CaseProvider>(context);
@@ -57,12 +59,20 @@ class _TMapOptionState extends State<TMapOption> {
                     onPressed: () {
                       try {
                         provider.applyFilter(
-                            type: CaseType
-                                .murder); // TODO: Richtige Werte filtern
+                          createdAt: _selectedDate.value,
+                          title: selectedFilter[FilterType.title],
+                          createdBy: selectedFilter[FilterType.createdBy],
+                          placeName: selectedFilter[FilterType.placeName],
+                          type: TDeviceUtil.convertStringtoCaseType(
+                              selectedFilter[FilterType.caseType]),
+                          status: TDeviceUtil.convertStringToCaseStatus(
+                              selectedFilter[FilterType.status]),
+                        );
                         mapProvider.rebuildInitialMarker(
                             controller: widget.controller,
                             caseProvider: provider,
                             markers: widget.markers);
+                        mapProvider.updateSelectedToggle(0);
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
@@ -118,23 +128,23 @@ class _TMapOptionState extends State<TMapOption> {
       children: [
         buildDivider(text: 'Inhalt filtern'),
         buildAutoComplete(
-          title: 'Inhalt',
-          type: FilterTypeTextbox.summary,
+          title: 'Titel',
+          type: FilterType.title,
         ),
         buildDivider(text: 'Autor filtern'),
         buildAutoComplete(
           title: 'Autor',
-          type: FilterTypeTextbox.creator,
+          type: FilterType.createdBy,
         ),
         buildDivider(text: 'Tatort filtern'),
         buildAutoComplete(
           title: 'Tatort',
-          type: FilterTypeTextbox.place,
+          type: FilterType.placeName,
         ),
         buildDivider(text: 'Fallart filtern'),
         buildAutoComplete(
           title: 'Fallart',
-          type: FilterTypeTextbox.caseType,
+          type: FilterType.caseType,
         ),
         buildDivider(text: 'Status filtern'),
         buildRadioButtons(),
@@ -145,8 +155,7 @@ class _TMapOptionState extends State<TMapOption> {
     );
   }
 
-  Widget buildAutoComplete(
-      {required String title, required FilterTypeTextbox type}) {
+  Widget buildAutoComplete({required String title, required FilterType type}) {
     final provider = Provider.of<CaseProvider>(context);
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -154,7 +163,7 @@ class _TMapOptionState extends State<TMapOption> {
         Autocomplete<String>(
           optionsBuilder: (TextEditingValue textEditingValue) {
             switch (type) {
-              case FilterTypeTextbox.summary:
+              case FilterType.title:
                 return provider.filteredCases
                     .where(
                       (suggestion) => suggestion.title.toLowerCase().contains(
@@ -164,7 +173,7 @@ class _TMapOptionState extends State<TMapOption> {
                     .map(
                       (e) => e.title,
                     );
-              case FilterTypeTextbox.caseType:
+              case FilterType.caseType:
                 return provider.filteredCases
                     .where(
                       (suggestion) =>
@@ -175,7 +184,7 @@ class _TMapOptionState extends State<TMapOption> {
                     .map(
                       (e) => e.caseType.toString(),
                     );
-              case FilterTypeTextbox.creator:
+              case FilterType.createdBy:
                 return provider.filteredCases
                     .where(
                       (suggestion) =>
@@ -186,7 +195,7 @@ class _TMapOptionState extends State<TMapOption> {
                     .map(
                       (e) => e.createdBy,
                     );
-              case FilterTypeTextbox.place:
+              case FilterType.placeName:
                 return provider.filteredCases
                     .where(
                       (suggestion) =>
@@ -202,9 +211,9 @@ class _TMapOptionState extends State<TMapOption> {
             }
           },
           onSelected: (String selection) {
-            selectedFilters.add(
-              Text('$title: $selection'),
-            );
+            setState(() {
+              selectedFilter[type] = selection;
+            });
           },
           fieldViewBuilder: (BuildContext context,
               TextEditingController textEditingController,
@@ -236,7 +245,9 @@ class _TMapOptionState extends State<TMapOption> {
                       (String option) => ListTile(
                         title: Text(option),
                         onTap: () {
-                          onSelected(option);
+                          setState(() {
+                            onSelected(option);
+                          });
                         },
                       ),
                     )
@@ -334,5 +345,3 @@ class _TMapOptionState extends State<TMapOption> {
 //     },
 //   );
 // }
-
-enum FilterTypeTextbox { summary, creator, place, caseType, status }

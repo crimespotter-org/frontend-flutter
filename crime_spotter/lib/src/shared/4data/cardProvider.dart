@@ -146,7 +146,8 @@ class CaseProvider extends ChangeNotifier {
   }
 
   void applyFilter(
-      {String? title,
+      {DateTime? createdAt,
+      String? title,
       String? createdBy,
       String? placeName,
       CaseType? type,
@@ -155,12 +156,15 @@ class CaseProvider extends ChangeNotifier {
 
     _filteredCases.addAll(
       _cases
-          .where((element) =>
-              (title != null ? element.title == title : true) &&
-              (createdBy != null ? element.createdBy == createdBy : true) &&
-              (placeName != null ? element.placeName == placeName : true) &&
-              (type != null ? element.caseType == type : true) &&
-              (status != null ? element.status == status : true))
+          .where(
+            (element) =>
+                (createdAt != null ? element.createdAt == createdAt : true) &&
+                (title != null ? element.title == title : true) &&
+                (createdBy != null ? element.createdBy == createdBy : true) &&
+                (placeName != null ? element.placeName == placeName : true) &&
+                (type != null ? element.caseType == type : true) &&
+                (status != null ? element.status == status : true),
+          )
           .toList(),
     );
   }
