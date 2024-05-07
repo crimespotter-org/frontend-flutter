@@ -23,7 +23,7 @@ class TDeviceUtil {
     return list.toSet().toList();
   }
 
-  static CaseType convertStringtoCaseType(String crimeString) {
+  static CaseType? convertStringtoCaseType(String? crimeString) {
     switch (crimeString) {
       case "murder":
         return CaseType.murder;
@@ -36,18 +36,18 @@ class TDeviceUtil {
       case "rape":
         return CaseType.rape;
       default:
-        return CaseType.unknown;
+        return null;
     }
   }
 
-  static CaseStatus convertStringToCaseStatus(String status) {
+  static CaseStatus? convertStringToCaseStatus(String? status) {
     switch (status) {
       case 'opened':
         return CaseStatus.open;
       case 'closed':
         return CaseStatus.closed;
       default:
-        return CaseStatus.unknown;
+        return null;
     }
   }
 

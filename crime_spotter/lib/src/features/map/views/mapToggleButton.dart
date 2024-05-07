@@ -2,11 +2,14 @@ import 'package:crime_spotter/src/features/map/views/mapOption.dart';
 import 'package:crime_spotter/src/shared/4data/mapProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:provider/provider.dart';
 
 class TMapToggleButton extends StatefulWidget {
   final MapController controller;
-  const TMapToggleButton({super.key, required this.controller});
+  final Map<GeoPoint, List<Placemark>> markers;
+  const TMapToggleButton(
+      {super.key, required this.controller, required this.markers});
 
   @override
   State<TMapToggleButton> createState() => _TMapToggleButtonState();
@@ -15,8 +18,6 @@ class TMapToggleButton extends StatefulWidget {
 enum ToggleButton { map, heatMap, cases, options }
 
 class _TMapToggleButtonState extends State<TMapToggleButton> {
-  final List<bool> _selectedToggle = <bool>[true, false, false, false];
-
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<MapProvider>(context);
@@ -26,33 +27,18 @@ class _TMapToggleButtonState extends State<TMapToggleButton> {
         ToggleButtons(
           direction: Axis.horizontal,
           onPressed: (int index) {
-            if (mounted) {
-              setState(
-                () {
-                  for (int i = 0; i < _selectedToggle.length; i++) {
-                    _selectedToggle[i] = i == index;
-                  }
-                },
-              );
-            }
+            provider.updateSelectedToggle(index);
 
-            if (index == ToggleButton.map.index) {
-              provider.changeToMap();
-              provider.hideCases();
-            } else if (index == ToggleButton.heatMap.index) {
-              provider.changeToHeatMap();
-              provider.hideCases();
-            } else if (index == ToggleButton.cases.index) {
-              provider.changeToMap();
-              provider.showCases();
-            } else if (index == ToggleButton.options.index) {
-              provider.changeToMap();
-              provider.hideCases();
-
-              showModalBottomSheet(
+            if (index == ToggleButton.options.index) {
+              showDialog(
                 context: context,
                 builder: (context) {
-                  return TMapOption(controller: widget.controller);
+                  return SingleChildScrollView(
+                    child: TMapOption(
+                      controller: widget.controller,
+                      markers: widget.markers,
+                    ),
+                  );
                 },
               );
             }
@@ -66,7 +52,7 @@ class _TMapToggleButtonState extends State<TMapToggleButton> {
             minHeight: 40.0,
             minWidth: 80.0,
           ),
-          isSelected: _selectedToggle,
+          isSelected: provider.selectedToggle,
           children: const [
             Text('Karte'),
             Text('Heatmap'),

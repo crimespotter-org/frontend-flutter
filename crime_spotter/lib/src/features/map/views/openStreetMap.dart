@@ -139,37 +139,12 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
                   widget.controller.myLocation().then(
                         (value) => mapProvider.updateCurrentPosition(value),
                       );
-                  for (var singleCase in caseProvider.filteredCases) {
-                    if (mounted) {
-                      await widget.controller.addMarker(
-                        GeoPoint(
-                            latitude: singleCase.latitude,
-                            longitude: singleCase.longitude),
-                        markerIcon:
-                            buildMarker(singleCase.caseType, caseProvider),
-                      );
-                      placemarkFromCoordinates(
-                              singleCase.latitude, singleCase.longitude)
-                          .then(
-                        (value) => {
-                          if (value.isNotEmpty)
-                            {
-                              if (mounted)
-                                {
-                                  setState(
-                                    () {
-                                      widget.markerMap[GeoPoint(
-                                          latitude: singleCase.latitude,
-                                          longitude:
-                                              singleCase.longitude)] = value;
-                                    },
-                                  ),
-                                }
-                            },
-                        },
-                      );
-                    }
-                  }
+                  widget.markerMap.addAll(
+                    await mapProvider.rebuildInitialMarker(
+                        controller: widget.controller,
+                        caseProvider: caseProvider,
+                        markers: widget.markerMap),
+                  );
                 },
               ),
           },
@@ -242,6 +217,7 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
                                 },
                             },
                           ),
+                          widget.controller.setZoom(zoomLevel: 15),
                         },
                       ),
                 },
@@ -251,45 +227,6 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
           ),
         ),
       ],
-    );
-  }
-
-  MarkerIcon buildMarker(CaseType type, CaseProvider provider) {
-    IconData icon;
-    MaterialColor color;
-
-    switch (type) {
-      case CaseType.murder:
-        icon = Icons.directions_run;
-        color = Colors.red;
-        break;
-      case CaseType.theft:
-        icon = Icons.report;
-        color = Colors.grey;
-        break;
-      case CaseType.robberyMurder:
-        icon = Icons.local_atm;
-        color = Colors.green;
-        break;
-      case CaseType.brawl:
-        icon = Icons.groups;
-        color = Colors.brown;
-        break;
-      case CaseType.rape:
-        icon = Icons.pan_tool;
-        color = Colors.purple;
-        break;
-      default:
-        icon = Icons.pin_drop;
-        color = Colors.blue;
-        break;
-    }
-    return MarkerIcon(
-      icon: Icon(
-        icon,
-        color: color,
-        size: 48,
-      ),
     );
   }
 

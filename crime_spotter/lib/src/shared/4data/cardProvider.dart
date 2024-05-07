@@ -16,9 +16,9 @@ class CaseProvider extends ChangeNotifier {
     resetCases();
   }
 
-  final List<CaseDetails> _cases = [];
-  final List<CaseDetails> _filteredCases = [];
-  final List<Uint8List> _casesForVoting = [];
+  List<CaseDetails> _cases = [];
+  List<CaseDetails> _filteredCases = [];
+  List<Uint8List> _casesForVoting = [];
   Offset _position = Offset.zero;
   bool _isDragging = false;
   Size _screenSize = Size.zero;
@@ -128,93 +128,45 @@ class CaseProvider extends ChangeNotifier {
 
     CaseService.getAllCases().then(
       (value) => {
-        _cases.addAll(value.reversed),
-        _filteredCases.addAll(value.reversed),
+        _cases = value.reversed.toList(),
+        _filteredCases = value.reversed.toList(),
         notifyListeners(),
       },
     );
     CaseService.getCasesIncludingFirstImage().then(
       (value) => {
-        _casesForVoting.addAll(
-          value
-              .expand<Uint8List>((element) => element.images
-                  .where((element) => element.image.isNotEmpty)
-                  .map((e) => e.image))
-              .toList(),
-        ),
+        _casesForVoting = value
+            .expand<Uint8List>((element) => element.images
+                .where((element) => element.image.isNotEmpty)
+                .map((e) => e.image))
+            .toList(),
         notifyListeners(),
       },
     );
   }
 
-  void filterTitlesAndSummary(String filter, bool deletFilter) {
-    if (deletFilter) {
-      _filteredCases.map((e) => e.title.contains(filter)).toList(); //TODO
-    } else {
-      _filteredCases
-          .map((e) => e.title.contains(filter) || e.summary.contains(filter))
-          .toList();
-    }
-  }
+  void applyFilter(
+      {DateTime? createdAt,
+      String? title,
+      String? createdBy,
+      String? placeName,
+      CaseType? type,
+      CaseStatus? status}) {
+    _filteredCases.clear();
 
-  void filterCreatedBy(String filter, bool deletFilter) {
-    if (deletFilter) {
-      _filteredCases.map((e) => e.createdBy.contains(filter)).toList(); //TODO
-    } else {
-      _filteredCases.map((e) => e.createdBy.contains(filter)).toList();
-    }
-  }
-
-  void filterCreatedAt(DateTime filter, bool deletFilter) {
-    if (deletFilter) {
-      _filteredCases.map((e) => e.createdAt == filter).toList(); //TODO
-    } else {
-      _filteredCases.map((e) => e.createdAt == filter).toList();
-    }
-  }
-
-  void filterPlaceName(String filter, bool deletFilter) {
-    if (deletFilter) {
-      _filteredCases.map((e) => e.placeName.contains(filter)).toList(); //TODO
-    } else {
-      _filteredCases.map((e) => e.placeName.contains(filter)).toList();
-    }
-  }
-
-  void filterZipName(String filter, bool deletFilter) {
-    if (deletFilter) {
-      _filteredCases
-          .map((e) => (e.zipCode as String).contains(filter))
-          .toList(); //TODO
-    } else {
-      _filteredCases
-          .map((e) => (e.zipCode as String).contains(filter))
-          .toList();
-    }
-  }
-
-  void filterCaseType(CaseType filter, bool deletFilter) {
-    if (deletFilter) {
-      _filteredCases.map((r) => r.caseType == filter as String).toList(); //TODO
-    } else {
-      _filteredCases.map((r) => r.caseType == filter as String).toList();
-    }
-  }
-
-  void filterCrimeDate(DateTime filter, bool deletFilter) {
-    if (deletFilter) {
-      _filteredCases.map((e) => e.crimeDateTime == filter).toList(); //TODO
-    } else {
-      _filteredCases.map((e) => e.crimeDateTime == filter).toList();
-    }
-  }
-
-  void filterCaseStatus(CaseStatus filter, bool deletFilter) {
-    if (deletFilter) {
-      _filteredCases.map((e) => e.status == filter as String).toList(); //TODO
-    } else {
-      _filteredCases.map((e) => e.status == filter as String).toList();
-    }
+    _filteredCases.addAll(
+      _cases
+          .where(
+            (element) =>
+                (createdAt != null ? element.createdAt == createdAt : true) &&
+                (title != null ? element.title == title : true) &&
+                (createdBy != null ? element.createdBy == createdBy : true) &&
+                (placeName != null ? element.placeName == placeName : true) &&
+                (type != null ? element.caseType == type : true) &&
+                (status != null ? element.status == status : true),
+          )
+          .toList(),
+    );
   }
 
   void resetPosition() {

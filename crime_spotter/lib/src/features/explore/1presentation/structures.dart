@@ -49,9 +49,11 @@ class CaseDetails {
       createdAt: DateTime.parse(json['created_at']),
       placeName: json['place_name'] ?? '',
       zipCode: json['zip_code'] ?? 0,
-      caseType: TDeviceUtil.convertStringtoCaseType(json['case_type']),
+      caseType: TDeviceUtil.convertStringtoCaseType(json['case_type']) ??
+          CaseType.unknown,
       crimeDateTime: DateTime.parse(json['crime_date_time']),
-      status: TDeviceUtil.convertStringToCaseStatus(json['status']),
+      status: TDeviceUtil.convertStringToCaseStatus(json['status']) ??
+          CaseStatus.unknown,
     );
   }
 
