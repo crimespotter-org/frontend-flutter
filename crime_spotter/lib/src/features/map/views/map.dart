@@ -1,5 +1,6 @@
 import 'package:crime_spotter/src/common/widget/widget/radioButton.dart';
 import 'package:crime_spotter/src/common/widget/widget/searchBar.dart';
+import 'package:crime_spotter/src/features/map/controller/controller.dart';
 import 'package:crime_spotter/src/features/map/views/fleaFletMap.dart';
 import 'package:crime_spotter/src/features/map/views/mapSwipeCases.dart';
 import 'package:crime_spotter/src/features/map/views/mapToggleButton.dart';
@@ -76,7 +77,7 @@ class _MapPageState extends State<MapPage> {
   final Map<GeoPoint, List<Placemark>> markerMap = {};
   bool mapLoaded =
       false; //Die Marker auf der Map müssen erst gezeichnet werden, bevor navigiert werden darf
-
+  bool showUpgradeRole = false;
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<MapProvider>(context);
@@ -92,7 +93,7 @@ class _MapPageState extends State<MapPage> {
             left: -MediaQuery.of(context).size.width /
                 2, // Adjust the left position as needed
             top: -MediaQuery.of(context).size.height * 0.21,
-            height: MediaQuery.of(context).size.height * 0.5,
+            height: MediaQuery.of(context).size.height * 0.56,
             width: MediaQuery.of(context).size.width * 2,
             child: ClipOval(
               child: Container(
@@ -107,7 +108,23 @@ class _MapPageState extends State<MapPage> {
               padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 20),
               child: Column(
                 children: [
-                  Text(SupaBaseConst.userRole ?? "Keine Rolle"),
+                  Center(
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(
+                            Icons.person,
+                          ),
+                          onPressed: () => {
+                            setState(() {
+                              showUpgradeRole = true;
+                            })
+                          },
+                        ),
+                        Text(SupaBaseConst.userRole ?? "Keine Rolle"),
+                      ],
+                    ),
+                  ),
                   const SizedBox(
                     height: 10,
                   ),
@@ -121,6 +138,10 @@ class _MapPageState extends State<MapPage> {
                   TMapToggleButton(
                     controller: controller,
                     markers: markerMap,
+                  ),
+                  Visibility(
+                    visible: showUpgradeRole,
+                    child: buildUpgradeRole(),
                   ),
                 ],
               ),
@@ -163,6 +184,85 @@ class _MapPageState extends State<MapPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget buildUpgradeRole() {
+    return Card(
+      color: Colors.lightBlue,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          GestureDetector(
+            onTap: () => setState(() {
+              showUpgradeRole = false;
+            }),
+            child: const Align(
+              alignment: Alignment.topRight,
+              child: Icon(Icons.clear),
+            ),
+          ),
+          const Text(
+            'Demo',
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          Text("Du besitzt derzeit die Rolle \"${SupaBaseConst.userRole}\""),
+          const SizedBox(
+            height: 10,
+          ),
+          SupaBaseConst.userRole == "crimespotter"
+              ? const Text(
+                  "Für 10.99\$ hast du die Chance, ein Admin dieser App zu werden. Dadurch kannst du nun nicht nur die Fälle erkunden, sondern diese auch bearbeiten, sowie neue hinzuzufügen.")
+              : const Text(
+                  "Du hast mit dieser Rolle uneingeschränkten Zugriff innerhalb von CrimeSpotter. Da dies ein Demo-Stand ist, kannst du hier deine Rolle wieder zurück zu \"CrimeSpotter\" setzen."),
+          buildChangeRole("admin"),
+          buildChangeRole("crimespotter"),
+        ],
+      ),
+    );
+  }
+
+  Widget buildChangeRole(String role) {
+    String updatedRole = role == "admin" ? "crimespotter" : "admin";
+    String buttonText = role == "admin" ? "Downgrade" : "Upgrade";
+    return Visibility(
+      visible: SupaBaseConst.userRole == role,
+      child: ElevatedButton(
+        child: Text(buttonText),
+        onPressed: () => {
+          ButtonController.updateUserRole(updatedRole).then(
+            (value) => {
+              if (value.isNotEmpty)
+                {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Sie haben nun die Rolle $updatedRole'),
+                      backgroundColor: Colors.green,
+                    ),
+                  ),
+                  setState(
+                    () {
+                      SupaBaseConst.userRole = updatedRole;
+                      showUpgradeRole = false;
+                    },
+                  )
+                }
+              else
+                {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                          'Beim Aktualisieren der Rolle ist ein Fehler aufgetreten.'),
+                      backgroundColor: Colors.red,
+                    ),
+                  ),
+                },
+            },
+          ),
+        },
       ),
     );
   }

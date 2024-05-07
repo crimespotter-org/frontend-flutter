@@ -39,8 +39,8 @@ class _LogInState extends State<LogIn> {
       );
 
       if (mounted && SupaBaseConst.supabase.auth.currentSession != null) {
-        SupaBaseConst.userRole =
-            await SupaBaseConst.fetchUserRole(response.session!.accessToken);
+        SupaBaseConst.jwt = response.session!.accessToken;
+        SupaBaseConst.userRole = await SupaBaseConst.fetchUserRole();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Willkommen bei CrimeSpotter!'),
