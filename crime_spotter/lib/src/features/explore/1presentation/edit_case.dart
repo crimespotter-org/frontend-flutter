@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
 import 'package:crime_spotter/src/shared/4data/cardProvider.dart';
+import 'package:crime_spotter/src/shared/4data/caseService.dart';
 import 'package:crime_spotter/src/shared/4data/helper_functions.dart';
 import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:flutter/foundation.dart';
@@ -20,14 +21,64 @@ class EditCase extends StatefulWidget {
 
 class _EditCaseState extends State<EditCase> {
   late CaseDetails shownCase;
+  late Future<CaseDetails> _caseFuture;
+
+  Future<CaseDetails> getCase(String id) async {
+    if (id == "-1") {
+      return CaseDetails.createNew();
+    }
+    final provider = Provider.of<CaseProvider>(context);
+    try {
+      var temp =
+          provider.casesDetailed.firstWhere((element) => element.id == id);
+      return temp;
+    } on Exception catch (_) {
+      return CaseService.getCaseDetailedById(id);
+    }
+  }
+
+  Future<void> loadData() async {
+    final caseID = ModalRoute.of(context)?.settings.arguments as String?;
+    _caseFuture = getCase(caseID!);
+  }
+
+  @override
+  void didChangeDependencies() {
+    loadData();
+    super.didChangeDependencies();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<CaseProvider>(context);
-    //MAAAAAAAARKUS create new und edit gehen beide hier auf dieses Widget. Habe das mal angepast, damit das
-    //wenigestens fürs Editieren wieder funktioniert
-    shownCase = provider.cases.firstWhere(
-        (element) => element.id == ModalRoute.of(context)!.settings.arguments);
+    return FutureBuilder<CaseDetails>(
+      future: _caseFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          // Display a loading indicator while waiting for the data
+          return Scaffold(
+            appBar: AppBar(),
+            body: const Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        } else if (snapshot.hasError) {
+          // Display an error message if something went wrong
+          return Scaffold(
+            appBar: AppBar(),
+            body: Center(
+              child: Text('Error: ${snapshot.error}'),
+            ),
+          );
+        } else {
+          // Data has been loaded successfully
+          shownCase = snapshot.data!;
+          return _buildMainView();
+        }
+      },
+    );
+  }
 
+  Widget _buildMainView() {
     return DefaultTabController(
       length: 3,
       child: Scaffold(

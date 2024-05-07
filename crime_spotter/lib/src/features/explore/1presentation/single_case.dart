@@ -1,6 +1,10 @@
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
+import 'package:crime_spotter/src/shared/4data/cardProvider.dart';
 import 'package:crime_spotter/src/shared/4data/caseService.dart';
+import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SingleCase extends StatefulWidget {
@@ -13,10 +17,24 @@ class SingleCase extends StatefulWidget {
 class _SingleCaseState extends State<SingleCase> {
   late Future<CaseDetails> _caseFuture;
   String? caseID;
+  late CaseDetails shownCase;
+  late CaseProvider provider;
 
   Future<void> loadData() async {
     caseID = ModalRoute.of(context)?.settings.arguments as String?;
-    _caseFuture = CaseService.getCaseDetailedById(caseID!);
+    _caseFuture = getCase(caseID!);
+  }
+
+  Future<CaseDetails> getCase(String id) async {
+    provider = Provider.of<CaseProvider>(context);
+    try {
+      var temp =
+          provider.casesDetailed.firstWhere((element) => element.id == id);
+      shownCase = temp;
+      return temp;
+    } on Exception catch (_) {
+      return CaseService.getCaseDetailedById(id);
+    }
   }
 
   @override
@@ -32,8 +50,11 @@ class _SingleCaseState extends State<SingleCase> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           // Display a loading indicator while waiting for the data
-          return const Center(
-            child: CircularProgressIndicator(),
+          return Scaffold(
+            appBar: AppBar(),
+            body: const Center(
+              child: CircularProgressIndicator(),
+            ),
           );
         } else if (snapshot.hasError) {
           // Display an error message if something went wrong
@@ -45,28 +66,35 @@ class _SingleCaseState extends State<SingleCase> {
           );
         } else {
           // Data has been loaded successfully
-          final loadedCase = snapshot.data!;
-          return SingleCaseBodyWidget(shownCase: loadedCase);
+          return _buildMainView();
         }
       },
     );
   }
-}
 
-class SingleCaseBodyWidget extends StatelessWidget {
-  final CaseDetails shownCase;
-
-  const SingleCaseBodyWidget({required this.shownCase});
-
-  _launchURL(String link) async {
-    await launchUrl(Uri.parse(link));
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildMainView() {
+    _calcTotalVotes();
     return Scaffold(
       appBar: AppBar(
-        title: Text(shownCase.title),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Text(
+                  shownCase.title,
+                ),
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.share),
+              onPressed: () {
+                shareCase();
+              },
+            ),
+          ],
+        ),
       ),
       body: Card(
         child: Column(
@@ -136,6 +164,7 @@ class SingleCaseBodyWidget extends StatelessWidget {
                 child: Text('Zusammenfassung:'),
               ),
             ),
+            const SizedBox(height: 5),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16.0),
@@ -148,9 +177,106 @@ class SingleCaseBodyWidget extends StatelessWidget {
                 ),
               ),
             ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                RawMaterialButton(
+                  onPressed: () {},
+                  elevation: 2.0,
+                  fillColor: Colors.white,
+                  padding: const EdgeInsets.all(10.0),
+                  shape: const CircleBorder(),
+                  child: const Icon(
+                    Icons.comment,
+                    size: 25.0,
+                  ),
+                ),
+                const Spacer(),
+                RawMaterialButton(
+                  onPressed: () {
+                    _vote(-1);
+                  },
+                  elevation: 2.0,
+                  fillColor: Colors.white,
+                  padding: const EdgeInsets.all(10.0),
+                  shape: const CircleBorder(),
+                  child: const Icon(
+                    Icons.thumb_down,
+                    size: 25.0,
+                  ),
+                ),
+                Text(averageVotes.toString()),
+                RawMaterialButton(
+                  onPressed: () {
+                    _vote(1);
+                  },
+                  elevation: 2.0,
+                  fillColor: Colors.white,
+                  padding: const EdgeInsets.all(10.0),
+                  shape: const CircleBorder(),
+                  child: const Icon(
+                    Icons.thumb_up,
+                    size: 25.0,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 5),
           ],
         ),
       ),
     );
+  }
+
+  late int averageVotes;
+
+  _launchURL(String link) async {
+    await launchUrl(Uri.parse(link));
+  }
+
+  void _calcTotalVotes() {
+    averageVotes = shownCase.upvotes - shownCase.downvotes;
+  }
+
+  void _vote(int vote) async {
+    var existingvotes = await SupaBaseConst.supabase
+        .from('votes')
+        .select('*')
+        .match({
+      "case_id": shownCase.id,
+      "user_id": SupaBaseConst.currentUser?.id
+    });
+
+    if (existingvotes.isNotEmpty) {
+      var existingvote = existingvotes.first;
+      await SupaBaseConst.supabase
+          .from('votes')
+          .update({"vote": vote}).match({"id": existingvote["id"]});
+    } else {
+      await SupaBaseConst.supabase.from('votes').insert({
+        'case_id': shownCase.id,
+        'user_id': SupaBaseConst.currentUser?.id,
+        'vote': '$vote',
+      });
+    }
+
+    var temp = await provider.updateDetailedCase(shownCase.id!);
+    setState(() {
+      shownCase = temp;
+      _calcTotalVotes();
+    });
+  }
+
+  Future<void> shareCase() async {
+    final url = 'crimespotter://casedetails/${shownCase.id}';
+    try {
+      await Share.share(
+        'Schau dir diesen Fall bei Crimespotter an: $url',
+        subject: 'Teile diesen Fall',
+      );
+    } catch (error) {
+      print('Fehler beim Teilen der Case Details: $error');
+    }
   }
 }

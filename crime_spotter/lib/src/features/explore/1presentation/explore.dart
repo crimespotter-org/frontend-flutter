@@ -67,15 +67,14 @@ class _ExploreState extends State<Explore> {
                 ),
           Positioned(
             bottom: 16.0,
-            right: 16.0,
+            left: 16.0,
             child: FloatingActionButton(
               backgroundColor: Colors.blueAccent,
               onPressed: () async {
                 setState(
                   () {
-                    var caseToCreate = CaseDetails.createNew();
                     Navigator.pushNamed(context, UIData.edit_case,
-                        arguments: caseToCreate);
+                        arguments: "-1");
                   },
                 );
               },

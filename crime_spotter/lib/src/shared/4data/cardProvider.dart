@@ -17,6 +17,7 @@ class CaseProvider extends ChangeNotifier {
   }
 
   List<CaseDetails> _cases = [];
+  List<CaseDetails> _casesDetailed = [];
   List<CaseDetails> _filteredCases = [];
   List<Uint8List> _casesForVoting = [];
   Offset _position = Offset.zero;
@@ -25,6 +26,7 @@ class CaseProvider extends ChangeNotifier {
   double _angle = 0;
 
   List<CaseDetails> get cases => _cases;
+  List<CaseDetails> get casesDetailed => _casesDetailed;
   List<CaseDetails> get filteredCases => _filteredCases;
   List<Uint8List> get casesForVoting => _casesForVoting;
   Offset get position => _position;
@@ -126,13 +128,27 @@ class CaseProvider extends ChangeNotifier {
     _filteredCases.clear();
     _casesForVoting.clear();
 
-    CaseService.getAllCases().then(
-      (value) => {
-        _cases = value.reversed.toList(),
-        _filteredCases = value.reversed.toList(),
-        notifyListeners(),
-      },
-    );
+    CaseService.getAllCases()
+        .then(
+          (value) => {
+            _cases = value.reversed.toList(),
+            _filteredCases = value.reversed.toList(),
+            notifyListeners(),
+          },
+        )
+        .then(
+          (value) => {
+            for (CaseDetails c in _cases)
+              {
+                CaseService.getCaseDetailedById(c.id!).then(
+                  (value) => {
+                    _casesDetailed.add(value),
+                  },
+                ),
+              },
+            notifyListeners(),
+          },
+        );
     CaseService.getCasesIncludingFirstImage().then(
       (value) => {
         _casesForVoting = value
@@ -143,6 +159,19 @@ class CaseProvider extends ChangeNotifier {
         notifyListeners(),
       },
     );
+  }
+
+  Future<CaseDetails> updateDetailedCase(String caseID) async {
+    await CaseService.getCaseDetailedById(caseID).then(
+      (value) {
+        int index =
+            _casesDetailed.indexWhere((element) => element.id == caseID);
+        if (index != -1) {
+          _casesDetailed[index] = value;
+        }
+      },
+    );
+    return _casesDetailed.firstWhere((element) => element.id == caseID);
   }
 
   void applyFilter(
