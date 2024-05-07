@@ -3,6 +3,14 @@ import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:flutter/material.dart';
 
 class ButtonController {
+  static Future<List<Map<String, dynamic>>> updateUserRole(String role) async {
+    return await SupaBaseConst.supabase
+        .from('user_profiles')
+        .update({'role': role})
+        .eq('id', SupaBaseConst.currentUser!.id)
+        .select();
+  }
+
   static List<FloatingActionButton> itemsActionBar(BuildContext context) {
     return [
       FloatingActionButton(

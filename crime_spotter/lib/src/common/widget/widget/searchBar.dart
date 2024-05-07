@@ -1,17 +1,26 @@
 import 'package:crime_spotter/src/features/map/4data/fetch_data.dart';
 import 'package:crime_spotter/src/shared/4data/helper_functions.dart';
+import 'package:crime_spotter/src/shared/4data/mapProvider.dart';
 import 'package:crime_spotter/src/shared/constants/colors.dart';
 import 'package:crime_spotter/src/shared/model/predictionResponse.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
+
+import 'package:flutter_map/flutter_map.dart' as heat;
 import 'package:geocoding/geocoding.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:provider/provider.dart';
 
 class TSearchBar extends StatefulWidget {
   final MapController controller;
+  final heat.MapController heatController;
   final Map<GeoPoint, List<Placemark>> markerMap;
   const TSearchBar(
-      {super.key, required this.controller, required this.markerMap});
+      {super.key,
+      required this.controller,
+      required this.heatController,
+      required this.markerMap});
 
   @override
   State<TSearchBar> createState() => _TSearchBarState();
@@ -33,8 +42,46 @@ class _TSearchBarState extends State<TSearchBar> {
     return result;
   }
 
+  void moveForHeatMap(GeoPoint position) {
+    widget.heatController
+        .move(LatLng(position.latitude, position.longitude), 15);
+    Navigator.pop(context);
+  }
+
+  void moveForMainMap(GeoPoint position) {
+    widget.controller.moveTo(position, animate: true);
+    widget.controller.addMarker(
+      position,
+      markerIcon: const MarkerIcon(
+        icon: Icon(
+          Icons.pin_drop,
+          color: Colors.blue,
+          size: 48,
+        ),
+      ),
+    );
+    placemarkFromCoordinates(position.latitude, position.longitude).then(
+      (value) => {
+        if (value.isNotEmpty)
+          {
+            if (mounted)
+              {
+                setState(
+                  () {
+                    widget.markerMap[position] = value;
+                  },
+                ),
+              }
+          },
+      },
+    );
+    Navigator.pop(context);
+    widget.controller.setZoom(zoomLevel: 13);
+  }
+
   @override
   void dispose() {
+    widget.heatController.dispose();
     widget.controller.dispose();
     _searchController.dispose();
     super.dispose();
@@ -42,6 +89,7 @@ class _TSearchBarState extends State<TSearchBar> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<MapProvider>(context);
     return Container(
       height: 75,
       width: TDeviceUtil.getScreenWidth(context),
@@ -99,42 +147,14 @@ class _TSearchBarState extends State<TSearchBar> {
                                                         .geometry
                                                         .location
                                                         .lng),
-                                                widget.controller.moveTo(
-                                                    position,
-                                                    animate: true),
-                                                widget.controller.addMarker(
-                                                  position,
-                                                  markerIcon: const MarkerIcon(
-                                                    icon: Icon(
-                                                      Icons.pin_drop,
-                                                      color: Colors.blue,
-                                                      size: 48,
-                                                    ),
-                                                  ),
-                                                ),
-                                                placemarkFromCoordinates(
-                                                        position.latitude,
-                                                        position.longitude)
-                                                    .then(
-                                                  (value) => {
-                                                    if (value.isNotEmpty)
-                                                      {
-                                                        if (mounted)
-                                                          {
-                                                            setState(
-                                                              () {
-                                                                widget.markerMap[
-                                                                        position] =
-                                                                    value;
-                                                              },
-                                                            ),
-                                                          }
-                                                      },
+                                                if (provider.isHeatmap)
+                                                  {
+                                                    moveForHeatMap(position),
+                                                  }
+                                                else
+                                                  {
+                                                    moveForMainMap(position),
                                                   },
-                                                ),
-                                                Navigator.pop(context),
-                                                widget.controller
-                                                    .setZoom(zoomLevel: 13),
                                               },
                                           },
                                         ),

@@ -29,7 +29,7 @@ class _RegisterState extends State<Register> {
     final sm = ScaffoldMessenger.of(context);
     final theme = Theme.of(context);
     try {
-      await SupaBaseConst.supabase.auth.signUp(
+      var authResponse = await SupaBaseConst.supabase.auth.signUp(
         email: _emailController.text.trim(),
         password: _passwordController.text,
         // emailRedirectTo:
@@ -37,6 +37,14 @@ class _RegisterState extends State<Register> {
       );
 
       if (mounted) {
+        var newRole = {
+          'username': _emailController.text,
+          'role': 'crimespotter',
+          'id': authResponse.user!.id
+        };
+
+        await SupaBaseConst.supabase.from('user_profiles').insert(newRole);
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Bitte bestätigen Sie die Email!'),
