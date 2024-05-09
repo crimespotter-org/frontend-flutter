@@ -52,9 +52,8 @@ class CaseService {
     CaseDetails newItem = CaseDetails.fromJson(response.first);
 
     //links
-    List<Links> links = <Links>[];
     for (var link in response) {
-      links.add(
+      newItem.furtherLinks.add(
         Links.fromJson(link),
       );
     }
@@ -74,6 +73,17 @@ class CaseService {
         continue;
       }
     }
+
+    //votes
+    var votesResult = await SupaBaseConst.supabase
+        .rpc('get_case_votes_by_id', params: {'p_case_id': newItem.id});
+    var votes = votesResult.isNotEmpty ? votesResult.first : null;
+
+    if (votes != null) {
+      newItem.upvotes = votes["upvotes"];
+      newItem.downvotes = votes["downvotes"];
+    }
+
     return newItem;
   }
 

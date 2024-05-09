@@ -18,6 +18,8 @@ class CaseDetails {
   DateTime crimeDateTime;
   CaseStatus status;
 
+  int upvotes = 0;
+  int downvotes = 0;
   bool isNew = false;
 
   List<Media> images = [];
