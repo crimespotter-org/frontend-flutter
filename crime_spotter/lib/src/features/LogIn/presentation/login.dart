@@ -2,7 +2,9 @@ import 'dart:async';
 import 'package:crime_spotter/src/features/LogIn/presentation/register.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
 import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
+import 'package:crime_spotter/src/shared/4data/userdetailsProvider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class LogIn extends StatefulWidget {
@@ -24,7 +26,7 @@ class _LogInState extends State<LogIn> {
 
   final _listViewKey = GlobalKey<FormState>();
 
-  Future<void> _signIn() async {
+  Future<void> _signIn(UserDetailsProvider provider) async {
     setState(() {
       _isLoading = true;
     });
@@ -39,16 +41,15 @@ class _LogInState extends State<LogIn> {
       );
 
       if (mounted && SupaBaseConst.supabase.auth.currentSession != null) {
-        SupaBaseConst.jwt = response.session!.accessToken;
-        SupaBaseConst.userRole = await SupaBaseConst.fetchUserRole();
+        provider.setJWT(response.session!.accessToken);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Willkommen bei CrimeSpotter!'),
             backgroundColor: Colors.green,
           ),
         );
-        SupaBaseConst.currentUser ??= SupaBaseConst.supabase.auth.currentUser;
-
+        provider.setCurrentUser(SupaBaseConst.supabase.auth.currentUser);
+        provider.getAllActiveUser();
         _emailController.clear();
         _passwordController.clear();
       }
@@ -109,6 +110,7 @@ class _LogInState extends State<LogIn> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<UserDetailsProvider>(context);
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -208,7 +210,7 @@ class _LogInState extends State<LogIn> {
                                 if (_isLoading) return;
 
                                 if (_listViewKey.currentState!.validate()) {
-                                  _signIn();
+                                  _signIn(provider);
                                 }
                               },
                               child: Text(

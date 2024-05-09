@@ -2,9 +2,10 @@ import 'package:crime_spotter/src/features/LogIn/presentation/register.dart';
 import 'package:crime_spotter/src/features/explore/1presentation/edit_case.dart';
 import 'package:crime_spotter/src/features/explore/1presentation/explore.dart';
 import 'package:crime_spotter/src/features/explore/1presentation/single_case.dart';
-import 'package:crime_spotter/src/features/settings/settings.dart';
+import 'package:crime_spotter/src/features/admin/admin.dart';
 import 'package:crime_spotter/src/shared/4data/cardProvider.dart';
 import 'package:crime_spotter/src/shared/4data/mapProvider.dart';
+import 'package:crime_spotter/src/shared/4data/userdetailsProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -36,6 +37,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => CaseProvider()),
         ChangeNotifierProvider(create: (_) => MapProvider()),
+        ChangeNotifierProvider(create: (_) => UserDetailsProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
