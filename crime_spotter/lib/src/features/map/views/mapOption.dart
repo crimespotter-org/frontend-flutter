@@ -60,7 +60,6 @@ class _TMapOptionState extends State<TMapOption> {
                   const Divider(
                     thickness: 3,
                   ),
-                  //buildMapOptions(),
 
                   // for(var t in selectedFilters){
 
