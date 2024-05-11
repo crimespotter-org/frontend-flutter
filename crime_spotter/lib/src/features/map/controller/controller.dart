@@ -3,16 +3,10 @@ import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:flutter/material.dart';
 
 class ButtonController {
-  static Future<List<Map<String, dynamic>>> updateUserRole(String role) async {
-    return await SupaBaseConst.supabase
-        .from('user_profiles')
-        .update({'role': role})
-        .eq('id', SupaBaseConst.currentUser!.id)
-        .select();
-  }
-
-  static List<FloatingActionButton> itemsActionBar(BuildContext context) {
-    return [
+  static List<FloatingActionButton> itemsActionBar(
+      BuildContext context, bool isAdmin) {
+    List<FloatingActionButton> list = [];
+    list.add(
       FloatingActionButton(
         heroTag: "signOut",
         backgroundColor: Colors.greenAccent,
@@ -23,6 +17,8 @@ class ButtonController {
         tooltip: "Ausloggen",
         child: const Icon(Icons.add),
       ),
+    );
+    list.add(
       FloatingActionButton(
         heroTag: "explore",
         backgroundColor: Colors.blueAccent,
@@ -32,15 +28,21 @@ class ButtonController {
         tooltip: "Entdecken",
         child: const Icon(Icons.explore),
       ),
-      FloatingActionButton(
-        heroTag: "settings",
-        backgroundColor: Colors.grey,
-        onPressed: () async {
-          Navigator.pushNamed(context, UIData.settings);
-        },
-        tooltip: "Einstellungen",
-        child: const Icon(Icons.settings),
-      ),
-    ];
+    );
+
+    if (isAdmin) {
+      list.add(
+        FloatingActionButton(
+          heroTag: "changeRole",
+          backgroundColor: Colors.grey,
+          onPressed: () async {
+            Navigator.pushNamed(context, UIData.settings);
+          },
+          tooltip: "Rollen verwalten",
+          child: const Icon(Icons.settings),
+        ),
+      );
+    }
+    return list;
   }
 }

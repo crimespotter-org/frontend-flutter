@@ -1,6 +1,5 @@
 import 'package:crime_spotter/src/common/widget/widget/radioButton.dart';
 import 'package:crime_spotter/src/common/widget/widget/searchBar.dart';
-import 'package:crime_spotter/src/features/map/controller/controller.dart';
 import 'package:crime_spotter/src/features/map/views/fleaFletMap.dart';
 import 'package:crime_spotter/src/features/map/views/mapSwipeCases.dart';
 import 'package:crime_spotter/src/features/map/views/mapToggleButton.dart';
@@ -8,6 +7,7 @@ import 'package:crime_spotter/src/shared/4data/cardProvider.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
 import 'package:crime_spotter/src/shared/4data/mapProvider.dart';
 import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
+import 'package:crime_spotter/src/shared/4data/userdetailsProvider.dart';
 import 'package:crime_spotter/src/shared/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:crime_spotter/src/features/map/views/openStreetMap.dart';
@@ -81,6 +81,7 @@ class _MapPageState extends State<MapPage> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<MapProvider>(context);
+    final userDetailsprovider = Provider.of<UserDetailsProvider>(context);
     return Scaffold(
       body: Stack(
         children: <Widget>[
@@ -93,7 +94,7 @@ class _MapPageState extends State<MapPage> {
             left: -MediaQuery.of(context).size.width /
                 2, // Adjust the left position as needed
             top: -MediaQuery.of(context).size.height * 0.21,
-            height: MediaQuery.of(context).size.height * 0.56,
+            height: MediaQuery.of(context).size.height * 0.53,
             width: MediaQuery.of(context).size.width * 2,
             child: ClipOval(
               child: Container(
@@ -105,7 +106,7 @@ class _MapPageState extends State<MapPage> {
           Visibility(
             visible: provider.mapLoaded,
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 20),
+              padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
               child: Column(
                 children: [
                   Center(
@@ -116,12 +117,13 @@ class _MapPageState extends State<MapPage> {
                             Icons.person,
                           ),
                           onPressed: () => {
-                            setState(() {
-                              showUpgradeRole = true;
-                            })
+                            buildUpgradeRole(),
                           },
                         ),
-                        Text(SupaBaseConst.userRole ?? "Keine Rolle"),
+                        Text(
+                          userDetailsprovider
+                              .displayUserRole(userDetailsprovider.userRole),
+                        ),
                       ],
                     ),
                   ),
@@ -138,10 +140,6 @@ class _MapPageState extends State<MapPage> {
                   TMapToggleButton(
                     controller: controller,
                     markers: markerMap,
-                  ),
-                  Visibility(
-                    visible: showUpgradeRole,
-                    child: buildUpgradeRole(),
                   ),
                 ],
               ),
@@ -188,80 +186,116 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
-  Widget buildUpgradeRole() {
-    return Card(
-      color: Colors.lightBlue,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          GestureDetector(
-            onTap: () => setState(() {
-              showUpgradeRole = false;
-            }),
-            child: const Align(
-              alignment: Alignment.topRight,
-              child: Icon(Icons.clear),
-            ),
+  void buildUpgradeRole() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        final provider = Provider.of<UserDetailsProvider>(context);
+        return AlertDialog(
+          title: const Text('Rollen auswählen'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Wählen Sie die Rolle für ${provider.currentUser.email}:'),
+              const SizedBox(height: 10),
+              Text(
+                'Derzeitige Rolle: ${provider.displayUserRole(provider.userRole)}',
+              ),
+              const SizedBox(height: 20),
+              DropdownButton<String>(
+                value: provider.displayUserRole(provider.userRole),
+                onChanged: (newValue) {
+                  setState(
+                    () {
+                      if (provider.userRole != UserRole.admin ||
+                          provider.convertStringToUserRole(newValue ?? "") !=
+                              UserRole.admin) {
+                        provider.updateUserRole(
+                          user: null,
+                          role:
+                              provider.convertStringToUserRole(newValue ?? ""),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                'Sie sind der einzige Admin und können sich nicht degradieren'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    },
+                  );
+                },
+                items: <String>[
+                  provider.displayUserRole(UserRole.admin),
+                  provider.displayUserRole(UserRole.crimefluencer),
+                  provider.displayUserRole(UserRole.crimespotter)
+                ].map<DropdownMenuItem<String>>(
+                  (String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  },
+                ).toList(),
+              ),
+            ],
           ),
-          const Text(
-            'Demo',
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          Text("Du besitzt derzeit die Rolle \"${SupaBaseConst.userRole}\""),
-          const SizedBox(
-            height: 10,
-          ),
-          SupaBaseConst.userRole == "crimespotter"
-              ? const Text(
-                  "Für 10.99\$ hast du die Chance, ein Admin dieser App zu werden. Dadurch kannst du nun nicht nur die Fälle erkunden, sondern diese auch bearbeiten, sowie neue hinzuzufügen.")
-              : const Text(
-                  "Du hast mit dieser Rolle uneingeschränkten Zugriff innerhalb von CrimeSpotter. Da dies ein Demo-Stand ist, kannst du hier deine Rolle wieder zurück zu \"CrimeSpotter\" setzen."),
-          buildChangeRole("admin"),
-          buildChangeRole("crimespotter"),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget buildChangeRole(String role) {
-    String updatedRole = role == "admin" ? "crimespotter" : "admin";
-    String buttonText = role == "admin" ? "Downgrade" : "Upgrade";
+  Widget buildChangeRole(UserRole role) {
+    final provider = Provider.of<UserDetailsProvider>(context);
     return Visibility(
-      visible: SupaBaseConst.userRole == role,
+      visible: provider.userRole == role,
       child: ElevatedButton(
-        child: Text(buttonText),
+        child: Text(provider.displayUserRole(role)),
         onPressed: () => {
-          ButtonController.updateUserRole(updatedRole).then(
-            (value) => {
-              if (value.isNotEmpty)
-                {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Sie haben nun die Rolle $updatedRole'),
-                      backgroundColor: Colors.green,
-                    ),
-                  ),
-                  setState(
-                    () {
-                      SupaBaseConst.userRole = updatedRole;
-                      showUpgradeRole = false;
+          if (provider.userRole != UserRole.admin || role != UserRole.admin)
+            {
+              provider.updateUserRole(user: null, role: role).then(
+                    (successful) => {
+                      if (successful)
+                        {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Sie haben nun die Rolle $role'),
+                              backgroundColor: Colors.green,
+                            ),
+                          ),
+                          setState(
+                            () {
+                              showUpgradeRole = false;
+                            },
+                          )
+                        }
+                      else
+                        {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                  'Beim Aktualisieren der Rolle ist ein Fehler aufgetreten.'),
+                              backgroundColor: Colors.red,
+                            ),
+                          ),
+                        },
                     },
-                  )
-                }
-              else
-                {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                          'Beim Aktualisieren der Rolle ist ein Fehler aufgetreten.'),
-                      backgroundColor: Colors.red,
-                    ),
                   ),
-                },
-            },
-          ),
+            }
+          else
+            {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                      'Sie sind der einzige Admin und können sich nicht degradieren'),
+                  backgroundColor: Colors.red,
+                ),
+              ),
+            }
         },
       ),
     );
@@ -300,24 +334,7 @@ class _MapPageState extends State<MapPage> {
     final isLike = status == CaseVoting.like;
     final isDislike = status == CaseVoting.dislike;
 
-    return
-        // cases.isEmpty
-        //     ? ElevatedButton(
-        //         style: ElevatedButton.styleFrom(
-        //           shape: RoundedRectangleBorder(
-        //             borderRadius: BorderRadius.circular(16),
-        //           ),
-        //         ),
-        //         child: const Text('Neu beginnen'),
-        //         onPressed: () {
-        //           final provider =
-        //               Provider.of<CaseProvider>(context, listen: false);
-
-        //           provider.resetCases();
-        //         },
-        //       )
-        //     :
-        Row(
+    return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         ElevatedButton(
