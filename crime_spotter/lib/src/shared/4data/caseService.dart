@@ -49,17 +49,17 @@ class CaseService {
   static Future<CaseDetails> getCaseDetailedById(String id) async {
     var response = await SupaBaseConst.supabase
         .rpc('get_case_detailed_flutter', params: {'case_id': id});
-    CaseDetails newItem = CaseDetails.fromJson(response.first);
+    CaseDetails item = CaseDetails.fromJson(response.first);
 
     //links
     for (var link in response) {
-      newItem.furtherLinks.add(
+      item.furtherLinks.add(
         Links.fromJson(link),
       );
     }
 
     //images
-    String storageDir = 'case-${newItem.id}';
+    String storageDir = 'case-${item.id}';
     List<FileObject> files = await SupaBaseConst.supabase.storage
         .from('media')
         .list(path: storageDir);
@@ -68,7 +68,7 @@ class CaseService {
         var signedUrl = await SupaBaseConst.supabase.storage
             .from('media')
             .download('$storageDir/${x.name}');
-        newItem.images.add(Media(image: signedUrl, name: x.name));
+        item.images.add(Media(image: signedUrl, name: x.name));
       } catch (ex) {
         continue;
       }
@@ -76,15 +76,40 @@ class CaseService {
 
     //votes
     var votesResult = await SupaBaseConst.supabase
-        .rpc('get_case_votes_by_id', params: {'p_case_id': newItem.id});
+        .rpc('get_case_votes_by_id', params: {'p_case_id': item.id});
     var votes = votesResult.isNotEmpty ? votesResult.first : null;
 
     if (votes != null) {
-      newItem.upvotes = votes["upvotes"];
-      newItem.downvotes = votes["downvotes"];
+      item.upvotes = votes["upvotes"];
+      item.downvotes = votes["downvotes"];
+    }
+    //comments
+    var commentsResponse = await SupaBaseConst.supabase
+        .rpc('get_comments', params: {'p_case_id': item.id});
+    var comments = commentsResponse.isNotEmpty ? commentsResponse : null;
+    if (comments != null) {
+      for (var r in commentsResponse) {
+        item.comments.add(
+          Comment.fromJson(r),
+        );
+      }
     }
 
-    return newItem;
+    return item;
+  }
+
+  static Future<List<Comment>> loadCommentsOfCase(String caseID) async {
+    var response = await SupaBaseConst.supabase
+        .rpc('get_comments', params: {'p_case_id': caseID});
+
+    List<Comment> temp = [];
+
+    for (var item in response) {
+      temp.add(
+        Comment.fromJson(item),
+      );
+    }
+    return temp;
   }
 
   // static Future<List<CaseDetails>> readData() async {

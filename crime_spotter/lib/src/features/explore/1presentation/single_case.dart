@@ -1,7 +1,9 @@
+import 'package:crime_spotter/src/features/explore/1presentation/comment_section.dart';
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
 import 'package:crime_spotter/src/shared/4data/cardProvider.dart';
 import 'package:crime_spotter/src/shared/4data/caseService.dart';
 import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
+import 'package:crime_spotter/src/shared/4data/userdetailsProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -19,14 +21,16 @@ class _SingleCaseState extends State<SingleCase> {
   String? caseID;
   late CaseDetails shownCase;
   late CaseProvider provider;
+  late UserDetailsProvider userProvider;
 
-  Future<void> loadData() async {
+  Future<void> loadData(BuildContext context) async {
     caseID = ModalRoute.of(context)?.settings.arguments as String?;
-    _caseFuture = getCase(caseID!);
+    _caseFuture = getCase(context, caseID!);
   }
 
-  Future<CaseDetails> getCase(String id) async {
+  Future<CaseDetails> getCase(BuildContext context, String id) async {
     provider = Provider.of<CaseProvider>(context);
+    userProvider = Provider.of<UserDetailsProvider>(context);
     try {
       var temp =
           provider.casesDetailed.firstWhere((element) => element.id == id);
@@ -39,7 +43,7 @@ class _SingleCaseState extends State<SingleCase> {
 
   @override
   void didChangeDependencies() {
-    loadData();
+    loadData(context);
     super.didChangeDependencies();
   }
 
@@ -66,13 +70,13 @@ class _SingleCaseState extends State<SingleCase> {
           );
         } else {
           // Data has been loaded successfully
-          return _buildMainView();
+          return _buildMainView(context);
         }
       },
     );
   }
 
-  Widget _buildMainView() {
+  Widget _buildMainView(BuildContext context) {
     _calcTotalVotes();
     return Scaffold(
       appBar: AppBar(
@@ -182,7 +186,9 @@ class _SingleCaseState extends State<SingleCase> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 RawMaterialButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    _displayCommentSection(context);
+                  },
                   elevation: 2.0,
                   fillColor: Colors.white,
                   padding: const EdgeInsets.all(10.0),
@@ -243,10 +249,8 @@ class _SingleCaseState extends State<SingleCase> {
     var existingvotes = await SupaBaseConst.supabase
         .from('votes')
         .select('*')
-        .match({
-      "case_id": shownCase.id,
-      "user_id": SupaBaseConst.currentUser?.id
-    });
+        .match(
+            {"case_id": shownCase.id, "user_id": userProvider.currentUser.id});
 
     if (existingvotes.isNotEmpty) {
       var existingvote = existingvotes.first;
@@ -256,7 +260,7 @@ class _SingleCaseState extends State<SingleCase> {
     } else {
       await SupaBaseConst.supabase.from('votes').insert({
         'case_id': shownCase.id,
-        'user_id': SupaBaseConst.currentUser?.id,
+        'user_id': userProvider.currentUser.id,
         'vote': '$vote',
       });
     }
@@ -278,5 +282,19 @@ class _SingleCaseState extends State<SingleCase> {
     } catch (error) {
       print('Fehler beim Teilen der Case Details: $error');
     }
+  }
+
+  Future _displayCommentSection(BuildContext context) {
+    return showModalBottomSheet(
+      context: context,
+      //backgroundColor: Colors.blue,
+      barrierColor: Colors.black87.withOpacity(0.4),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+      ),
+      builder: (BuildContext context) {
+        return CommentSection(shownCase: shownCase);
+      },
+    );
   }
 }
