@@ -1,6 +1,7 @@
 import 'package:crime_spotter/src/shared/4data/cardProvider.dart';
 import 'package:crime_spotter/src/shared/4data/helper_functions.dart';
 import 'package:crime_spotter/src/shared/4data/mapProvider.dart';
+import 'package:crime_spotter/src/shared/4data/userdetailsProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:geocoding/geocoding.dart';
@@ -11,16 +12,19 @@ enum FilterType { title, createdBy, placeName, caseType, status, createdAt }
 class TMapOption extends StatefulWidget {
   final MapController controller;
   final Map<GeoPoint, List<Placemark>> markers;
+  final Map<FilterType, String?> selectedFilter;
   const TMapOption(
-      {super.key, required this.controller, required this.markers});
+      {super.key,
+      required this.controller,
+      required this.markers,
+      required this.selectedFilter});
 
   @override
   State<TMapOption> createState() => _TMapOptionState();
 }
 
 class _TMapOptionState extends State<TMapOption> {
-  final double? spaceBetweenOptions = 8;
-  final Map<FilterType, String> selectedFilter = {};
+  bool dateIsFiltered = false;
   DateTime selectedDate = DateTime.now();
   List<bool> _picked = [false, true];
   final List<String> filterName = [
@@ -36,7 +40,6 @@ class _TMapOptionState extends State<TMapOption> {
   Widget build(BuildContext context) {
     final provider = Provider.of<CaseProvider>(context);
     final mapProvider = Provider.of<MapProvider>(context);
-    bool filterTime = false;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(8),
@@ -60,49 +63,70 @@ class _TMapOptionState extends State<TMapOption> {
                   const Divider(
                     thickness: 3,
                   ),
-
-                  // for(var t in selectedFilters){
-
-                  // }
-
                   SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.5,
+                    height: MediaQuery.of(context).size.height * 0.65,
                     child: ListView.separated(
                       itemBuilder: (BuildContext context, int index) {
                         return ListTile(
-                          title: Visibility(
-                            visible: FilterType.values[index] ==
-                                    FilterType.createdAt &&
-                                filterTime,
-                            child: Text('${filterName[index]} auswählen:'),
+                          subtitle: Visibility(
+                            visible: FilterType.values[index] !=
+                                FilterType.createdAt,
+                            child: buildAutoComplete(
+                              title: filterName[index],
+                              type: FilterType.values[index],
+                            ),
                           ),
-                          subtitle:
-                              FilterType.values[index] != FilterType.createdAt
-                                  ? buildAutoComplete(
-                                      title: filterName[index],
-                                      type: FilterType.values[index])
-                                  : buildDatePicker(),
+                          trailing: Visibility(
+                            visible: FilterType.values[index] !=
+                                FilterType.createdAt,
+                            child: GestureDetector(
+                              onTap: () => {
+                                setState(
+                                  () {
+                                    widget.selectedFilter[
+                                        FilterType.values[index]] = null;
+                                  },
+                                ),
+                              },
+                              child: const Icon(Icons.clear),
+                            ),
+                          ),
                         );
                       },
                       separatorBuilder: (BuildContext context, int index) {
-                        return const Divider(); //buildDivider(text: filterName[index]);
+                        return const Divider();
                       },
                       itemCount: filterName.length,
                     ),
                   ),
-
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: dateIsFiltered
+                          ? Text(
+                              'Es wird nach ${selectedDate.day}.${selectedDate.month}.${selectedDate.year} gefiltert',
+                              textAlign: TextAlign.left,
+                            )
+                          : const Text('Tatdatum auswählen:'),
+                    ),
+                  ),
+                  buildDatePicker(),
+                  const Divider(),
                   ElevatedButton(
                     onPressed: () {
                       try {
                         provider.applyFilter(
-                          createdAt: _selectedDate.value,
-                          title: selectedFilter[FilterType.title],
-                          createdBy: selectedFilter[FilterType.createdBy],
-                          placeName: selectedFilter[FilterType.placeName],
+                          createdAt: dateIsFiltered ? selectedDate : null,
+                          title: widget.selectedFilter[FilterType.title],
+                          createdBy:
+                              widget.selectedFilter[FilterType.createdBy],
+                          placeName:
+                              widget.selectedFilter[FilterType.placeName],
                           type: TDeviceUtil.convertStringtoCaseType(
-                              selectedFilter[FilterType.caseType]),
+                              widget.selectedFilter[FilterType.caseType]),
                           status: TDeviceUtil.convertStringToCaseStatus(
-                              selectedFilter[FilterType.status]),
+                              widget.selectedFilter[FilterType.status]),
                         );
                         mapProvider.rebuildInitialMarker(
                             controller: widget.controller,
@@ -140,56 +164,78 @@ class _TMapOptionState extends State<TMapOption> {
     );
   }
 
-  final RestorableDateTime _selectedDate = RestorableDateTime(
-    DateTime(2021, 7, 25),
-  );
-
   Widget buildDatePicker() {
-    return ToggleButtons(
-      direction: Axis.horizontal,
-      borderRadius: const BorderRadius.all(Radius.circular(8)),
-      selectedBorderColor: Colors.red[700],
-      selectedColor: Colors.white,
-      fillColor: Colors.red[200],
-      color: Colors.red[400],
-      constraints: const BoxConstraints(
-        minHeight: 40.0,
-        minWidth: 80.0,
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        vertical: MediaQuery.of(context).size.height * 0.02,
       ),
-      isSelected: _picked,
-      onPressed: (int index) {
-        if (index == 0) {
-          showDatePicker(
-            context: context,
-            firstDate: DateTime(2000),
-            lastDate: DateTime(2025),
-            initialDate: selectedDate,
-          );
-        }
+      child: Align(
+        alignment: Alignment.center,
+        child: ToggleButtons(
+          direction: Axis.horizontal,
+          borderRadius: const BorderRadius.all(Radius.circular(80)),
+          selectedBorderColor: Colors.red[700],
+          selectedColor: Colors.white,
+          fillColor: Colors.red[200],
+          color: Colors.red[400],
+          constraints: const BoxConstraints(
+            minHeight: 40.0,
+            minWidth: 80.0,
+          ),
+          isSelected: _picked,
+          onPressed: (int index) {
+            if (index == 0) {
+              showDatePicker(
+                context: context,
+                firstDate: DateTime(2000),
+                lastDate: DateTime(2025),
+                initialDate: selectedDate,
+              ).then(
+                (DateTime? pickedDate) {
+                  if (pickedDate != null) {
+                    setState(
+                      () {
+                        selectedDate = pickedDate;
+                      },
+                    );
+                  } else {
+                    setState(() {
+                      _picked = <bool>[false, true];
+                      dateIsFiltered = false;
+                    });
+                  }
+                },
+              );
+            }
 
-        setState(
-          () {
-            _picked = <bool>[index == 0, index == 1];
+            setState(
+              () {
+                _picked = <bool>[index == 0, index == 1];
+                dateIsFiltered = index == 0 ? true : false;
+              },
+            );
           },
-        );
-      },
-      children: const [
-        Text('Filtern'),
-        Text('Nicht filtern'),
-      ],
+          children: const [
+            Text('Filtern'),
+            Text('Nicht filtern'),
+          ],
+        ),
+      ),
     );
   }
 
   Widget buildAutoComplete({required String title, required FilterType type}) {
     final provider = Provider.of<CaseProvider>(context);
+    final userProvider = Provider.of<UserDetailsProvider>(context);
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         Autocomplete<String>(
           optionsBuilder: (TextEditingValue textEditingValue) {
+            //if (textEditingValue.text == '') return List.empty();
             switch (type) {
               case FilterType.title:
-                return provider.filteredCases
+                return provider.cases
                     .where(
                       (suggestion) => suggestion.title.toLowerCase().contains(
                             textEditingValue.text.toLowerCase(),
@@ -197,31 +243,25 @@ class _TMapOptionState extends State<TMapOption> {
                     )
                     .map(
                       (e) => e.title,
-                    );
-              case FilterType.caseType:
-                return provider.filteredCases
-                    .where(
-                      (suggestion) =>
-                          suggestion.caseType ==
-                          TDeviceUtil.convertStringtoCaseType(
-                              textEditingValue.text.toLowerCase()),
                     )
-                    .map(
-                      (e) => e.caseType.toString(),
-                    );
+                    .toSet();
+              case FilterType.status:
+                return ["Offen", "Abgeschlossen"].where((status) => status
+                    .toLowerCase()
+                    .contains(textEditingValue.text.toLowerCase()));
               case FilterType.createdBy:
-                return provider.filteredCases
+                return userProvider.activeUsers
                     .where(
-                      (suggestion) =>
-                          suggestion.createdBy.toLowerCase().contains(
-                                textEditingValue.text.toLowerCase(),
-                              ),
+                      (suggestion) => suggestion.name.toLowerCase().contains(
+                            textEditingValue.text.toLowerCase(),
+                          ),
                     )
                     .map(
-                      (e) => e.createdBy,
-                    );
+                      (e) => e.name,
+                    )
+                    .toSet();
               case FilterType.placeName:
-                return provider.filteredCases
+                return provider.cases
                     .where(
                       (suggestion) =>
                           suggestion.placeName.toLowerCase().contains(
@@ -230,26 +270,31 @@ class _TMapOptionState extends State<TMapOption> {
                     )
                     .map(
                       (e) => e.placeName,
-                    );
-              case FilterType.status:
-              // return provider.filteredCases
-              //     .where(
-              //       (suggestion) =>
-              //           suggestion.status.toLowerCase().contains(
-              //                 textEditingValue.text.toLowerCase(),
-              //               ),
-              //     )
-              //     .map(
-              //       (e) => e.placeName,
-              //     );
+                    )
+                    .toSet();
+              case FilterType.caseType:
+                return provider.cases
+                    .where(
+                      (suggestion) => TDeviceUtil.convertCaseTypeToGerman(
+                              suggestion.caseType)
+                          .toLowerCase()
+                          .contains(
+                            textEditingValue.text.toLowerCase(),
+                          ),
+                    )
+                    .map(
+                      (e) => TDeviceUtil.convertCaseTypeToGerman(e.caseType),
+                    )
+                    .toSet();
+
               default:
-                return provider.filteredCases.map((e) => e.title);
+                return provider.cases.map((e) => e.title).toSet();
             }
           },
           onSelected: (String selection) {
             setState(
               () {
-                selectedFilter[type] = selection;
+                widget.selectedFilter[type] = selection;
               },
             );
           },
@@ -257,10 +302,11 @@ class _TMapOptionState extends State<TMapOption> {
               TextEditingController textEditingController,
               FocusNode focusNode,
               VoidCallback onFieldSubmitted) {
-            return TextField(
+            textEditingController.text = widget.selectedFilter[type] ?? '';
+            return TextFormField(
               controller: textEditingController,
               focusNode: focusNode,
-              onChanged: (String value) {
+              onFieldSubmitted: (String value) {
                 onFieldSubmitted();
               },
               decoration: InputDecoration(
@@ -297,89 +343,4 @@ class _TMapOptionState extends State<TMapOption> {
       ],
     );
   }
-
-  Widget buildRadioButtons() {
-    CaseStatus? character = CaseStatus.open;
-    return Column(
-      children: <Widget>[
-        ListTile(
-          title: const Text('Beendete Ermittlungen'),
-          leading: Radio<CaseStatus>(
-            value: CaseStatus.closed,
-            groupValue: character,
-            onChanged: (CaseStatus? value) {
-              setState(
-                () {
-                  character = value;
-                },
-              );
-            },
-          ),
-        ),
-        ListTile(
-          title: const Text('Laufende Ermittlungen'),
-          leading: Radio<CaseStatus>(
-            value: CaseStatus.open,
-            groupValue: character,
-            onChanged: (CaseStatus? value) {
-              setState(
-                () {
-                  character = value;
-                },
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget buildDivider({required String text}) {
-    return Row(
-      children: <Widget>[
-        const Expanded(child: Divider()),
-        const SizedBox(
-          width: 5,
-          height: 50,
-        ),
-        Text(
-          text,
-          style: const TextStyle(color: Colors.blue),
-        ),
-        const SizedBox(
-          width: 5,
-          height: 50,
-        ),
-        const Expanded(child: Divider()),
-      ],
-    );
-  }
 }
-
-// Widget buildTextbox({
-//   required String title,
-//   required FilterTypeTextbox filterType,
-// }) {
-//   final provider = Provider.of<CaseProvider>(context);
-//   return TextFormField(
-//     decoration: InputDecoration(
-//       labelText: title,
-//       suffixIcon: const Icon(
-//         Icons.abc_outlined,
-//         color: Colors.grey,
-//       ),
-//     ),
-//     onFieldSubmitted: (value) => {
-//       switch (filterType) {
-//         FilterTypeTextbox.creator => provider.filterCreatedBy(filter: value),
-//         FilterTypeTextbox.summary =>
-//           provider.filterTitlesAndSummary(filter: value),
-//         FilterTypeTextbox.status => provider.filterCaseStatus(
-//             filter: TDeviceUtil.convertStringToCaseStatus(value)),
-//         FilterTypeTextbox.caseType => provider.filterCaseType(
-//             filter: TDeviceUtil.convertStringtoCaseType(value)),
-//         FilterTypeTextbox.place => provider.filterPlaceName(filter: value),
-//       },
-//     },
-//   );
-// }
