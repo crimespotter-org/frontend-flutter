@@ -2,6 +2,7 @@ import 'package:crime_spotter/src/features/explore/1presentation/structures.dart
 import 'package:crime_spotter/src/shared/4data/cardProvider.dart';
 import 'package:crime_spotter/src/shared/4data/caseService.dart';
 import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
+import 'package:crime_spotter/src/shared/4data/userdetailsProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -19,6 +20,7 @@ class _SingleCaseState extends State<SingleCase> {
   String? caseID;
   late CaseDetails shownCase;
   late CaseProvider provider;
+  late UserDetailsProvider userProvider;
 
   Future<void> loadData() async {
     caseID = ModalRoute.of(context)?.settings.arguments as String?;
@@ -27,6 +29,7 @@ class _SingleCaseState extends State<SingleCase> {
 
   Future<CaseDetails> getCase(String id) async {
     provider = Provider.of<CaseProvider>(context);
+    userProvider = Provider.of<UserDetailsProvider>(context);
     try {
       var temp =
           provider.casesDetailed.firstWhere((element) => element.id == id);
@@ -243,10 +246,8 @@ class _SingleCaseState extends State<SingleCase> {
     var existingvotes = await SupaBaseConst.supabase
         .from('votes')
         .select('*')
-        .match({
-      "case_id": shownCase.id,
-      "user_id": SupaBaseConst.currentUser?.id
-    });
+        .match(
+            {"case_id": shownCase.id, "user_id": userProvider.currentUser.id});
 
     if (existingvotes.isNotEmpty) {
       var existingvote = existingvotes.first;
@@ -256,7 +257,7 @@ class _SingleCaseState extends State<SingleCase> {
     } else {
       await SupaBaseConst.supabase.from('votes').insert({
         'case_id': shownCase.id,
-        'user_id': SupaBaseConst.currentUser?.id,
+        'user_id': userProvider.currentUser.id,
         'vote': '$vote',
       });
     }

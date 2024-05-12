@@ -8,8 +8,12 @@ import 'package:provider/provider.dart';
 class TMapToggleButton extends StatefulWidget {
   final MapController controller;
   final Map<GeoPoint, List<Placemark>> markers;
+  final Map<FilterType, String?> selectedFilte;
   const TMapToggleButton(
-      {super.key, required this.controller, required this.markers});
+      {super.key,
+      required this.controller,
+      required this.markers,
+      required this.selectedFilte});
 
   @override
   State<TMapToggleButton> createState() => _TMapToggleButtonState();
@@ -37,6 +41,7 @@ class _TMapToggleButtonState extends State<TMapToggleButton> {
                     child: TMapOption(
                       controller: widget.controller,
                       markers: widget.markers,
+                      selectedFilter: widget.selectedFilte,
                     ),
                   );
                 },
