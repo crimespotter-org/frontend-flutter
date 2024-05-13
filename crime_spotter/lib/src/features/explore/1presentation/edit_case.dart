@@ -355,7 +355,7 @@ class _EditCaseState extends State<EditCase> {
       // Add the image bytes to your list
       setState(() {
         shownCase.images
-            ?.add(Media(image: Uint8List.fromList(imageBytes), name: fileName));
+            .add(Media(image: Uint8List.fromList(imageBytes), name: fileName));
       });
     }
   }
@@ -382,11 +382,11 @@ class _EditCaseState extends State<EditCase> {
   }
 
   Future<void> _deleteImage(int index) async {
-    if (_isNotInAddImageList(shownCase.images![index])) {
-      _imagesTodelete.add(shownCase.images![index]);
+    if (_isNotInAddImageList(shownCase.images[index])) {
+      _imagesTodelete.add(shownCase.images[index]);
     }
     setState(() {
-      shownCase.images!.removeAt(index);
+      shownCase.images.removeAt(index);
     });
   }
 

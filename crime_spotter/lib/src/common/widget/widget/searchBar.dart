@@ -91,25 +91,33 @@ class _TSearchBarState extends State<TSearchBar> {
   Widget build(BuildContext context) {
     final provider = Provider.of<MapProvider>(context);
     return Container(
-      height: 75,
+      height: 70,
       width: TDeviceUtil.getScreenWidth(context),
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color.fromARGB(60, 255, 255, 255),
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.grey),
+        border: Border.all(color: Colors.white),
       ),
       child: TextField(
+        style: const TextStyle(color: Colors.white),
         onSubmitted: (value) => {
           _runFilter(value).then(
             (prediction) {
               showModalBottomSheet(
-                backgroundColor: TColor.searchColor,
                 context: context,
                 builder: (context) {
                   GeoPoint position;
-                  return Card(
-                    color: TColor.searchColor,
+                  return Container(
+                    decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          topRight: Radius.circular(20)),
+                      image: DecorationImage(
+                        image: AssetImage("assets/Backgroung.png"),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(8),
                       child: Column(
@@ -117,7 +125,10 @@ class _TSearchBarState extends State<TSearchBar> {
                         children: [
                           GestureDetector(
                             onTap: () => Navigator.pop(context),
-                            child: const Icon(Icons.clear),
+                            child: const Icon(
+                              Icons.clear,
+                              color: Colors.white,
+                            ),
                           ),
                           Expanded(
                             child: ListView.builder(
@@ -163,25 +174,35 @@ class _TSearchBarState extends State<TSearchBar> {
                                 child: Card(
                                   key: Key(prediction!.predictions[index]
                                       .structuredFormatting.mainText),
-                                  color: Colors.white,
                                   elevation: 4,
                                   margin:
                                       const EdgeInsets.symmetric(vertical: 10),
-                                  child: Column(
-                                    children: [
-                                      Text(
-                                        prediction.predictions[index]
-                                            .structuredFormatting.mainText,
-                                        style: const TextStyle(
-                                            fontSize: 24, color: Colors.black),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                      image: const DecorationImage(
+                                        image:
+                                            AssetImage("assets/LogIn-Card.png"),
+                                        fit: BoxFit.cover,
                                       ),
-                                      const SizedBox(height: 1),
-                                      Text(
-                                        'Land: ${prediction.predictions[index].structuredFormatting.secondaryText}',
-                                        style: const TextStyle(
-                                            color: Colors.black),
-                                      ),
-                                    ],
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        Text(
+                                          prediction.predictions[index]
+                                              .structuredFormatting.mainText,
+                                          style: const TextStyle(
+                                              fontSize: 24,
+                                              color: Colors.white),
+                                        ),
+                                        const SizedBox(height: 1),
+                                        Text(
+                                          'Land: ${prediction.predictions[index].structuredFormatting.secondaryText}',
+                                          style: const TextStyle(
+                                              color: Colors.white),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
@@ -198,9 +219,10 @@ class _TSearchBarState extends State<TSearchBar> {
         },
         decoration: const InputDecoration(
           labelText: 'Suche',
+          labelStyle: TextStyle(color: Colors.white),
           suffixIcon: Icon(
             Iconsax.search_favorite,
-            color: Colors.grey,
+            color: Colors.white,
           ),
         ),
       ),

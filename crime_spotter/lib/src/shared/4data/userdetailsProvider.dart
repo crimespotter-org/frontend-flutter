@@ -13,12 +13,15 @@ class UserDetailsProvider extends ChangeNotifier {
   String _jwt = "";
   bool _userIsAuthenticated = false;
   List<ActiveUser> _activeUsers = [];
+  List<ActiveUser> _activeUsersIncludingCurrent = [];
 
   String get jwt => _jwt;
   UserRole get userRole => _userRole;
   bool get userIsAuthenticated => _userIsAuthenticated;
   User get currentUser => _currentUser!;
   List<ActiveUser> get activeUsers => _activeUsers;
+  List<ActiveUser> get activeUsersIncludingCurrent =>
+      _activeUsersIncludingCurrent;
 
   Future<List<ActiveUser>?> getAllActiveUser() async {
     final response =
@@ -35,6 +38,13 @@ class UserDetailsProvider extends ChangeNotifier {
           ),
         );
       }
+      _activeUsersIncludingCurrent.add(
+        ActiveUser(
+          name: entry['username'],
+          role: convertStringToUserRole(entry['role']),
+          id: entry['id'],
+        ),
+      );
     }
     _activeUsers = _activeUsers.toSet().toList();
     return _activeUsers;
@@ -50,9 +60,19 @@ class UserDetailsProvider extends ChangeNotifier {
       _activeUsers.remove(
         _activeUsers.singleWhere((element) => element == user),
       );
+
+      bool foundInSecondList =
+          _activeUsersIncludingCurrent.any((element) => element == user);
+      if (foundInSecondList) {
+        _activeUsersIncludingCurrent.remove(
+          _activeUsersIncludingCurrent
+              .singleWhere((element) => element == user),
+        );
+      }
       return true;
     }
 
+    _activeUsersIncludingCurrent.add(user);
     _activeUsers.add(user);
     return true;
   }
@@ -86,6 +106,9 @@ class UserDetailsProvider extends ChangeNotifier {
       _userRole = role;
     } else {
       _activeUsers.singleWhere((element) => element == user).role = role;
+      _activeUsersIncludingCurrent
+          .singleWhere((element) => element == user)
+          .role = role;
     }
     notifyListeners();
     return true;
