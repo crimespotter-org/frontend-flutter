@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:crime_spotter/src/common/widget/widget/radioButton.dart';
 import 'package:crime_spotter/src/common/widget/widget/searchBar.dart';
 import 'package:crime_spotter/src/features/map/views/fleaFletMap.dart';
@@ -14,6 +16,7 @@ import 'package:crime_spotter/src/features/map/views/openStreetMap.dart';
 import 'package:flutter_map/flutter_map.dart' as heat;
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class MapPage extends StatefulWidget {
@@ -31,6 +34,7 @@ class _MapPageState extends State<MapPage> {
   bool isHeatMap = false;
   bool showUpgradeRole = false;
 
+  final ImagePicker _picker = ImagePicker();
   final heat.MapController heatController = heat.MapController();
   final Map<GeoPoint, List<Placemark>> markerMap = {};
   final Map<FilterType, String?> selectedFilter = {};
@@ -125,7 +129,7 @@ class _MapPageState extends State<MapPage> {
                             color: Colors.grey,
                           ),
                           onPressed: () => {
-                            buildUpgradeRole(),
+                            buildUpgradeRole(userDetailsprovider),
                           },
                         ),
                         Text(
@@ -196,23 +200,62 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
-  void buildUpgradeRole() {
+  void buildUpgradeRole(UserDetailsProvider userDetailsprovider) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         final provider = Provider.of<UserDetailsProvider>(context);
         return AlertDialog(
-          title: const Text('Rollen auswählen'),
+          title: const Text('Benutzer bearbeiten'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Text(
+                  'Wählen Sie ein Profilbild für ${provider.currentUser.email}:'),
+              const SizedBox(height: 10),
+              userDetailsprovider.profilePictures[
+                          userDetailsprovider.currentUser.id] !=
+                      null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(30),
+                      child: Image.network(userDetailsprovider
+                              .profilePictures[
+                                  userDetailsprovider.currentUser.id]
+                              ?.path ??
+                          ""),
+                    )
+                  : ClipRRect(
+                      borderRadius: BorderRadius.circular(30),
+                      child: Image.asset(
+                        "assets/placeholder.jpg",
+                      ),
+                    ),
+              const SizedBox(height: 10),
+              Center(
+                child: ElevatedButton(
+                  child: const Text('Neues Bild auswählen'),
+                  onPressed: () async => {
+                    await _picker.pickImage(source: ImageSource.gallery).then(
+                          (file) => {
+                            if (file != null)
+                              {
+                                userDetailsprovider.updateProfilePicture(
+                                    image: file)
+                              }
+                          },
+                        ),
+                  },
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Divider(),
               Text('Wählen Sie die Rolle für ${provider.currentUser.email}:'),
               const SizedBox(height: 10),
               Text(
                 'Derzeitige Rolle: ${provider.displayUserRole(provider.userRole)}',
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
               DropdownButton<String>(
                 value: provider.displayUserRole(provider.userRole),
                 onChanged: (newValue) {
