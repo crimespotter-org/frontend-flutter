@@ -2,8 +2,11 @@ import 'package:crime_spotter/src/features/explore/1presentation/case_tile_short
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
 import 'package:crime_spotter/src/shared/4data/caseService.dart';
+import 'package:crime_spotter/src/shared/4data/userdetailsProvider.dart';
 import 'package:crime_spotter/src/shared/constants/colors.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class Explore extends StatefulWidget {
   const Explore({super.key});
@@ -14,6 +17,7 @@ class Explore extends StatefulWidget {
 
 class _ExploreState extends State<Explore> {
   List<CaseDetails> cases = [];
+  bool canEdit = false;
 
   Future<void> loadData() async {
     List<CaseDetails> loadedCases =
@@ -31,6 +35,19 @@ class _ExploreState extends State<Explore> {
     loadData();
   }
 
+  @override
+  void didChangeDependencies() {
+    var userProvider = Provider.of<UserDetailsProvider>(context);
+    var role = userProvider.userRole;
+    if (role == UserRole.admin || role == UserRole.crimefluencer) {
+      setState(() {
+        canEdit = true;
+      });
+    }
+
+    super.didChangeDependencies();
+  }
+
   int currentIndex = 0;
 
   @override
@@ -38,48 +55,64 @@ class _ExploreState extends State<Explore> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Fälle erkunden'),
+        foregroundColor: Colors.white,
+        backgroundColor: TColor.backgroundColor,
       ),
-      body: Stack(
-        children: [
-          cases.isNotEmpty
-              ? ListView.builder(
-                  itemCount: cases.length,
-                  itemBuilder: (context, index) {
-                    return CaseTileShort(
-                      shownCase: cases[index],
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage("assets/Backgroung.png"),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Stack(
+          children: [
+            cases.isNotEmpty
+                ? ListView.builder(
+                    itemCount: cases.length,
+                    itemBuilder: (context, index) {
+                      return CaseTileShort(
+                          shownCase: cases[index], canEdit: canEdit);
+                    },
+                  )
+                : const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Fallakten werden geladen",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        CircularProgressIndicator(
+                          color: TColor.buttonColor,
+                        ),
+                      ],
+                    ),
+                  ),
+            if (canEdit)
+              Positioned(
+                bottom: 16.0,
+                left: 16.0,
+                child: FloatingActionButton(
+                  heroTag: "addCase",
+                  backgroundColor: TColor.buttonColor,
+                  onPressed: () async {
+                    setState(
+                      () {
+                        Navigator.pushNamed(context, UIData.edit_case,
+                            arguments: "-1");
+                      },
                     );
                   },
-                )
-              : const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text("Fallakten werden geladen"),
-                      SizedBox(
-                        height: 20,
-                      ),
-                      CircularProgressIndicator(),
-                    ],
-                  ),
+                  tooltip: "Neuen Fall hinzufügen",
+                  child: const Icon(Icons.add),
                 ),
-          Positioned(
-            bottom: 16.0,
-            left: 16.0,
-            child: FloatingActionButton(
-              backgroundColor: TColor.buttonColor,
-              onPressed: () async {
-                setState(
-                  () {
-                    Navigator.pushNamed(context, UIData.edit_case,
-                        arguments: "-1");
-                  },
-                );
-              },
-              tooltip: "Neuen Fall hinzufügen",
-              child: const Icon(Icons.add),
-            ),
-          ),
-        ],
+              ),
+          ],
+        ),
       ),
     );
   }

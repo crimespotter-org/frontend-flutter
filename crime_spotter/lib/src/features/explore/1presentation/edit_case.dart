@@ -84,8 +84,8 @@ class _EditCaseState extends State<EditCase> {
       child: Scaffold(
         appBar: AppBar(
           title: shownCase.isNew
-              ? Text(shownCase.title)
-              : const Text("Neuen Fall erstellen"),
+              ? const Text("Neuen Fall erstellen")
+              : const Text("Fall bearbeiten"),
           bottom: const TabBar(
             tabs: [
               Tab(text: 'Zusammenfassung'),
@@ -106,18 +106,22 @@ class _EditCaseState extends State<EditCase> {
             Positioned(
               bottom: 16.0,
               right: 16.0,
-              child: ElevatedButton(
+              child: FloatingActionButton(
+                heroTag: "saveCase",
+                backgroundColor: Colors.greenAccent,
                 onPressed: () {
                   _saveCase();
                 },
-                child: const Text('Speichern'),
+                tooltip: "Speichern",
+                child: const Icon(Icons.save),
               ),
             ),
             Positioned(
               bottom: 16.0,
               left: 16.0,
               child: FloatingActionButton(
-                backgroundColor: Colors.red,
+                heroTag: "deleteCase",
+                backgroundColor: Colors.redAccent,
                 onPressed: () async {
                   _deleteCase();
                 },
@@ -207,19 +211,21 @@ class _EditCaseState extends State<EditCase> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           ListView.builder(
+            physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
             itemCount: shownCase.furtherLinks.length,
             itemBuilder: (context, index) {
               return _buildLinkItem(index, shownCase.furtherLinks[index]);
             },
           ),
-          const SizedBox(height: 20),
+
+          const SizedBox(height: 5),
           // Add Link button
-          ElevatedButton(
+          IconButton(
             onPressed: () {
               _addLink();
             },
-            child: const Text('Link hinzufügen'),
+            icon: const Icon(Icons.add_link),
           ),
         ],
       ),
@@ -263,7 +269,7 @@ class _EditCaseState extends State<EditCase> {
         ),
         // Remove link button
         IconButton(
-          icon: const Icon(Icons.remove_circle),
+          icon: const Icon(Icons.link_off),
           onPressed: () {
             _deleteLink(index);
           },
@@ -278,8 +284,34 @@ class _EditCaseState extends State<EditCase> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Add Image button
+          Row(
+            children: [
+              const Text("Bild hinzufügen:"),
+              const Spacer(),
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    _uploadImage(ImageSource.gallery);
+                  });
+                },
+                icon: const Icon(Icons.crop_original),
+              ),
+              const SizedBox(width: 10),
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    _uploadImage(ImageSource.camera);
+                  });
+                },
+                icon: const Icon(Icons.photo_camera),
+              ),
+            ],
+          ),
+
           // List of images
           GridView.builder(
+            physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount:
@@ -291,16 +323,6 @@ class _EditCaseState extends State<EditCase> {
             itemBuilder: (context, index) {
               return _buildImageItem(index, shownCase.images[index].image);
             },
-          ),
-          const SizedBox(height: 20),
-          // Add Image button
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                _uploadImage();
-              });
-            },
-            child: const Text('Bild hinzufügen'),
           ),
         ],
       ),
@@ -338,9 +360,8 @@ class _EditCaseState extends State<EditCase> {
   final List<MediaToAdd> _imagesToAdd = [];
   final List<Media> _imagesTodelete = [];
 
-  Future<void> _uploadImage() async {
-    final XFile? pickedFile =
-        await _picker.pickImage(source: ImageSource.gallery);
+  Future<void> _uploadImage(ImageSource source) async {
+    final XFile? pickedFile = await _picker.pickImage(source: source);
 
     if (pickedFile != null) {
       setState(() {

@@ -10,7 +10,7 @@ class ButtonController {
     list.add(
       FloatingActionButton(
         heroTag: "signOut",
-        backgroundColor: Color(0xFF3e6964),
+        backgroundColor: TColor.buttonColor2,
         onPressed: () {
           SupaBaseConst.supabase.auth.signOut();
           Navigator.pushReplacementNamed(context, UIData.logIn);
@@ -22,7 +22,7 @@ class ButtonController {
     list.add(
       FloatingActionButton(
         heroTag: "explore",
-        backgroundColor: Color(0xFF3e6964),
+        backgroundColor: TColor.buttonColor2,
         onPressed: () async {
           Navigator.pushNamed(context, UIData.explore);
         },
@@ -35,7 +35,7 @@ class ButtonController {
       list.add(
         FloatingActionButton(
           heroTag: "changeRole",
-          backgroundColor: Color(0xFF3e6964),
+          backgroundColor: TColor.buttonColor2,
           onPressed: () async {
             Navigator.pushNamed(context, UIData.settings);
           },
