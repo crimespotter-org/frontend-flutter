@@ -49,10 +49,11 @@ class _TMapToggleButtonState extends State<TMapToggleButton> {
             }
           },
           borderRadius: const BorderRadius.all(Radius.circular(8)),
-          selectedBorderColor: Colors.red[700],
-          selectedColor: Colors.white,
-          fillColor: Colors.red[200],
-          color: Colors.red[400],
+          selectedBorderColor: Colors.white,
+          borderColor: Colors.white,
+          selectedColor: Colors.black,
+          fillColor: const Color.fromARGB(60, 255, 255, 255),
+          color: Colors.white,
           constraints: const BoxConstraints(
             minHeight: 40.0,
             minWidth: 80.0,

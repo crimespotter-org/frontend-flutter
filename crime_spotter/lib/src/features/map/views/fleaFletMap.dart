@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:crime_spotter/src/shared/4data/cardProvider.dart';
+import 'package:crime_spotter/src/shared/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_heatmap/flutter_map_heatmap.dart';
@@ -87,6 +88,8 @@ class _OpenStreetMapState extends State<OpenStreetMap> {
           child: Align(
             alignment: Alignment.bottomLeft,
             child: FloatingActionButton(
+              backgroundColor: TColor.buttonColor,
+              heroTag: "heatMapCurrentLocation",
               onPressed: () async => {
                 currentLocation = await _getCurrentLocation(),
                 widget.controller.move(currentLocation, 15),

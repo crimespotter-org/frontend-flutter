@@ -111,6 +111,7 @@ class _CommentSectionState extends State<CommentSection> {
         content: TextField(
           autofocus: true,
           controller: commentText,
+          maxLines: null,
         ),
         actions: [
           IconButton(

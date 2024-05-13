@@ -2,6 +2,7 @@ import 'package:crime_spotter/src/features/explore/1presentation/case_tile_short
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
 import 'package:crime_spotter/src/shared/4data/caseService.dart';
+import 'package:crime_spotter/src/shared/constants/colors.dart';
 import 'package:flutter/material.dart';
 
 class Explore extends StatefulWidget {
@@ -65,7 +66,7 @@ class _ExploreState extends State<Explore> {
             bottom: 16.0,
             left: 16.0,
             child: FloatingActionButton(
-              backgroundColor: Colors.blueAccent,
+              backgroundColor: TColor.buttonColor,
               onPressed: () async {
                 setState(
                   () {

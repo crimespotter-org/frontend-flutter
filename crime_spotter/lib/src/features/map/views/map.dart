@@ -101,7 +101,12 @@ class _MapPageState extends State<MapPage> {
             child: ClipOval(
               child: Container(
                 height: MediaQuery.of(context).size.height * 0.4,
-                color: TColor.searchColor,
+                decoration: const BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage("assets/Backgroung.png"),
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
             ),
           ),
@@ -117,6 +122,7 @@ class _MapPageState extends State<MapPage> {
                         IconButton(
                           icon: const Icon(
                             Icons.person,
+                            color: Colors.grey,
                           ),
                           onPressed: () => {
                             buildUpgradeRole(),
@@ -125,6 +131,7 @@ class _MapPageState extends State<MapPage> {
                         Text(
                           userDetailsprovider
                               .displayUserRole(userDetailsprovider.userRole),
+                          style: const TextStyle(color: Colors.grey),
                         ),
                       ],
                     ),
