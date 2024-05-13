@@ -31,7 +31,7 @@ class CaseTileShort extends StatelessWidget {
                     width: double.infinity,
                   )
                 : Image.memory(
-                    shownCase.images!.first.image,
+                    shownCase.images.first.image,
                     fit: BoxFit.cover,
                     width: double.infinity,
                   ),
