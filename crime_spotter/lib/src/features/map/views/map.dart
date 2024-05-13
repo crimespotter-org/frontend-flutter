@@ -9,7 +9,6 @@ import 'package:crime_spotter/src/shared/4data/const.dart';
 import 'package:crime_spotter/src/shared/4data/mapProvider.dart';
 import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:crime_spotter/src/shared/4data/userdetailsProvider.dart';
-import 'package:crime_spotter/src/shared/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:crime_spotter/src/features/map/views/openStreetMap.dart';
 import 'package:flutter_map/flutter_map.dart' as heat;
@@ -27,7 +26,33 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
+  //Die Marker auf der Map müssen erst gezeichnet werden, bevor navigiert werden darf
+  bool mapLoaded = false;
   bool isHeatMap = false;
+  bool showUpgradeRole = false;
+
+  final heat.MapController heatController = heat.MapController();
+  final Map<GeoPoint, List<Placemark>> markerMap = {};
+  final Map<FilterType, String?> selectedFilter = {};
+  final MapController controller = MapController.customLayer(
+    customTile: CustomTile(
+      sourceName: "opentopomap",
+      tileExtension: ".png",
+      minZoomLevel: 2,
+      maxZoomLevel: 19,
+      urlsServers: [
+        TileURLs(
+          url: "https://tile.openstreetmap.org/",
+          subdomains: [],
+        )
+      ],
+      tileSize: 256,
+    ),
+    initMapWithUserPosition: const UserTrackingOption(
+      unFollowUser: false,
+      enableTracking: true,
+    ),
+  );
 
   @override
   void setState(fn) {
@@ -50,36 +75,11 @@ class _MapPageState extends State<MapPage> {
 
   @override
   void dispose() {
+    heatController.dispose();
+    controller.dispose();
     super.dispose();
   }
 
-  final heat.MapController heatController = heat.MapController();
-
-  final MapController controller = MapController.customLayer(
-    customTile: CustomTile(
-      sourceName: "opentopomap",
-      tileExtension: ".png",
-      minZoomLevel: 2,
-      maxZoomLevel: 19,
-      urlsServers: [
-        TileURLs(
-          url: "https://tile.openstreetmap.org/",
-          subdomains: [],
-        )
-      ],
-      tileSize: 256,
-    ),
-    initMapWithUserPosition: const UserTrackingOption(
-      unFollowUser: false,
-      enableTracking: true,
-    ),
-  );
-
-  final Map<GeoPoint, List<Placemark>> markerMap = {};
-  bool mapLoaded =
-      false; //Die Marker auf der Map müssen erst gezeichnet werden, bevor navigiert werden darf
-  bool showUpgradeRole = false;
-  final Map<FilterType, String?> selectedFilter = {};
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<MapProvider>(context);

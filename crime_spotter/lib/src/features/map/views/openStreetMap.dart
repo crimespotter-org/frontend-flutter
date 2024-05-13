@@ -64,12 +64,6 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
   }
 
   @override
-  void dispose() {
-    widget.controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final caseProvider = Provider.of<CaseProvider>(context);
     final mapProvider = Provider.of<MapProvider>(context);
