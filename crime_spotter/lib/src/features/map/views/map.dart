@@ -1,6 +1,7 @@
 import 'package:crime_spotter/src/common/widget/widget/radioButton.dart';
 import 'package:crime_spotter/src/common/widget/widget/searchBar.dart';
 import 'package:crime_spotter/src/features/map/views/fleaFletMap.dart';
+import 'package:crime_spotter/src/features/map/views/mapOption.dart';
 import 'package:crime_spotter/src/features/map/views/mapSwipeCases.dart';
 import 'package:crime_spotter/src/features/map/views/mapToggleButton.dart';
 import 'package:crime_spotter/src/shared/4data/cardProvider.dart';
@@ -78,6 +79,7 @@ class _MapPageState extends State<MapPage> {
   bool mapLoaded =
       false; //Die Marker auf der Map müssen erst gezeichnet werden, bevor navigiert werden darf
   bool showUpgradeRole = false;
+  final Map<FilterType, String?> selectedFilter = {};
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<MapProvider>(context);
@@ -140,6 +142,7 @@ class _MapPageState extends State<MapPage> {
                   TMapToggleButton(
                     controller: controller,
                     markers: markerMap,
+                    selectedFilte: selectedFilter,
                   ),
                 ],
               ),
