@@ -95,6 +95,7 @@ class _CommentSectionState extends State<CommentSection> {
   Future<void> updateCommentList(PostgresChangePayload payload) async {
     if (payload.newRecord.isNotEmpty) {
       shownCase.comments.add(Comment.fromJson(payload.newRecord));
+      shownCase.comments.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     }
     if (payload.oldRecord.isNotEmpty) {
       shownCase.comments
