@@ -273,7 +273,7 @@ class _SingleCaseState extends State<SingleCase> {
   }
 
   Future<void> shareCase() async {
-    final url = 'crimespotter://casedetails/${shownCase.id}';
+    final url = 'crimespotter://casedetails/?${shownCase.id}';
     try {
       await Share.share(
         'Schau dir diesen Fall bei Crimespotter an: $url',
