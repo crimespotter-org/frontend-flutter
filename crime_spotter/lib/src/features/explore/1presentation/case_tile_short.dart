@@ -4,82 +4,85 @@ import 'package:flutter/material.dart';
 
 class CaseTileShort extends StatelessWidget {
   final CaseDetails shownCase;
+  final bool canEdit;
   Function(BuildContext)? deleteFunction;
 
   CaseTileShort({
     super.key,
     required this.shownCase,
+    required this.canEdit,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(10),
-      height: 150,
-      decoration: BoxDecoration(
-        color: Colors.grey,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Stack(
-          children: [
-            shownCase.images.isEmpty
-                ? Image.asset(
-                    "assets/placeholder.jpg",
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                  )
-                : Image.memory(
-                    shownCase.images.first.image,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
+    return GestureDetector(
+      onTap: () async {
+        Navigator.pushNamed(context, UIData.single_case,
+            arguments: shownCase.id);
+      },
+      child: Container(
+        margin: const EdgeInsets.all(5),
+        height: 100,
+        decoration: BoxDecoration(
+          color: Colors.grey,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: Colors.black,
+            width: 2,
+          ),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Stack(
+            children: [
+              shownCase.images.isEmpty
+                  ? Image.asset(
+                      "assets/placeholder.jpg",
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      //opacity: const AlwaysStoppedAnimation(.6),
+                    )
+                  : Image.memory(
+                      shownCase.images.first.image,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      //opacity: const AlwaysStoppedAnimation(.6),
+                    ),
+              Container(
+                width: double.infinity,
+                color: const Color.fromARGB(200, 0, 0, 0),
+                padding: const EdgeInsets.all(8),
+                child: Text(
+                  shownCase.title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
-            Container(
-              width: double.infinity,
-              color: const Color.fromARGB(255, 202, 202, 202)
-                  .withOpacity(0.6), // Adjust opacity as needed
-              padding: const EdgeInsets.all(8),
-              child: Text(
-                shownCase.title,
-                style: const TextStyle(
-                  color: Colors.red,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
                 ),
               ),
-            ),
-            Positioned.fill(
-              child: Align(
-                alignment: Alignment.bottomRight,
-                child: SizedBox(
-                  width: 140,
+              Positioned.fill(
+                child: Align(
+                  alignment: Alignment.bottomRight,
                   child: Row(
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit),
-                        iconSize: 50,
-                        color: Colors.red,
-                        onPressed: () async {
-                          Navigator.pushNamed(context, UIData.edit_case,
-                              arguments: shownCase.id);
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.arrow_forward_ios),
-                        iconSize: 50,
-                        color: Colors.red,
-                        onPressed: () async {
-                          Navigator.pushNamed(context, UIData.single_case,
-                              arguments: shownCase.id);
-                        },
-                      ),
+                      const Spacer(),
+                      if (canEdit)
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          iconSize: 50,
+                          color: Colors.redAccent,
+                          onPressed: () async {
+                            Navigator.pushNamed(context, UIData.edit_case,
+                                arguments: shownCase.id);
+                          },
+                        ),
                     ],
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

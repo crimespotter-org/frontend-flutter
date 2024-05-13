@@ -22,15 +22,27 @@ class _SingleCaseState extends State<SingleCase> {
   late CaseDetails shownCase;
   late CaseProvider provider;
   late UserDetailsProvider userProvider;
+  int vote = 0;
 
   Future<void> loadData(BuildContext context) async {
     caseID = ModalRoute.of(context)?.settings.arguments as String?;
-    _caseFuture = getCase(context, caseID!);
+
+    if (mounted) {
+      _caseFuture = getCase(context, caseID!);
+    }
+
+    var existingvote = await SupaBaseConst.supabase
+        .from('votes')
+        .select('*')
+        .match({"case_id": caseID, "user_id": userProvider.currentUser.id});
+
+    if (existingvote.isNotEmpty) {
+      vote = existingvote.first['vote'];
+    }
+    setState(() {});
   }
 
   Future<CaseDetails> getCase(BuildContext context, String id) async {
-    provider = Provider.of<CaseProvider>(context);
-    userProvider = Provider.of<UserDetailsProvider>(context);
     try {
       var temp =
           provider.casesDetailed.firstWhere((element) => element.id == id);
@@ -43,6 +55,8 @@ class _SingleCaseState extends State<SingleCase> {
 
   @override
   void didChangeDependencies() {
+    provider = Provider.of<CaseProvider>(context);
+    userProvider = Provider.of<UserDetailsProvider>(context);
     loadData(context);
     super.didChangeDependencies();
   }
@@ -204,7 +218,7 @@ class _SingleCaseState extends State<SingleCase> {
                     _vote(-1);
                   },
                   elevation: 2.0,
-                  fillColor: Colors.white,
+                  fillColor: vote == -1 ? Colors.redAccent : Colors.white,
                   padding: const EdgeInsets.all(10.0),
                   shape: const CircleBorder(),
                   child: const Icon(
@@ -218,7 +232,7 @@ class _SingleCaseState extends State<SingleCase> {
                     _vote(1);
                   },
                   elevation: 2.0,
-                  fillColor: Colors.white,
+                  fillColor: vote == 1 ? Colors.greenAccent : Colors.white,
                   padding: const EdgeInsets.all(10.0),
                   shape: const CircleBorder(),
                   child: const Icon(
@@ -245,7 +259,7 @@ class _SingleCaseState extends State<SingleCase> {
     averageVotes = shownCase.upvotes - shownCase.downvotes;
   }
 
-  void _vote(int vote) async {
+  void _vote(int newvote) async {
     var existingvotes = await SupaBaseConst.supabase
         .from('votes')
         .select('*')
@@ -254,19 +268,28 @@ class _SingleCaseState extends State<SingleCase> {
 
     if (existingvotes.isNotEmpty) {
       var existingvote = existingvotes.first;
-      await SupaBaseConst.supabase
-          .from('votes')
-          .update({"vote": vote}).match({"id": existingvote["id"]});
+      if (existingvote['vote'] == newvote) {
+        await SupaBaseConst.supabase
+            .from('votes')
+            .delete()
+            .match({"id": existingvote["id"]});
+        newvote = 0;
+      } else {
+        await SupaBaseConst.supabase
+            .from('votes')
+            .update({"vote": newvote}).match({"id": existingvote["id"]});
+      }
     } else {
       await SupaBaseConst.supabase.from('votes').insert({
         'case_id': shownCase.id,
         'user_id': userProvider.currentUser.id,
-        'vote': '$vote',
+        'vote': '$newvote',
       });
     }
 
     var temp = await provider.updateDetailedCase(shownCase.id!);
     setState(() {
+      vote = newvote;
       shownCase = temp;
       _calcTotalVotes();
     });

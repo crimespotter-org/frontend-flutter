@@ -95,6 +95,8 @@ class CaseService {
       }
     }
 
+    item.comments.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
     return item;
   }
 
