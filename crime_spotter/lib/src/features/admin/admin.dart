@@ -38,6 +38,9 @@ class _SettingsState extends State<Settings> {
             itemBuilder: (context, index) {
               return Card(
                 child: ListTile(
+                  leading: const CircleAvatar(
+                    backgroundImage: AssetImage("assets/placeholder.jpg"),
+                  ),
                   title: Text(provider.activeUsers[index].name),
                   subtitle: DropdownButton<String>(
                     value: provider
