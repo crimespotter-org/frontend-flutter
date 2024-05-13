@@ -252,9 +252,11 @@ class _TMapOptionState extends State<TMapOption> {
               case FilterType.createdBy:
                 return userProvider.activeUsers
                     .where(
-                      (suggestion) => suggestion.name.toLowerCase().contains(
-                            textEditingValue.text.toLowerCase(),
-                          ),
+                      (suggestion) =>
+                          suggestion.name.toLowerCase().contains(
+                                textEditingValue.text.toLowerCase(),
+                              ) &&
+                          suggestion.role != UserRole.crimespotter,
                     )
                     .map(
                       (e) => e.name,
