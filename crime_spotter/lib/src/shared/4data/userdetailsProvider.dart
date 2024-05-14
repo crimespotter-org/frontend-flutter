@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:crime_spotter/src/shared/model/activeUserModel.dart';
+import 'package:crime_spotter/src/shared/model/fileModel.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -19,7 +20,7 @@ class UserDetailsProvider extends ChangeNotifier {
   bool _userIsAuthenticated = false;
   List<ActiveUser> _activeUsers = [];
   List<ActiveUser> _activeUsersIncludingCurrent = [];
-  Map<String, File> _profilePictures = Map<String, File>();
+  List<FileModel> _profilePictures = [];
 
   String get jwt => _jwt;
   UserRole get userRole => _userRole;
@@ -28,7 +29,7 @@ class UserDetailsProvider extends ChangeNotifier {
   List<ActiveUser> get activeUsers => _activeUsers;
   List<ActiveUser> get activeUsersIncludingCurrent =>
       _activeUsersIncludingCurrent;
-  Map<String, File> get profilePictures => _profilePictures;
+  List<FileModel> get profilePictures => _profilePictures;
 
   Future<List<ActiveUser>?> getAllActiveUser() async {
     final response =
@@ -129,7 +130,16 @@ class UserDetailsProvider extends ChangeNotifier {
     }
 
     for (var image in pictures) {
-      _profilePictures[image.name.split('.')[0]] = File(image.name);
+      List<String> splitted = image.name.split('.');
+      _profilePictures.add(
+        FileModel(
+          imageInBytes: await SupaBaseConst.supabase.storage
+              .from('avatars')
+              .download(image.name),
+          userId: splitted[0],
+          extension: splitted[1],
+        ),
+      );
     }
   }
 
@@ -138,18 +148,20 @@ class UserDetailsProvider extends ChangeNotifier {
       String? userId,
       bool useCurrentUser = true}) async {
     String? response;
+    FileModel? profileToChange = _profilePictures
+        .where((element) => element.userId == userId)
+        .firstOrNull;
 
     try {
       userId = useCurrentUser ? _currentUser?.id ?? "" : userId;
-
-      if (_profilePictures[userId] == null) {
-        String path = '$userId.png';
+      if (profileToChange == null) {
+        String path = '$userId.${image.name.split('.').last}';
         response = await SupaBaseConst.supabase.storage.from('avatars').upload(
             path, File(image.path),
             fileOptions:
                 const FileOptions(cacheControl: '3600', upsert: false));
       } else {
-        String path = _profilePictures[userId]!.path;
+        String path = '${profileToChange.userId}.${profileToChange.extension}';
         await SupaBaseConst.supabase.storage
             .from('avatars')
             .remove(<String>[path]);
@@ -158,9 +170,14 @@ class UserDetailsProvider extends ChangeNotifier {
             fileOptions:
                 const FileOptions(cacheControl: '3600', upsert: false));
       }
-
-      if (userId != null) _profilePictures[userId] = File('$userId.png');
-      //if (response.isNotEmpty) {}
+      if (response.isNotEmpty) {
+        if (profileToChange == null) {
+          _profilePictures.add(FileModel(
+              userId: userId!,
+              imageInBytes: await File(image.path).readAsBytes(),
+              extension: image.name.split('.').last));
+        }
+      }
       notifyListeners();
     } catch (ex) {
       print("Fehler beim Profilbild aktualisieren");

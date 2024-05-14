@@ -214,16 +214,16 @@ class _MapPageState extends State<MapPage> {
               Text(
                   'Wählen Sie ein Profilbild für ${provider.currentUser.email}:'),
               const SizedBox(height: 10),
-              userDetailsprovider.profilePictures[
-                          userDetailsprovider.currentUser.id] !=
-                      null
+              userDetailsprovider.profilePictures.any((element) =>
+                      element.userId == userDetailsprovider.currentUser.id)
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(30),
-                      child: Image.network(userDetailsprovider
-                              .profilePictures[
-                                  userDetailsprovider.currentUser.id]
-                              ?.path ??
-                          ""),
+                      child: Image.memory(userDetailsprovider.profilePictures
+                          .where((element) =>
+                              element.userId ==
+                              userDetailsprovider.currentUser.id)
+                          .first
+                          .imageInBytes),
                     )
                   : ClipRRect(
                       borderRadius: BorderRadius.circular(30),
