@@ -46,8 +46,8 @@ class CaseDetails {
       id: json['id'],
       title: json['title'],
       summary: json['summary'] ?? '',
-      latitude: json['lat'],
-      longitude: json['long'],
+      latitude: json['lat'].toDouble(),
+      longitude: json['long'].toDouble(),
       createdBy: json['created_by'] ?? '',
       createdAt: DateTime.parse(json['created_at']),
       placeName: json['place_name'] ?? '',
@@ -70,9 +70,9 @@ class CaseDetails {
         createdAt = DateTime.now(),
         placeName = '',
         zipCode = 0,
-        caseType = CaseType.unknown,
+        caseType = CaseType.murder,
         crimeDateTime = DateTime.now(),
-        status = CaseStatus.unknown,
+        status = CaseStatus.open,
         isNew = true;
 }
 

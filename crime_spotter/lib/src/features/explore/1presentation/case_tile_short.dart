@@ -21,8 +21,8 @@ class CaseTileShort extends StatelessWidget {
             arguments: shownCase.id);
       },
       child: Container(
-        margin: const EdgeInsets.all(5),
-        height: 100,
+        margin: const EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 15),
+        height: 150,
         decoration: BoxDecoration(
           color: Colors.grey,
           borderRadius: BorderRadius.circular(18),
