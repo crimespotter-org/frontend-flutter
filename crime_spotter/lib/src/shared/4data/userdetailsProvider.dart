@@ -62,11 +62,11 @@ class UserDetailsProvider extends ChangeNotifier {
       );
 
       bool foundInSecondList =
-          _activeUsersIncludingCurrent.any((element) => element == user);
+          _activeUsersIncludingCurrent.any((element) => element.id == user.id);
       if (foundInSecondList) {
         _activeUsersIncludingCurrent.remove(
           _activeUsersIncludingCurrent
-              .singleWhere((element) => element == user),
+              .singleWhere((element) => element.id == user.id),
         );
       }
       return true;
@@ -107,7 +107,7 @@ class UserDetailsProvider extends ChangeNotifier {
     } else {
       _activeUsers.singleWhere((element) => element == user).role = role;
       _activeUsersIncludingCurrent
-          .singleWhere((element) => element == user)
+          .singleWhere((element) => element.id == user.id)
           .role = role;
     }
     notifyListeners();

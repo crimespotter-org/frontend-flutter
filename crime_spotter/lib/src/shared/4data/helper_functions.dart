@@ -51,6 +51,35 @@ class TDeviceUtil {
     }
   }
 
+  static String? convertCaseStatusToString(CaseStatus? status) {
+    switch (status) {
+      case CaseStatus.open:
+        return 'open';
+      case CaseStatus.closed:
+        return 'closed';
+      default:
+        return null;
+    }
+  }
+
+  static String? convertCaseTypeToString(CaseType type) {
+    switch (type) {
+      case CaseType.murder:
+        return 'murder';
+      case CaseType.theft:
+        return 'theft';
+      case CaseType.robberyMurder:
+        return "robbery-murder";
+      case CaseType.brawl:
+        return 'brawl';
+      case CaseType.rape:
+        return 'rape';
+      case CaseType.unknown:
+      default:
+        return null;
+    }
+  }
+
   static String convertCaseTypeToGerman(CaseType type) {
     switch (type) {
       case CaseType.murder:

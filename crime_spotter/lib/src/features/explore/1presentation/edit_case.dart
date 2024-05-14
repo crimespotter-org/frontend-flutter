@@ -6,6 +6,7 @@ import 'package:crime_spotter/src/shared/4data/cardProvider.dart';
 import 'package:crime_spotter/src/shared/4data/caseService.dart';
 import 'package:crime_spotter/src/shared/4data/helper_functions.dart';
 import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
+import 'package:crime_spotter/src/shared/4data/userdetailsProvider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -20,14 +21,17 @@ class EditCase extends StatefulWidget {
 }
 
 class _EditCaseState extends State<EditCase> {
-  late CaseDetails shownCase;
+  CaseDetails? shownCase;
   late Future<CaseDetails> _caseFuture;
 
   Future<CaseDetails> getCase(String id) async {
     if (id == "-1") {
-      return CaseDetails.createNew();
+      var newCase = CaseDetails.createNew();
+      var userProvider = Provider.of<UserDetailsProvider>(context);
+      newCase.createdBy = userProvider.currentUser.id;
+      return newCase;
     }
-    final provider = Provider.of<CaseProvider>(context);
+    var provider = Provider.of<CaseProvider>(context);
     try {
       var temp =
           provider.casesDetailed.firstWhere((element) => element.id == id);
@@ -38,8 +42,10 @@ class _EditCaseState extends State<EditCase> {
   }
 
   Future<void> loadData() async {
-    final caseID = ModalRoute.of(context)?.settings.arguments as String?;
-    _caseFuture = getCase(caseID!);
+    if (shownCase == null) {
+      final caseID = ModalRoute.of(context)?.settings.arguments as String?;
+      _caseFuture = getCase(caseID!);
+    }
   }
 
   @override
@@ -83,7 +89,7 @@ class _EditCaseState extends State<EditCase> {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: shownCase.isNew
+          title: shownCase!.isNew
               ? const Text("Neuen Fall erstellen")
               : const Text("Fall bearbeiten"),
           bottom: const TabBar(
@@ -98,9 +104,9 @@ class _EditCaseState extends State<EditCase> {
           children: [
             TabBarView(
               children: [
-                _buildSummaryTab(shownCase),
-                _buildLinksTab(shownCase),
-                _buildImagesTab(shownCase),
+                _buildSummaryTab(shownCase!),
+                _buildLinksTab(shownCase!),
+                _buildImagesTab(shownCase!),
               ],
             ),
             Positioned(
@@ -116,19 +122,20 @@ class _EditCaseState extends State<EditCase> {
                 child: const Icon(Icons.save),
               ),
             ),
-            Positioned(
-              bottom: 16.0,
-              left: 16.0,
-              child: FloatingActionButton(
-                heroTag: "deleteCase",
-                backgroundColor: Colors.redAccent,
-                onPressed: () async {
-                  _deleteCase();
-                },
-                tooltip: "Fall löschen",
-                child: const Icon(Icons.delete),
+            if (!shownCase!.isNew)
+              Positioned(
+                bottom: 16.0,
+                left: 16.0,
+                child: FloatingActionButton(
+                  heroTag: "deleteCase",
+                  backgroundColor: Colors.redAccent,
+                  onPressed: () async {
+                    _showDeleteDialog();
+                  },
+                  tooltip: "Fall löschen",
+                  child: const Icon(Icons.delete),
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -136,75 +143,70 @@ class _EditCaseState extends State<EditCase> {
   }
 
   Widget _buildSummaryTab(CaseDetails shownCase) {
-    if (shownCase == null) {
-      return const Center(
-        child: Text('Keine Zusammenfassung verfügbar!'),
-      );
-    } else {
-      return SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Titel:',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'Titel:',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
             ),
-            TextFormField(
-              initialValue: shownCase.title,
-              onChanged: (value) {
-                shownCase.title = value;
-              },
+          ),
+          TextFormField(
+            initialValue: shownCase.title,
+            onChanged: (value) {
+              shownCase.title = value;
+            },
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            'Typ:',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
             ),
-            const SizedBox(height: 20),
-            const Text(
-              'Typ:',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+          ),
+          DropdownButton<CaseType>(
+            value: shownCase.caseType,
+            onChanged: (value) {
+              setState(() {
+                shownCase.caseType = value!; // Update the case type
+              });
+            },
+            items: CaseType.values
+                .where((element) => element != CaseType.unknown)
+                .map<DropdownMenuItem<CaseType>>((CaseType value) {
+              return DropdownMenuItem<CaseType>(
+                value: value,
+                child: Text(TDeviceUtil.convertCaseTypeToGerman(value)),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            'Zusammenfassung:',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
             ),
-            DropdownButton<CaseType>(
-              value: shownCase.caseType,
-              onChanged: (value) {
-                setState(() {
-                  shownCase.caseType = value!; // Update the case type
-                });
-              },
-              items: CaseType.values
-                  .map<DropdownMenuItem<CaseType>>((CaseType value) {
-                return DropdownMenuItem<CaseType>(
-                  value: value,
-                  child: Text(TDeviceUtil.convertCaseTypeToGerman(value)),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Zusammenfassung:',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            TextFormField(
-              initialValue: shownCase.summary,
-              onChanged: (value) {
-                shownCase.summary = value;
-              },
-              maxLines: null,
-            ),
-          ],
-        ),
-      );
-    }
+          ),
+          TextFormField(
+            initialValue: shownCase!.summary,
+            onChanged: (value) {
+              shownCase.summary = value;
+            },
+            maxLines: null,
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildLinksTab(CaseDetails shownCase) {
-    links = shownCase.furtherLinks ?? [];
+    links = shownCase!.furtherLinks ?? [];
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -213,9 +215,9 @@ class _EditCaseState extends State<EditCase> {
           ListView.builder(
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
-            itemCount: shownCase.furtherLinks.length,
+            itemCount: shownCase!.furtherLinks.length,
             itemBuilder: (context, index) {
-              return _buildLinkItem(index, shownCase.furtherLinks[index]);
+              return _buildLinkItem(index, shownCase!.furtherLinks[index]);
             },
           ),
 
@@ -319,9 +321,9 @@ class _EditCaseState extends State<EditCase> {
               crossAxisSpacing: 10.0,
               mainAxisSpacing: 10.0,
             ),
-            itemCount: shownCase.images.length,
+            itemCount: shownCase!.images.length,
             itemBuilder: (context, index) {
-              return _buildImageItem(index, shownCase.images[index].image);
+              return _buildImageItem(index, shownCase!.images[index].image);
             },
           ),
         ],
@@ -375,7 +377,7 @@ class _EditCaseState extends State<EditCase> {
 
       // Add the image bytes to your list
       setState(() {
-        shownCase.images
+        shownCase!.images
             .add(Media(image: Uint8List.fromList(imageBytes), name: fileName));
       });
     }
@@ -383,14 +385,14 @@ class _EditCaseState extends State<EditCase> {
 
   Future<void> _addLink() async {
     setState(() {
-      shownCase.furtherLinks ??= [];
-      shownCase.furtherLinks.add(Links.createNew());
+      shownCase!.furtherLinks ??= [];
+      shownCase!.furtherLinks.add(Links.createNew());
     });
   }
 
   Future<String> _uploadImageToSupabase(File imageFile) async {
     final String fileName = imageFile.path.split('/').last;
-    String storageDir = 'case-${shownCase.id}';
+    String storageDir = 'case-${shownCase!.id}';
     final String path = await SupaBaseConst.supabase.storage
         .from('media')
         .upload(
@@ -403,16 +405,16 @@ class _EditCaseState extends State<EditCase> {
   }
 
   Future<void> _deleteImage(int index) async {
-    if (_isNotInAddImageList(shownCase.images[index])) {
-      _imagesTodelete.add(shownCase.images[index]);
+    if (_isNotInAddImageList(shownCase!.images[index])) {
+      _imagesTodelete.add(shownCase!.images[index]);
     }
     setState(() {
-      shownCase.images.removeAt(index);
+      shownCase!.images.removeAt(index);
     });
   }
 
   Future<void> _deleteImageFromBucket(Media image) async {
-    String storageDir = 'case-${shownCase.id}';
+    String storageDir = 'case-${shownCase!.id}';
     final String fileName = image.name;
     final List<FileObject> objects = await SupaBaseConst.supabase.storage
         .from('media')
@@ -437,7 +439,7 @@ class _EditCaseState extends State<EditCase> {
 
   Future<void> _saveLinkToSupaBase(Links link) async {
     await SupaBaseConst.supabase.from('furtherlinks').insert({
-      'case_id': shownCase.id,
+      'case_id': shownCase!.id,
       'url': link.url,
       'link_type': link.type,
     });
@@ -470,7 +472,7 @@ class _EditCaseState extends State<EditCase> {
 
   Future<void> _saveCase() async {
     //case
-    if (shownCase.isNew) {
+    if (shownCase!.isNew) {
       _saveNewCase();
     } else {
       _updateCase();
@@ -480,10 +482,10 @@ class _EditCaseState extends State<EditCase> {
   Future<void> _updateCase() async {
     //case
     await SupaBaseConst.supabase.from('cases').update({
-      'title': shownCase.title,
-      'summary': shownCase.summary,
-      'case_type': shownCase.caseType,
-    }).match({'id': shownCase.id});
+      'title': shownCase!.title,
+      'summary': shownCase!.summary,
+      'case_type': shownCase!.caseType,
+    }).match({'id': shownCase!.id});
 
     //links
     for (var link in links.where((element) => element.isNew)) {
@@ -517,13 +519,21 @@ class _EditCaseState extends State<EditCase> {
 
   Future<void> _saveNewCase() async {
     //case
-    var createdCase = await SupaBaseConst.supabase.from('cases').insert({
-      'title': shownCase.title,
-      'summary': shownCase.summary,
-      'case_type': shownCase.caseType,
-    }).select();
-
-    shownCase.id = createdCase.first['id'];
+    var createdCase =
+        await SupaBaseConst.supabase.rpc('create_crime_case_angular', params: {
+      'p_title': shownCase!.title,
+      'p_summary': shownCase!.summary,
+      'p_created_by': shownCase!.createdBy,
+      'p_place_name': shownCase!.placeName,
+      'p_zip_code': shownCase!.zipCode,
+      'p_case_type': TDeviceUtil.convertCaseTypeToString(shownCase!.caseType),
+      'p_status': TDeviceUtil.convertCaseStatusToString(shownCase!.status),
+      'p_longitude': shownCase!.longitude,
+      'p_latitude': shownCase!.latitude,
+      'p_crime_date_time': shownCase!.crimeDateTime.toIso8601String(),
+      'p_links': null,
+    });
+    shownCase!.id = createdCase;
     //links
     for (var link in links.where((element) => element.isNew)) {
       _saveLinkToSupaBase(link);
@@ -531,8 +541,7 @@ class _EditCaseState extends State<EditCase> {
 
     //images
     for (var image in _imagesToAdd) {
-      final path = await _uploadImageToSupabase(image.file);
-      print('Uploaded image to Supabase: $path');
+      await _uploadImageToSupabase(image.file);
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -543,21 +552,48 @@ class _EditCaseState extends State<EditCase> {
     );
   }
 
+  void _showDeleteDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Fall löschen'),
+          content: const Text('Wollen sie den Fall wirklich löschen?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Abbrechen'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _deleteCase();
+              },
+              child: const Text('Bestätigen'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _deleteCase() async {
     //links
-    for (var link in shownCase.furtherLinks) {
+    for (var link in shownCase!.furtherLinks) {
       _deleteLinkFromSupabase(link);
     }
 
     //images
-    for (var image in shownCase.images) {
+    for (var image in shownCase!.images) {
       await _deleteImageFromBucket(image);
     }
     //case
     await SupaBaseConst.supabase
         .from('cases')
         .delete()
-        .match({'id': shownCase.id});
+        .match({'id': shownCase!.id});
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
