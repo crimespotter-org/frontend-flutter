@@ -81,8 +81,6 @@ class _TSearchBarState extends State<TSearchBar> {
 
   @override
   void dispose() {
-    widget.heatController.dispose();
-    widget.controller.dispose();
     _searchController.dispose();
     super.dispose();
   }

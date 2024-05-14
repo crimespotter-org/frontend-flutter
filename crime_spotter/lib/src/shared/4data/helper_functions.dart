@@ -43,8 +43,10 @@ class TDeviceUtil {
   static CaseStatus? convertStringToCaseStatus(String? status) {
     switch (status) {
       case 'opened':
+      case 'Offen':
         return CaseStatus.open;
       case 'closed':
+      case 'Abgeschlossen':
         return CaseStatus.closed;
       default:
         return null;
