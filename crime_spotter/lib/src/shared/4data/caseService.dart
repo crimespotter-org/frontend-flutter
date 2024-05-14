@@ -53,9 +53,11 @@ class CaseService {
 
     //links
     for (var link in response) {
-      item.furtherLinks.add(
-        Links.fromJson(link),
-      );
+      if (link['link_id'] != null) {
+        item.furtherLinks.add(
+          Links.fromJson(link),
+        );
+      }
     }
 
     //images
