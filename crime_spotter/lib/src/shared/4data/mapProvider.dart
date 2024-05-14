@@ -15,7 +15,6 @@ class MapProvider extends ChangeNotifier {
   final List<bool> _selectedToggle = <bool>[
     true, //map
     false, //heatmap
-    false, //cases
     false //options
   ];
 
@@ -41,9 +40,6 @@ class MapProvider extends ChangeNotifier {
     } else if (index == ToggleButton.heatMap.index) {
       _changeToHeatMap();
       hideCases();
-    } else if (index == ToggleButton.cases.index) {
-      _changeToMap();
-      showCases();
     } else if (index == ToggleButton.options.index) {
       _changeToMap();
       hideCases();
