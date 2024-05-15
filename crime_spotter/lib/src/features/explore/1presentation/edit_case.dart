@@ -7,10 +7,12 @@ import 'package:crime_spotter/src/shared/4data/caseService.dart';
 import 'package:crime_spotter/src/shared/4data/helper_functions.dart';
 import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:crime_spotter/src/shared/4data/userdetailsProvider.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
@@ -152,86 +154,22 @@ class _EditCaseState extends State<EditCase> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'Titel:',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
           TextFormField(
             initialValue: shownCase.title,
             onChanged: (value) {
               shownCase.title = value;
             },
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Typ:',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    DropdownButton<CaseType>(
-                      value: shownCase.caseType,
-                      onChanged: (value) {
-                        setState(() {
-                          shownCase.caseType = value!; // Update the case type
-                        });
-                      },
-                      items: CaseType.values
-                          .map<DropdownMenuItem<CaseType>>((CaseType value) {
-                        return DropdownMenuItem<CaseType>(
-                          value: value,
-                          child:
-                              Text(TDeviceUtil.convertCaseTypeToGerman(value)),
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                ),
+            decoration: const InputDecoration(
+              contentPadding: EdgeInsets.only(left: 10, right: 10),
+              labelText: 'Titel',
+              labelStyle: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
               ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Typ:',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    DropdownButton<CaseStatus>(
-                      value: shownCase.status,
-                      onChanged: (value) {
-                        setState(() {
-                          shownCase.status = value!; // Update the case type
-                        });
-                      },
-                      items: CaseStatus.values
-                          .map<DropdownMenuItem<CaseStatus>>(
-                              (CaseStatus value) {
-                        return DropdownMenuItem<CaseStatus>(
-                          value: value,
-                          child: Text(
-                              TDeviceUtil.convertCaseStatusToGerman(value)),
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              border: OutlineInputBorder(),
+            ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 15),
           Row(
             children: [
               Expanded(
@@ -241,25 +179,40 @@ class _EditCaseState extends State<EditCase> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Postleitzahl:',
+                        'Typ:',
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      TextFormField(
-                        keyboardType: TextInputType.number,
-                        inputFormatters: <TextInputFormatter>[
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
-                        initialValue: shownCase.zipCode.toString(),
-                        onChanged: (value) {
-                          try {
-                            shownCase.zipCode = int.parse(value);
-                          } catch (e) {
-                            // ignore
-                          }
-                        },
+                      InputDecorator(
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(4.0))),
+                          contentPadding: EdgeInsets.only(left: 10, right: 10),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<CaseType>(
+                            value: shownCase.caseType,
+                            onChanged: (value) {
+                              setState(() {
+                                shownCase.caseType =
+                                    value!; // Update the case type
+                              });
+                            },
+                            items: CaseType.values
+                                .map<DropdownMenuItem<CaseType>>(
+                                    (CaseType value) {
+                              return DropdownMenuItem<CaseType>(
+                                value: value,
+                                child: Text(
+                                    TDeviceUtil.convertCaseTypeToGerman(value)),
+                              );
+                            }).toList(),
+                            underline: const SizedBox(),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -270,71 +223,184 @@ class _EditCaseState extends State<EditCase> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Ortname:',
+                      'Typ:',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    TextFormField(
-                      initialValue: shownCase.placeName,
-                      onChanged: (value) {
-                        shownCase.placeName = value;
-                      },
+                    InputDecorator(
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(4.0))),
+                        contentPadding: EdgeInsets.only(left: 10, right: 10),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<CaseStatus>(
+                          value: shownCase.status,
+                          onChanged: (value) {
+                            setState(() {
+                              shownCase.status = value!; // Update the case type
+                            });
+                          },
+                          items: CaseStatus.values
+                              .map<DropdownMenuItem<CaseStatus>>(
+                                  (CaseStatus value) {
+                            return DropdownMenuItem<CaseStatus>(
+                              value: value,
+                              child: Text(
+                                  TDeviceUtil.convertCaseStatusToGerman(value)),
+                            );
+                          }).toList(),
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          const SizedBox(height: 25),
+          Row(
             children: [
-              const Text(
-                'Datum der Tat:',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 20),
+                  child: TextFormField(
+                    keyboardType: TextInputType.number,
+                    inputFormatters: <TextInputFormatter>[
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
+                    initialValue: shownCase.zipCode.toString(),
+                    onChanged: (value) {
+                      try {
+                        shownCase.zipCode = int.parse(value);
+                      } catch (e) {
+                        // ignore
+                      }
+                    },
+                    decoration: const InputDecoration(
+                      contentPadding: EdgeInsets.only(left: 10, right: 10),
+                      labelText: 'Postleitzahl',
+                      labelStyle: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
                 ),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    DateFormat('yyyy-MM-dd').format(shownCase.crimeDateTime),
-                    style: const TextStyle(fontSize: 24),
+              Expanded(
+                child: TextFormField(
+                  initialValue: shownCase.placeName,
+                  onChanged: (value) {
+                    shownCase.placeName = value;
+                  },
+                  decoration: const InputDecoration(
+                    contentPadding: EdgeInsets.only(left: 10, right: 10),
+                    labelText: 'Ortsname',
+                    labelStyle: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    border: OutlineInputBorder(),
                   ),
-                  const Spacer(),
-                  ElevatedButton(
-                    onPressed: () => _selectDate(context),
-                    child: const Text('Datum wählen'),
-                  ),
-                ],
+                ),
               ),
             ],
           ),
+          const SizedBox(height: 25),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 20),
+                  child: TextFormField(
+                    readOnly: true,
+                    initialValue: DateFormat('dd.MM.yyyy')
+                        .format(shownCase.crimeDateTime),
+                    decoration: const InputDecoration(
+                      contentPadding: EdgeInsets.only(left: 10, right: 10),
+                      labelText: 'Datum der Tat',
+                      labelStyle: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => _selectDate(context),
+                  child: const Text('Datum wählen'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 15),
           ElevatedButton(
             child: const Text("Pick Location"),
             onPressed: () async {
-              // final result = await showDialog(
-              //   context: context,
-              //   builder: (BuildContext context) {
-              //     return LocationPicker();
-              //   },
-              // );
+              GeoPoint? result = await showSimplePickerLocation(
+                context: context,
+                isDismissible: true,
+                title: "Title dialog",
+                textConfirmPicker: "pick",
+                initCurrentUserPosition: const UserTrackingOption(
+                  unFollowUser: false,
+                  enableTracking: true,
+                ),
+              );
 
-              // if (result != null) {
-              //   LatLng selectedLocation = result;
-              //   ScaffoldMessenger.of(context).showSnackBar(
-              //     SnackBar(
-              //         content: Text(
-              //             "Location: ${selectedLocation.latitude}, ${selectedLocation.longitude}")),
-              //   );
-              // }
+              if (result != null) {
+                shownCase.latitude = result.latitude;
+                shownCase.longitude = result.longitude;
+              }
             },
           ),
-          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Längengrad:',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(shownCase.latitude.toString()),
+                    ],
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Breitengrad:',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(shownCase.longitude.toString()),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 15),
           const Text(
             'Zusammenfassung:',
             style: TextStyle(
