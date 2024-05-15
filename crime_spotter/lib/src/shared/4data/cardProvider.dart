@@ -7,9 +7,9 @@ import 'package:flutter/services.dart';
 
 enum CaseVoting { like, dislike }
 
-enum CaseType { murder, theft, robberyMurder, brawl, rape, unknown }
+enum CaseType { murder, theft, robberyMurder, brawl, rape }
 
-enum CaseStatus { open, closed, unknown }
+enum CaseStatus { open, closed }
 
 class CaseProvider extends ChangeNotifier {
   CaseProvider() {
@@ -204,5 +204,11 @@ class CaseProvider extends ChangeNotifier {
     _angle = 0;
 
     notifyListeners();
+  }
+
+  void removeCaseFromLists(String idToRemove) {
+    _cases.removeWhere((element) => element.id == idToRemove);
+    _casesDetailed.removeWhere((element) => element.id == idToRemove);
+    _filteredCases.removeWhere((element) => element.id == idToRemove);
   }
 }
