@@ -1,19 +1,26 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:crime_spotter/src/shared/model/activeUserModel.dart';
+import 'package:crime_spotter/src/shared/model/fileModel.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 enum UserRole { crimespotter, crimefluencer, admin }
 
 class UserDetailsProvider extends ChangeNotifier {
+  UserDetailsProvider() {
+    _initUserProfilePictures();
+  }
   User? _currentUser;
   UserRole _userRole = UserRole.crimespotter;
   String _jwt = "";
   bool _userIsAuthenticated = false;
   List<ActiveUser> _activeUsers = [];
   List<ActiveUser> _activeUsersIncludingCurrent = [];
+  List<FileModel> _profilePictures = [];
 
   String get jwt => _jwt;
   UserRole get userRole => _userRole;
@@ -22,6 +29,7 @@ class UserDetailsProvider extends ChangeNotifier {
   List<ActiveUser> get activeUsers => _activeUsers;
   List<ActiveUser> get activeUsersIncludingCurrent =>
       _activeUsersIncludingCurrent;
+  List<FileModel> get profilePictures => _profilePictures;
 
   Future<List<ActiveUser>?> getAllActiveUser() async {
     final response =
@@ -112,6 +120,68 @@ class UserDetailsProvider extends ChangeNotifier {
     }
     notifyListeners();
     return true;
+  }
+
+  Future<void> _initUserProfilePictures() async {
+    final pictures =
+        await SupaBaseConst.supabase.storage.from('avatars').list();
+    if (pictures.isEmpty) {
+      return;
+    }
+
+    for (var image in pictures) {
+      List<String> splitted = image.name.split('.');
+      _profilePictures.add(
+        FileModel(
+          imageInBytes: await SupaBaseConst.supabase.storage
+              .from('avatars')
+              .download(image.name),
+          userId: splitted[0],
+          extension: splitted[1],
+        ),
+      );
+    }
+  }
+
+  Future<void> updateProfilePicture(
+      {required XFile image,
+      String? userId,
+      bool useCurrentUser = true}) async {
+    String? response;
+    FileModel? profileToChange = _profilePictures
+        .where((element) => element.userId == userId)
+        .firstOrNull;
+
+    try {
+      userId = useCurrentUser ? _currentUser?.id ?? "" : userId;
+      if (profileToChange == null) {
+        String path = '$userId.${image.name.split('.').last}';
+        response = await SupaBaseConst.supabase.storage.from('avatars').upload(
+            path, File(image.path),
+            fileOptions:
+                const FileOptions(cacheControl: '3600', upsert: false));
+      } else {
+        String path = '${profileToChange.userId}.${profileToChange.extension}';
+        await SupaBaseConst.supabase.storage
+            .from('avatars')
+            .remove(<String>[path]);
+        response = await SupaBaseConst.supabase.storage.from('avatars').upload(
+            path, File(image.path),
+            fileOptions:
+                const FileOptions(cacheControl: '3600', upsert: false));
+      }
+      if (response.isNotEmpty) {
+        if (profileToChange == null) {
+          _profilePictures.add(FileModel(
+              userId: userId!,
+              imageInBytes: await File(image.path).readAsBytes(),
+              extension: image.name.split('.').last));
+        }
+      }
+      notifyListeners();
+    } catch (ex) {
+      print("Fehler beim Profilbild aktualisieren");
+    }
   }
 
   void fetchUserRoleFromJWT() {

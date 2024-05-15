@@ -19,7 +19,7 @@ class TMapToggleButton extends StatefulWidget {
   State<TMapToggleButton> createState() => _TMapToggleButtonState();
 }
 
-enum ToggleButton { map, heatMap, cases, options }
+enum ToggleButton { map, heatMap, options }
 
 class _TMapToggleButtonState extends State<TMapToggleButton> {
   @override
@@ -62,7 +62,6 @@ class _TMapToggleButtonState extends State<TMapToggleButton> {
           children: const [
             Text('Karte'),
             Text('Heatmap'),
-            Text('Fallakten'),
             Text('Optionen'),
           ],
         ),

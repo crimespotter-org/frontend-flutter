@@ -2,6 +2,7 @@ import 'package:crime_spotter/src/shared/4data/cardProvider.dart';
 import 'package:crime_spotter/src/shared/4data/helper_functions.dart';
 import 'package:crime_spotter/src/shared/4data/mapProvider.dart';
 import 'package:crime_spotter/src/shared/4data/userdetailsProvider.dart';
+import 'package:crime_spotter/src/shared/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:geocoding/geocoding.dart';
@@ -41,124 +42,160 @@ class _TMapOptionState extends State<TMapOption> {
     final provider = Provider.of<CaseProvider>(context);
     final mapProvider = Provider.of<MapProvider>(context);
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(8),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'Optionen',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          image: const DecorationImage(
+            image: AssetImage("assets/Backgroung.png"),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Optionen',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-                  const Divider(
-                    thickness: 3,
-                  ),
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.65,
-                    child: ListView.separated(
-                      itemBuilder: (BuildContext context, int index) {
-                        return ListTile(
-                          subtitle: Visibility(
-                            visible: FilterType.values[index] !=
-                                FilterType.createdAt,
-                            child: buildAutoComplete(
-                              title: filterName[index],
-                              type: FilterType.values[index],
+                    const Divider(
+                      thickness: 2,
+                    ),
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.65,
+                      child: ListView.separated(
+                        itemBuilder: (BuildContext context, int index) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              image: const DecorationImage(
+                                image: AssetImage("assets/LogIn-Card.png"),
+                                fit: BoxFit.cover,
+                              ),
                             ),
-                          ),
-                          trailing: Visibility(
-                            visible: FilterType.values[index] !=
-                                FilterType.createdAt,
-                            child: GestureDetector(
-                              onTap: () => {
-                                setState(
-                                  () {
-                                    widget.selectedFilter[
-                                        FilterType.values[index]] = null;
-                                  },
+                            child: ListTile(
+                              subtitle: Visibility(
+                                visible: FilterType.values[index] !=
+                                    FilterType.createdAt,
+                                child: buildAutoComplete(
+                                  title: filterName[index],
+                                  type: FilterType.values[index],
                                 ),
-                              },
-                              child: const Icon(Icons.clear),
+                              ),
+                              trailing: Visibility(
+                                visible: FilterType.values[index] !=
+                                    FilterType.createdAt,
+                                child: GestureDetector(
+                                  onTap: () => {
+                                    setState(
+                                      () {
+                                        widget.selectedFilter[
+                                            FilterType.values[index]] = null;
+                                      },
+                                    ),
+                                  },
+                                  child: const Icon(
+                                    Icons.clear,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                      separatorBuilder: (BuildContext context, int index) {
-                        return const Divider();
-                      },
-                      itemCount: filterName.length,
+                          );
+                        },
+                        separatorBuilder: (BuildContext context, int index) {
+                          return const Divider();
+                        },
+                        itemCount: filterName.length -
+                            1, //createdAt soll nicht gebaut werden
+                      ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: dateIsFiltered
-                          ? Text(
-                              'Es wird nach ${selectedDate.day}.${selectedDate.month}.${selectedDate.year} gefiltert',
-                              textAlign: TextAlign.left,
-                            )
-                          : const Text('Tatdatum auswählen:'),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: dateIsFiltered
+                            ? Text(
+                                'Es wird nach ${selectedDate.day}.${selectedDate.month}.${selectedDate.year} gefiltert',
+                                textAlign: TextAlign.left,
+                                style: const TextStyle(color: Colors.white),
+                              )
+                            : const Text(
+                                'Tatdatum auswählen:',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                      ),
                     ),
-                  ),
-                  buildDatePicker(),
-                  const Divider(),
-                  ElevatedButton(
-                    onPressed: () {
-                      try {
-                        provider.applyFilter(
-                          createdAt: dateIsFiltered ? selectedDate : null,
-                          title: widget.selectedFilter[FilterType.title],
-                          createdBy:
-                              widget.selectedFilter[FilterType.createdBy],
-                          placeName:
-                              widget.selectedFilter[FilterType.placeName],
-                          type: TDeviceUtil.convertStringtoCaseType(
-                              widget.selectedFilter[FilterType.caseType]),
-                          status: TDeviceUtil.convertStringToCaseStatus(
-                              widget.selectedFilter[FilterType.status]),
-                        );
-                        mapProvider.rebuildInitialMarker(
-                            controller: widget.controller,
-                            caseProvider: provider,
-                            markers: widget.markers);
-                        mapProvider.updateSelectedToggle(0);
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Filter angewendet!'),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                      } catch (ex) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Filtern fehlgeschlagen!'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                    },
-                    child: const Text('Filter anwenden'),
-                  ),
-                ],
+                    buildDatePicker(),
+                    const Divider(),
+                    ElevatedButton(
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all<Color>(
+                            TColor.buttonColor),
+                      ),
+                      onPressed: () {
+                        try {
+                          provider.applyFilter(
+                            createdAt: dateIsFiltered ? selectedDate : null,
+                            title: widget.selectedFilter[FilterType.title],
+                            createdBy:
+                                widget.selectedFilter[FilterType.createdBy],
+                            placeName:
+                                widget.selectedFilter[FilterType.placeName],
+                            type: TDeviceUtil.convertStringtoCaseType(
+                                widget.selectedFilter[FilterType.caseType]),
+                            status: TDeviceUtil.convertStringToCaseStatus(
+                                widget.selectedFilter[FilterType.status]),
+                          );
+                          mapProvider.rebuildInitialMarker(
+                              controller: widget.controller,
+                              caseProvider: provider,
+                              markers: widget.markers);
+                          mapProvider.updateSelectedToggle(0);
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Filter angewendet!'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        } catch (ex) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Filtern fehlgeschlagen!'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      },
+                      child: const Text(
+                        'Filter anwenden',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: const Icon(Icons.clear),
-            )
-          ],
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: const Icon(
+                  Icons.clear,
+                  color: Colors.white,
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -173,11 +210,12 @@ class _TMapOptionState extends State<TMapOption> {
         alignment: Alignment.center,
         child: ToggleButtons(
           direction: Axis.horizontal,
-          borderRadius: const BorderRadius.all(Radius.circular(80)),
-          selectedBorderColor: Colors.red[700],
-          selectedColor: Colors.white,
-          fillColor: Colors.red[200],
-          color: Colors.red[400],
+          borderRadius: const BorderRadius.all(Radius.circular(8)),
+          selectedBorderColor: Colors.white,
+          borderColor: Colors.white,
+          selectedColor: Colors.black,
+          fillColor: const Color.fromARGB(60, 255, 255, 255),
+          color: Colors.white,
           constraints: const BoxConstraints(
             minHeight: 40.0,
             minWidth: 80.0,
@@ -216,8 +254,14 @@ class _TMapOptionState extends State<TMapOption> {
             );
           },
           children: const [
-            Text('Filtern'),
-            Text('Nicht filtern'),
+            Text(
+              'Filtern',
+              style: TextStyle(color: Colors.white),
+            ),
+            Text(
+              'Nicht filtern',
+              style: TextStyle(color: Colors.white),
+            ),
           ],
         ),
       ),
@@ -252,9 +296,11 @@ class _TMapOptionState extends State<TMapOption> {
               case FilterType.createdBy:
                 return userProvider.activeUsers
                     .where(
-                      (suggestion) => suggestion.name.toLowerCase().contains(
-                            textEditingValue.text.toLowerCase(),
-                          ),
+                      (suggestion) =>
+                          suggestion.name.toLowerCase().contains(
+                                textEditingValue.text.toLowerCase(),
+                              ) &&
+                          suggestion.role != UserRole.crimespotter,
                     )
                     .map(
                       (e) => e.name,
@@ -309,11 +355,13 @@ class _TMapOptionState extends State<TMapOption> {
               onFieldSubmitted: (String value) {
                 onFieldSubmitted();
               },
+              style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 labelText: '$title filtern',
+                labelStyle: const TextStyle(color: Colors.white),
                 suffixIcon: const Icon(
                   Icons.abc,
-                  color: Colors.grey,
+                  color: Colors.white,
                 ),
               ),
             );
@@ -327,7 +375,10 @@ class _TMapOptionState extends State<TMapOption> {
                 children: options
                     .map(
                       (String option) => ListTile(
-                        title: Text(option),
+                        title: Text(
+                          option,
+                          style: const TextStyle(color: Colors.white),
+                        ),
                         onTap: () {
                           setState(() {
                             onSelected(option);
