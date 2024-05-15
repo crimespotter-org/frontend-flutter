@@ -42,11 +42,11 @@ class TDeviceUtil {
 
   static CaseStatus? convertStringToCaseStatus(String? status) {
     switch (status) {
-      case 'opened':
+      case 'open':
       case 'Offen':
         return CaseStatus.open;
       case 'closed':
-      case 'Abgeschlossen':
+      case 'Geschlossen':
         return CaseStatus.closed;
       default:
         return null;
@@ -76,7 +76,6 @@ class TDeviceUtil {
         return 'brawl';
       case CaseType.rape:
         return 'rape';
-      case CaseType.unknown:
       default:
         return null;
     }
@@ -94,9 +93,19 @@ class TDeviceUtil {
         return 'Schlägerei';
       case CaseType.rape:
         return 'Vergewaltigung';
-      case CaseType.unknown:
       default:
-        return 'Unbekannt';
+        return 'Mord';
+    }
+  }
+
+  static String convertCaseStatusToGerman(CaseStatus status) {
+    switch (status) {
+      case CaseStatus.open:
+        return 'Offen';
+      case CaseStatus.closed:
+        return 'Geschlossen';
+      default:
+        return 'Offen';
     }
   }
 }

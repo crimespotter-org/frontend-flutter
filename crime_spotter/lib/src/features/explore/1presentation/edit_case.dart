@@ -9,9 +9,13 @@ import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
 import 'package:crime_spotter/src/shared/4data/userdetailsProvider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:intl/intl.dart';
 
 class EditCase extends StatefulWidget {
   const EditCase({super.key});
@@ -162,28 +166,173 @@ class _EditCaseState extends State<EditCase> {
             },
           ),
           const SizedBox(height: 20),
-          const Text(
-            'Typ:',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Typ:',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    DropdownButton<CaseType>(
+                      value: shownCase.caseType,
+                      onChanged: (value) {
+                        setState(() {
+                          shownCase.caseType = value!; // Update the case type
+                        });
+                      },
+                      items: CaseType.values
+                          .map<DropdownMenuItem<CaseType>>((CaseType value) {
+                        return DropdownMenuItem<CaseType>(
+                          value: value,
+                          child:
+                              Text(TDeviceUtil.convertCaseTypeToGerman(value)),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Typ:',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    DropdownButton<CaseStatus>(
+                      value: shownCase.status,
+                      onChanged: (value) {
+                        setState(() {
+                          shownCase.status = value!; // Update the case type
+                        });
+                      },
+                      items: CaseStatus.values
+                          .map<DropdownMenuItem<CaseStatus>>(
+                              (CaseStatus value) {
+                        return DropdownMenuItem<CaseStatus>(
+                          value: value,
+                          child: Text(
+                              TDeviceUtil.convertCaseStatusToGerman(value)),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          DropdownButton<CaseType>(
-            value: shownCase.caseType,
-            onChanged: (value) {
-              setState(() {
-                shownCase.caseType = value!; // Update the case type
-              });
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Postleitzahl:',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      TextFormField(
+                        keyboardType: TextInputType.number,
+                        inputFormatters: <TextInputFormatter>[
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        initialValue: shownCase.zipCode.toString(),
+                        onChanged: (value) {
+                          try {
+                            shownCase.zipCode = int.parse(value);
+                          } catch (e) {
+                            // ignore
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Ortname:',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    TextFormField(
+                      initialValue: shownCase.placeName,
+                      onChanged: (value) {
+                        shownCase.placeName = value;
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Datum der Tat:',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    DateFormat('yyyy-MM-dd').format(shownCase.crimeDateTime),
+                    style: const TextStyle(fontSize: 24),
+                  ),
+                  const Spacer(),
+                  ElevatedButton(
+                    onPressed: () => _selectDate(context),
+                    child: const Text('Datum wählen'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          ElevatedButton(
+            child: const Text("Pick Location"),
+            onPressed: () async {
+              // final result = await showDialog(
+              //   context: context,
+              //   builder: (BuildContext context) {
+              //     return LocationPicker();
+              //   },
+              // );
+
+              // if (result != null) {
+              //   LatLng selectedLocation = result;
+              //   ScaffoldMessenger.of(context).showSnackBar(
+              //     SnackBar(
+              //         content: Text(
+              //             "Location: ${selectedLocation.latitude}, ${selectedLocation.longitude}")),
+              //   );
+              // }
             },
-            items: CaseType.values
-                .where((element) => element != CaseType.unknown)
-                .map<DropdownMenuItem<CaseType>>((CaseType value) {
-              return DropdownMenuItem<CaseType>(
-                value: value,
-                child: Text(TDeviceUtil.convertCaseTypeToGerman(value)),
-              );
-            }).toList(),
           ),
           const SizedBox(height: 20),
           const Text(
@@ -194,7 +343,7 @@ class _EditCaseState extends State<EditCase> {
             ),
           ),
           TextFormField(
-            initialValue: shownCase!.summary,
+            initialValue: shownCase.summary,
             onChanged: (value) {
               shownCase.summary = value;
             },
@@ -205,8 +354,23 @@ class _EditCaseState extends State<EditCase> {
     );
   }
 
+  _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate:
+          shownCase != null ? shownCase!.crimeDateTime : DateTime.now(),
+      firstDate: DateTime(1500),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        shownCase!.crimeDateTime = picked;
+      });
+    }
+  }
+
   Widget _buildLinksTab(CaseDetails shownCase) {
-    links = shownCase!.furtherLinks ?? [];
+    links = shownCase.furtherLinks ?? [];
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -217,7 +381,7 @@ class _EditCaseState extends State<EditCase> {
             shrinkWrap: true,
             itemCount: shownCase!.furtherLinks.length,
             itemBuilder: (context, index) {
-              return _buildLinkItem(index, shownCase!.furtherLinks[index]);
+              return _buildLinkItem(index, shownCase.furtherLinks[index]);
             },
           ),
 
@@ -321,9 +485,9 @@ class _EditCaseState extends State<EditCase> {
               crossAxisSpacing: 10.0,
               mainAxisSpacing: 10.0,
             ),
-            itemCount: shownCase!.images.length,
+            itemCount: shownCase.images.length,
             itemBuilder: (context, index) {
-              return _buildImageItem(index, shownCase!.images[index].image);
+              return _buildImageItem(index, shownCase.images[index].image);
             },
           ),
         ],
@@ -480,76 +644,105 @@ class _EditCaseState extends State<EditCase> {
   }
 
   Future<void> _updateCase() async {
-    //case
-    await SupaBaseConst.supabase.from('cases').update({
-      'title': shownCase!.title,
-      'summary': shownCase!.summary,
-      'case_type': shownCase!.caseType,
-    }).match({'id': shownCase!.id});
+    try {
+      //case
+      await SupaBaseConst.supabase.from('cases').update({
+        'title': shownCase!.title,
+        'summary': shownCase!.summary,
+        'case_type': shownCase!.caseType,
+      }).match({'id': shownCase!.id});
 
-    //links
-    for (var link in links.where((element) => element.isNew)) {
-      _saveLinkToSupaBase(link);
-    }
-    for (var link in links) {
-      if (link.updated && _isNotInAddLinkList(link)) {
-        await _updateLinkInSupabase(link);
+      //links
+      for (var link in links.where((element) => element.isNew)) {
+        _saveLinkToSupaBase(link);
+      }
+      for (var link in links) {
+        if (link.updated && _isNotInAddLinkList(link)) {
+          await _updateLinkInSupabase(link);
+        }
+      }
+      for (var link in links.where((element) => element.delete)) {
+        await _deleteLinkFromSupabase(link);
+      }
+
+      //images
+      for (var image in _imagesToAdd) {
+        await _uploadImageToSupabase(image.file);
+      }
+      for (var image in _imagesTodelete) {
+        await _deleteImageFromBucket(image);
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Speichern erfolgreich!'),
+            backgroundColor: Colors.greenAccent,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Speichern fehlgeschlagen!'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
       }
     }
-    for (var link in links.where((element) => element.delete)) {
-      await _deleteLinkFromSupabase(link);
-    }
-
-    //images
-    for (var image in _imagesToAdd) {
-      final path = await _uploadImageToSupabase(image.file);
-      print('Uploaded image to Supabase: $path');
-    }
-    for (var image in _imagesTodelete) {
-      await _deleteImageFromBucket(image);
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Speichern erfolgreich!'),
-        backgroundColor: Colors.green,
-      ),
-    );
   }
 
   Future<void> _saveNewCase() async {
-    //case
-    var createdCase =
-        await SupaBaseConst.supabase.rpc('create_crime_case_angular', params: {
-      'p_title': shownCase!.title,
-      'p_summary': shownCase!.summary,
-      'p_created_by': shownCase!.createdBy,
-      'p_place_name': shownCase!.placeName,
-      'p_zip_code': shownCase!.zipCode,
-      'p_case_type': TDeviceUtil.convertCaseTypeToString(shownCase!.caseType),
-      'p_status': TDeviceUtil.convertCaseStatusToString(shownCase!.status),
-      'p_longitude': shownCase!.longitude,
-      'p_latitude': shownCase!.latitude,
-      'p_crime_date_time': shownCase!.crimeDateTime.toIso8601String(),
-      'p_links': null,
-    });
-    shownCase!.id = createdCase;
-    //links
-    for (var link in links.where((element) => element.isNew)) {
-      _saveLinkToSupaBase(link);
-    }
+    try {
+      //case
+      var createdCase = await SupaBaseConst.supabase
+          .rpc('create_crime_case_angular', params: {
+        'p_title': shownCase!.title,
+        'p_summary': shownCase!.summary,
+        'p_created_by': shownCase!.createdBy,
+        'p_place_name': shownCase!.placeName,
+        'p_zip_code': shownCase!.zipCode,
+        'p_case_type': TDeviceUtil.convertCaseTypeToString(shownCase!.caseType),
+        'p_status': TDeviceUtil.convertCaseStatusToString(shownCase!.status),
+        'p_longitude': shownCase!.longitude,
+        'p_latitude': shownCase!.latitude,
+        'p_crime_date_time': shownCase!.crimeDateTime.toIso8601String(),
+        'p_links': null,
+      });
+      shownCase!.id = createdCase;
+      shownCase!.isNew = false;
+      //links
+      for (var link in links.where((element) => element.isNew)) {
+        _saveLinkToSupaBase(link);
+      }
 
-    //images
-    for (var image in _imagesToAdd) {
-      await _uploadImageToSupabase(image.file);
-    }
+      //images
+      for (var image in _imagesToAdd) {
+        await _uploadImageToSupabase(image.file);
+      }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Speichern erfolgreich!'),
-        backgroundColor: Colors.green,
-      ),
-    );
+      if (mounted) {
+        var provider = Provider.of<CaseProvider>(context);
+        provider.resetCases();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Speichern erfolgreich!'),
+            backgroundColor: Colors.greenAccent,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Speichern fehlgeschlagen!'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
   }
 
   void _showDeleteDialog() {
@@ -580,27 +773,43 @@ class _EditCaseState extends State<EditCase> {
   }
 
   Future<void> _deleteCase() async {
-    //links
-    for (var link in shownCase!.furtherLinks) {
-      _deleteLinkFromSupabase(link);
-    }
+    try {
+      //links
+      for (var link in shownCase!.furtherLinks) {
+        _deleteLinkFromSupabase(link);
+      }
 
-    //images
-    for (var image in shownCase!.images) {
-      await _deleteImageFromBucket(image);
-    }
-    //case
-    await SupaBaseConst.supabase
-        .from('cases')
-        .delete()
-        .match({'id': shownCase!.id});
+      //images
+      for (var image in shownCase!.images) {
+        await _deleteImageFromBucket(image);
+      }
+      //case
+      await SupaBaseConst.supabase
+          .from('cases')
+          .delete()
+          .match({'id': shownCase!.id});
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Löschen erfolgreich!'),
-        backgroundColor: Colors.red,
-      ),
-    );
-    Navigator.pop(context);
+      if (mounted) {
+        var provider = Provider.of<CaseProvider>(context);
+        provider.removeCaseFromLists(shownCase!.id!);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Löschen erfolgreich!'),
+            backgroundColor: Colors.yellowAccent,
+          ),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Löschen fehlgeschlagen!'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
   }
 }

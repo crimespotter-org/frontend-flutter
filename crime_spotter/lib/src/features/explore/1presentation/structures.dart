@@ -53,10 +53,10 @@ class CaseDetails {
       placeName: json['place_name'] ?? '',
       zipCode: json['zip_code'] ?? 0,
       caseType: TDeviceUtil.convertStringtoCaseType(json['case_type']) ??
-          CaseType.unknown,
+          CaseType.murder, //unknown is not allowed in dropdown!!!
       crimeDateTime: DateTime.parse(json['crime_date_time']),
       status: TDeviceUtil.convertStringToCaseStatus(json['status']) ??
-          CaseStatus.unknown,
+          CaseStatus.open, //unknown is not allowed in dropdown!!!
     );
   }
 
@@ -64,8 +64,8 @@ class CaseDetails {
       : id = null,
         title = "",
         summary = "",
-        latitude = 0,
-        longitude = 0,
+        latitude = 1,
+        longitude = 1,
         createdBy = '',
         createdAt = DateTime.now(),
         placeName = '',
