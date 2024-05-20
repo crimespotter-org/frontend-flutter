@@ -94,8 +94,7 @@ class _MapPageState extends State<MapPage> {
             child: OpenStreetMap(controller: heatController),
           ),
           Positioned(
-            left: -MediaQuery.of(context).size.width /
-                2, // Adjust the left position as needed
+            left: -MediaQuery.of(context).size.width / 2,
             top: -MediaQuery.of(context).size.height * 0.21,
             height: MediaQuery.of(context).size.height * 0.53,
             width: MediaQuery.of(context).size.width * 2,
