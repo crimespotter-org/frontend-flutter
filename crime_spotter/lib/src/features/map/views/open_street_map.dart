@@ -1,9 +1,10 @@
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
-import 'package:crime_spotter/src/shared/4data/cardProvider.dart';
+import 'package:crime_spotter/src/shared/4data/card_provider.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
 import 'package:crime_spotter/src/shared/4data/helper_functions.dart';
-import 'package:crime_spotter/src/shared/4data/mapProvider.dart';
+import 'package:crime_spotter/src/shared/4data/map_provider.dart';
 import 'package:crime_spotter/src/shared/constants/colors.dart';
+import 'package:crime_spotter/src/shared/constants/size.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:geocoding/geocoding.dart';
@@ -34,9 +35,9 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
                 posistion,
                 markerIcon: const MarkerIcon(
                   icon: Icon(
-                    Icons.pin_drop,
-                    color: Colors.blue,
-                    size: 48,
+                    Icons.place,
+                    color: TColor.defaultPinColor,
+                    size: TSize.defaultPinSize,
                   ),
                 ),
               );
@@ -84,7 +85,16 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
                 bool isCase = caseProvider.cases.any((element) =>
                     element.longitude == currentLocation.longitude &&
                     element.latitude == currentLocation.latitude);
-                return Card(
+                return Container(
+                  decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20)),
+                    image: DecorationImage(
+                      image: AssetImage("assets/Backgroung.png"),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(8),
                     child: Row(
@@ -99,7 +109,8 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
                               widget.controller.removeMarker(geoPoint),
                               Navigator.pop(currentContext)
                             },
-                            child: const Icon(Icons.delete),
+                            child:
+                                const Icon(Icons.delete, color: Colors.white),
                           ),
                         ),
                         Expanded(
@@ -115,7 +126,10 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
                         ),
                         GestureDetector(
                           onTap: () => Navigator.pop(currentContext),
-                          child: const Icon(Icons.clear),
+                          child: const Icon(
+                            Icons.clear,
+                            color: Colors.white,
+                          ),
                         )
                       ],
                     ),
@@ -190,9 +204,9 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
                             posistion,
                             markerIcon: const MarkerIcon(
                               icon: Icon(
-                                Icons.pin_drop,
-                                color: Colors.blue,
-                                size: 48,
+                                Icons.person_pin_circle,
+                                color: Colors.red,
+                                size: TSize.defaultPinSize,
                               ),
                             ),
                           ),
@@ -235,15 +249,43 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.blue,
+            color: Colors.white,
           ),
         ),
         const Divider(
           thickness: 1,
         ),
-        Text('Latitude: ${location.latitude}'),
+        RichText(
+          text: TextSpan(
+            style: DefaultTextStyle.of(context).style,
+            children: <TextSpan>[
+              const TextSpan(
+                text: 'Latitude: ',
+                style: TextStyle(color: TColor.dividerColor),
+              ),
+              TextSpan(
+                text: '${location.latitude}',
+                style: const TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+        ),
         const SizedBox(height: 15),
-        Text('Longitude: ${location.longitude}'),
+        RichText(
+          text: TextSpan(
+            style: DefaultTextStyle.of(context).style,
+            children: <TextSpan>[
+              const TextSpan(
+                text: 'Longitude: ',
+                style: TextStyle(color: TColor.dividerColor),
+              ),
+              TextSpan(
+                text: '${location.longitude}',
+                style: const TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -257,7 +299,7 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.blue,
+            color: Colors.white,
           ),
         ),
         buildDivider(text: 'Status der Ermittlung'),
@@ -280,7 +322,8 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
           content: '${currentCase.placeName} (Plz: ${currentCase.zipCode})',
           widget: const Icon(
             Icons.pin_drop,
-            color: Colors.indigo,
+            color: TColor.defaultPinColor,
+            size: TSize.defaultPinSize * 0.6,
           ),
         ),
         buildDivider(text: 'Zusammenfassung'),
@@ -288,13 +331,21 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
           currentCase.summary,
           overflow: TextOverflow.ellipsis,
           maxLines: 4,
+          style: const TextStyle(color: Colors.white),
         ),
         ElevatedButton(
+          style: ButtonStyle(
+            backgroundColor:
+                MaterialStateProperty.all<Color>(TColor.buttonColor),
+          ),
           onPressed: () => {
-            Navigator.pushNamed(context, UIData.single_case,
+            Navigator.pushNamed(context, UIData.singleCase,
                 arguments: currentCase.id)
           },
-          child: const Text('Zur Fallakte'),
+          child: const Text(
+            'Zur Fallakte',
+            style: TextStyle(color: Colors.white),
+          ),
         ),
       ],
     );
@@ -315,6 +366,7 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
         Text(
           content,
           textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.white),
         ),
       ],
     );
@@ -330,7 +382,7 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
         ),
         Text(
           text,
-          style: const TextStyle(color: Colors.blue),
+          style: const TextStyle(color: TColor.dividerColor),
         ),
         const SizedBox(
           width: 5,

@@ -1,4 +1,4 @@
-import 'package:crime_spotter/src/shared/4data/cardProvider.dart';
+import 'package:crime_spotter/src/shared/4data/card_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

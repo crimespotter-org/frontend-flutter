@@ -1,5 +1,5 @@
 import 'package:crime_spotter/src/shared/4data/const.dart';
-import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
+import 'package:crime_spotter/src/shared/4data/supabase_const.dart';
 import 'package:flutter/material.dart';
 
 class SplashPage extends StatefulWidget {

@@ -1,5 +1,5 @@
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
-import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
+import 'package:crime_spotter/src/shared/4data/supabase_const.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class CaseService {
