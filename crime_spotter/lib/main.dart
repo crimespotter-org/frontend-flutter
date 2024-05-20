@@ -3,9 +3,9 @@ import 'package:crime_spotter/src/features/explore/1presentation/edit_case.dart'
 import 'package:crime_spotter/src/features/explore/1presentation/explore.dart';
 import 'package:crime_spotter/src/features/explore/1presentation/single_case.dart';
 import 'package:crime_spotter/src/features/admin/admin.dart';
-import 'package:crime_spotter/src/shared/4data/cardProvider.dart';
-import 'package:crime_spotter/src/shared/4data/mapProvider.dart';
-import 'package:crime_spotter/src/shared/4data/userdetailsProvider.dart';
+import 'package:crime_spotter/src/shared/4data/card_provider.dart';
+import 'package:crime_spotter/src/shared/4data/map_provider.dart';
+import 'package:crime_spotter/src/shared/4data/userdetails_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -22,7 +22,6 @@ void main() async {
     url: 'https://nmijjbrgxttaatvjvegj.supabase.co',
     anonKey:
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5taWpqYnJneHR0YWF0dmp2ZWdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTEwMjU4NjIsImV4cCI6MjAyNjYwMTg2Mn0.uSz4jgMEZ8P0ngtKEGbm5gjU9hgWBH3ALBdrUufBRYc',
-    // authFlowType: AuthFlowType.pkce,
   );
 
   runApp(const MyApp());
@@ -55,8 +54,8 @@ class MyApp extends StatelessWidget {
           UIData.register: (BuildContext context) => const Register(),
           UIData.explore: (BuildContext context) => const Explore(),
           UIData.settings: (BuildContext context) => const Settings(),
-          UIData.single_case: (BuildContext context) => const SingleCase(),
-          UIData.edit_case: (BuildContext context) => const EditCase(),
+          UIData.singleCase: (BuildContext context) => const SingleCase(),
+          UIData.editCase: (BuildContext context) => const EditCase(),
         },
       ),
     );

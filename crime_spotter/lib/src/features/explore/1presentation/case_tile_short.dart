@@ -17,7 +17,7 @@ class CaseTileShort extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () async {
-        Navigator.pushNamed(context, UIData.single_case,
+        Navigator.pushNamed(context, UIData.singleCase,
             arguments: shownCase.id);
       },
       child: Container(
@@ -73,7 +73,7 @@ class CaseTileShort extends StatelessWidget {
                           iconSize: 50,
                           color: Colors.redAccent,
                           onPressed: () async {
-                            Navigator.pushNamed(context, UIData.edit_case,
+                            Navigator.pushNamed(context, UIData.editCase,
                                 arguments: shownCase.id);
                           },
                         ),

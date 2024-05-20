@@ -1,7 +1,7 @@
-import 'package:crime_spotter/src/shared/4data/cardProvider.dart';
+import 'package:crime_spotter/src/shared/4data/card_provider.dart';
 import 'package:crime_spotter/src/shared/4data/helper_functions.dart';
-import 'package:crime_spotter/src/shared/4data/mapProvider.dart';
-import 'package:crime_spotter/src/shared/4data/userdetailsProvider.dart';
+import 'package:crime_spotter/src/shared/4data/map_provider.dart';
+import 'package:crime_spotter/src/shared/4data/userdetails_provider.dart';
 import 'package:crime_spotter/src/shared/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';

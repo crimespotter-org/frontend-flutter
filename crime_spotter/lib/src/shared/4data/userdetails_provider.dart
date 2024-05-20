@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
-import 'package:crime_spotter/src/shared/model/activeUserModel.dart';
-import 'package:crime_spotter/src/shared/model/fileModel.dart';
+import 'package:crime_spotter/src/shared/4data/supabase_const.dart';
+import 'package:crime_spotter/src/shared/model/active_user_model.dart';
+import 'package:crime_spotter/src/shared/model/file_model.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -19,8 +19,8 @@ class UserDetailsProvider extends ChangeNotifier {
   String _jwt = "";
   bool _userIsAuthenticated = false;
   List<ActiveUser> _activeUsers = [];
-  List<ActiveUser> _activeUsersIncludingCurrent = [];
-  List<FileModel> _profilePictures = [];
+  final List<ActiveUser> _activeUsersIncludingCurrent = [];
+  final List<FileModel> _profilePictures = [];
 
   String get jwt => _jwt;
   UserRole get userRole => _userRole;
@@ -143,7 +143,7 @@ class UserDetailsProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> updateProfilePicture(
+  Future<bool> updateProfilePicture(
       {required XFile image,
       String? userId,
       bool useCurrentUser = true}) async {
@@ -179,8 +179,9 @@ class UserDetailsProvider extends ChangeNotifier {
         }
       }
       notifyListeners();
+      return true;
     } catch (ex) {
-      print("Fehler beim Profilbild aktualisieren");
+      return false;
     }
   }
 

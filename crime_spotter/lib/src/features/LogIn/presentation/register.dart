@@ -1,7 +1,5 @@
-import 'dart:async';
-
 import 'package:crime_spotter/src/shared/4data/const.dart';
-import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
+import 'package:crime_spotter/src/shared/4data/supabase_const.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -22,39 +20,48 @@ class _RegisterState extends State<Register> {
   late final TextEditingController _reapeatedPasswordController =
       TextEditingController();
 
-  Future<void> _register() async {
-    setState(() {
-      _isLoading = true;
-    });
+  void _register() {
     final sm = ScaffoldMessenger.of(context);
     final theme = Theme.of(context);
+    Map<String, dynamic> newRole = <String, dynamic>{};
+
+    setState(
+      () {
+        _isLoading = true;
+      },
+    );
+
     try {
-      var authResponse = await SupaBaseConst.supabase.auth.signUp(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-        // emailRedirectTo:
-        //     kIsWeb ? null : 'io.supabase.flutterquickstart://login-callback/',
+      SupaBaseConst.supabase.auth
+          .signUp(
+            email: _emailController.text.trim(),
+            password: _passwordController.text,
+          )
+          .then(
+            (authResponse) async => {
+              if (mounted)
+                {
+                  newRole = {
+                    'username': _emailController.text,
+                    'role': 'crimespotter',
+                    'id': authResponse.user!.id
+                  },
+                  await SupaBaseConst.supabase
+                      .from('user_profiles')
+                      .insert(newRole),
+                },
+            },
+          );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Bitte bestätigen Sie die Email!'),
+        ),
       );
-
-      if (mounted) {
-        var newRole = {
-          'username': _emailController.text,
-          'role': 'crimespotter',
-          'id': authResponse.user!.id
-        };
-
-        await SupaBaseConst.supabase.from('user_profiles').insert(newRole);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Bitte bestätigen Sie die Email!'),
-          ),
-        );
-        _emailController.clear();
-        _passwordController.clear();
-        _reapeatedPasswordController.clear();
-      }
-    } on AuthException catch (ex) {
+      _emailController.clear();
+      _passwordController.clear();
+      _reapeatedPasswordController.clear();
+    } on AuthException {
       sm.showSnackBar(
         SnackBar(
           content: const Text('Überprüfen Sie Ihre Eingaben'),
@@ -70,9 +77,11 @@ class _RegisterState extends State<Register> {
       );
     } finally {
       if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+        setState(
+          () {
+            _isLoading = false;
+          },
+        );
       }
     }
   }

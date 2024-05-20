@@ -1,5 +1,5 @@
-import 'package:crime_spotter/src/features/map/views/mapToggleButton.dart';
-import 'package:crime_spotter/src/shared/4data/cardProvider.dart';
+import 'package:crime_spotter/src/features/map/views/map_toggle_button.dart';
+import 'package:crime_spotter/src/shared/4data/card_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:geocoding/geocoding.dart';

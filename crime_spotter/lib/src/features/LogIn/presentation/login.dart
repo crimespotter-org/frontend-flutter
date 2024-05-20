@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:crime_spotter/src/features/LogIn/presentation/register.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
-import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
-import 'package:crime_spotter/src/shared/4data/userdetailsProvider.dart';
+import 'package:crime_spotter/src/shared/4data/supabase_const.dart';
+import 'package:crime_spotter/src/shared/4data/userdetails_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -53,7 +53,7 @@ class _LogInState extends State<LogIn> {
         _emailController.clear();
         _passwordController.clear();
       }
-    } on AuthException catch (ex) {
+    } on AuthException {
       sn.showSnackBar(
         SnackBar(
           content: const Text('Überprüfen Sie Ihre Eingaben'),
