@@ -105,40 +105,28 @@ class MapProvider extends ChangeNotifier {
   }
 
   MarkerIcon buildMarker(CaseType type) {
-    IconData icon;
-    Color color;
+    final iconMap = {
+      CaseType.murder: 'Murder',
+      CaseType.theft: 'Theft',
+      CaseType.robberyMurder: 'RobberyMurder',
+      CaseType.brawl: 'Brawl',
+      CaseType.rape: 'Rape',
+    };
 
-    switch (type) {
-      case CaseType.murder:
-        icon = Icons.directions_run;
-        color = Colors.red;
-        break;
-      case CaseType.theft:
-        icon = Icons.report;
-        color = Colors.grey;
-        break;
-      case CaseType.robberyMurder:
-        icon = Icons.local_atm;
-        color = Colors.green;
-        break;
-      case CaseType.brawl:
-        icon = Icons.groups;
-        color = Colors.brown;
-        break;
-      case CaseType.rape:
-        icon = Icons.pan_tool;
-        color = Colors.purple;
-        break;
-      default:
-        icon = Icons.place;
-        color = TColor.defaultPinColor;
-        break;
-    }
+    final iconPicture = iconMap[type] ?? 'Theft';
+
     return MarkerIcon(
-      icon: Icon(
-        icon,
-        color: color,
-        size: TSize.defaultPinSize,
+      iconWidget: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          height: TSize.defaultPinSize,
+          color: TColor.buttonColor2,
+          padding: const EdgeInsets.all(5),
+          child: Image.asset(
+            'assets/icons/$iconPicture.png',
+            color: Colors.white,
+          ),
+        ),
       ),
     );
   }

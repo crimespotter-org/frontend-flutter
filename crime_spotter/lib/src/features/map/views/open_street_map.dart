@@ -321,9 +321,9 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
         buildRow(
           content: '${currentCase.placeName} (Plz: ${currentCase.zipCode})',
           widget: const Icon(
-            Icons.person_pin_circle,
+            Icons.pin_drop,
             color: TColor.defaultPinColor,
-            size: TSize.defaultPinSize,
+            size: TSize.defaultPinSize * 0.6,
           ),
         ),
         buildDivider(text: 'Zusammenfassung'),
