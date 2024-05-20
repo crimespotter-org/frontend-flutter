@@ -1,5 +1,7 @@
 import 'package:crime_spotter/src/features/map/views/map_toggle_button.dart';
 import 'package:crime_spotter/src/shared/4data/card_provider.dart';
+import 'package:crime_spotter/src/shared/constants/colors.dart';
+import 'package:crime_spotter/src/shared/constants/size.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:geocoding/geocoding.dart';
@@ -104,7 +106,7 @@ class MapProvider extends ChangeNotifier {
 
   MarkerIcon buildMarker(CaseType type) {
     IconData icon;
-    MaterialColor color;
+    Color color;
 
     switch (type) {
       case CaseType.murder:
@@ -128,15 +130,15 @@ class MapProvider extends ChangeNotifier {
         color = Colors.purple;
         break;
       default:
-        icon = Icons.pin_drop;
-        color = Colors.blue;
+        icon = Icons.place;
+        color = TColor.defaultPinColor;
         break;
     }
     return MarkerIcon(
       icon: Icon(
         icon,
         color: color,
-        size: 48,
+        size: TSize.defaultPinSize,
       ),
     );
   }

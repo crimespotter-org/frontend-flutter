@@ -107,7 +107,6 @@ class _SettingsState extends State<Settings> {
                               value: value,
                               child: Text(
                                 value,
-                                style: const TextStyle(color: Colors.white),
                               ),
                             );
                           },

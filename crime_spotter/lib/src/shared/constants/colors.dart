@@ -5,4 +5,5 @@ class TColor {
   static const buttonColor2 = Color(0xFF3e6964);
   static const backgroundColor = Color(0xFF404040);
   static const dividerColor = Color.fromARGB(255, 0, 253, 224);
+  static const defaultPinColor = Color(0xFF3e6964);
 }

@@ -7,4 +7,5 @@ class TSize {
 
   static const double spaceBtwItems = 16.0;
   static const double defaultSpace = 24.0;
+  static const double defaultPinSize = 50;
 }

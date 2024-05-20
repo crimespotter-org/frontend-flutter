@@ -4,6 +4,7 @@ import 'package:crime_spotter/src/shared/4data/const.dart';
 import 'package:crime_spotter/src/shared/4data/helper_functions.dart';
 import 'package:crime_spotter/src/shared/4data/map_provider.dart';
 import 'package:crime_spotter/src/shared/constants/colors.dart';
+import 'package:crime_spotter/src/shared/constants/size.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:geocoding/geocoding.dart';
@@ -34,9 +35,9 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
                 posistion,
                 markerIcon: const MarkerIcon(
                   icon: Icon(
-                    Icons.pin_drop,
-                    color: TColor.backgroundColor,
-                    size: 48,
+                    Icons.place,
+                    color: TColor.defaultPinColor,
+                    size: TSize.defaultPinSize,
                   ),
                 ),
               );
@@ -203,9 +204,9 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
                             posistion,
                             markerIcon: const MarkerIcon(
                               icon: Icon(
-                                Icons.pin_drop,
-                                color: TColor.backgroundColor,
-                                size: 48,
+                                Icons.person_pin_circle,
+                                color: Colors.red,
+                                size: TSize.defaultPinSize,
                               ),
                             ),
                           ),
@@ -320,8 +321,9 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
         buildRow(
           content: '${currentCase.placeName} (Plz: ${currentCase.zipCode})',
           widget: const Icon(
-            Icons.pin_drop,
-            color: TColor.buttonColor,
+            Icons.person_pin_circle,
+            color: TColor.defaultPinColor,
+            size: TSize.defaultPinSize,
           ),
         ),
         buildDivider(text: 'Zusammenfassung'),
