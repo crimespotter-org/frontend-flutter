@@ -52,7 +52,7 @@ class CaseDetails {
       createdAt: DateTime.parse(json['created_at']),
       placeName: json['place_name'] ?? '',
       zipCode: json['zip_code'] ?? 0,
-      caseType: TDeviceUtil.convertStringtoCaseType(json['case_type']) ??
+      caseType: TDeviceUtil.convertStringToCaseType(json['case_type']) ??
           CaseType.murder, //unknown is not allowed in dropdown!!!
       crimeDateTime: DateTime.parse(json['crime_date_time']),
       status: TDeviceUtil.convertStringToCaseStatus(json['status']) ??

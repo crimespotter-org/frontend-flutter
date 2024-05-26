@@ -155,6 +155,7 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
                         caseProvider: caseProvider,
                         markers: widget.markerMap),
                   );
+                  mapProvider.initMarkersDrawn(true);
                 },
               ),
           },
