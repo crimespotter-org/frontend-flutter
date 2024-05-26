@@ -3,6 +3,7 @@ import 'package:crime_spotter/src/shared/4data/helper_functions.dart';
 import 'package:crime_spotter/src/shared/4data/map_provider.dart';
 import 'package:crime_spotter/src/shared/4data/userdetails_provider.dart';
 import 'package:crime_spotter/src/shared/constants/colors.dart';
+import 'package:crime_spotter/src/shared/model/active_user_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:geocoding/geocoding.dart';
@@ -268,114 +269,181 @@ class _TMapOptionState extends State<TMapOption> {
     );
   }
 
+  Widget buildAutocompleteForCreator(
+      {required String title, required FilterType type}) {
+    final userProvider = Provider.of<UserDetailsProvider>(context);
+    return Autocomplete<ActiveUser>(
+      optionsBuilder: (TextEditingValue textEditingValue) {
+        return userProvider.activeUsersIncludingCurrent
+            .where(
+              (suggestion) =>
+                  suggestion.name.toLowerCase().contains(
+                        textEditingValue.text.toLowerCase(),
+                      ) &&
+                  suggestion.role != UserRole.crimespotter,
+            )
+            .toSet();
+      },
+      onSelected: (ActiveUser selection) {
+        setState(
+          () {
+            widget.selectedFilter[type] = selection.id;
+          },
+        );
+      },
+      fieldViewBuilder: (BuildContext context,
+          TextEditingController textEditingController,
+          FocusNode focusNode,
+          VoidCallback onFieldSubmitted) {
+        textEditingController.text = userProvider.activeUsersIncludingCurrent
+                .where((element) => element.id == widget.selectedFilter[type])
+                .singleOrNull
+                ?.name ??
+            '';
+        return TextFormField(
+          controller: textEditingController,
+          focusNode: focusNode,
+          onFieldSubmitted: (String value) {
+            onFieldSubmitted();
+          },
+          style: const TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            labelText: '$title filtern',
+            labelStyle: const TextStyle(color: Colors.white),
+          ),
+        );
+      },
+      displayStringForOption: (option) => option.name.toString(),
+      optionsViewBuilder: (BuildContext context,
+          AutocompleteOnSelected<ActiveUser> onSelected,
+          Iterable<ActiveUser> options) {
+        return Material(
+          elevation: 4.0,
+          child: ListView(
+            children: options
+                .map(
+                  (ActiveUser option) => ListTile(
+                    title: Text(
+                      option.name,
+                      style: const TextStyle(color: Colors.black),
+                    ),
+                    onTap: () {
+                      setState(() {
+                        onSelected(option);
+                      });
+                    },
+                  ),
+                )
+                .toList(),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget buildTextbox({required String title, required FilterType type}) {
+    return TextFormField(
+      controller:
+          type == FilterType.title ? _titelController : _placeNameController,
+      style: const TextStyle(color: Colors.white),
+      onChanged: (value) {
+        widget.selectedFilter[type] = value;
+      },
+      decoration: InputDecoration(
+        labelText:
+            type == FilterType.title ? 'Titel filtern' : 'Tatort filtern',
+        labelStyle: const TextStyle(color: Colors.white),
+      ),
+    );
+  }
+
   Widget buildInputBox({required String title, required FilterType type}) {
     final provider = Provider.of<CaseProvider>(context);
-    final userProvider = Provider.of<UserDetailsProvider>(context);
-    return type == FilterType.title || type == FilterType.placeName
-        ? TextFormField(
-            controller: type == FilterType.title
-                ? _titelController
-                : _placeNameController,
-            style: const TextStyle(color: Colors.white),
-            onChanged: (value) {
-              widget.selectedFilter[type] = value;
-            },
-            decoration: InputDecoration(
-              labelText:
-                  type == FilterType.title ? 'Titel filtern' : 'Tatort filtern',
-              labelStyle: const TextStyle(color: Colors.white),
-            ),
-          )
-        : Autocomplete<String>(
-            optionsBuilder: (TextEditingValue textEditingValue) {
-              switch (type) {
-                case FilterType.status:
-                  return ["Offen", "Abgeschlossen"].where((status) => status
-                      .toLowerCase()
-                      .contains(textEditingValue.text.toLowerCase()));
 
-                case FilterType.createdBy:
-                  return userProvider.activeUsersIncludingCurrent
-                      .where(
-                        (suggestion) =>
-                            suggestion.name.toLowerCase().contains(
-                                  textEditingValue.text.toLowerCase(),
-                                ) &&
-                            suggestion.role != UserRole.crimespotter,
-                      )
-                      .map(
-                        (e) => e.name,
-                      )
-                      .toSet();
+    if (type == FilterType.createdBy) {
+      return buildAutocompleteForCreator(title: title, type: type);
+    }
+    if (type == FilterType.title || type == FilterType.placeName) {
+      return buildTextbox(title: title, type: type);
+    }
 
-                case FilterType.caseType:
-                  return provider.cases
-                      .where(
-                        (suggestion) => TDeviceUtil.convertCaseTypeToGerman(
-                                suggestion.caseType)
-                            .toLowerCase()
-                            .contains(
-                              textEditingValue.text.toLowerCase(),
-                            ),
-                      )
-                      .map(
-                        (e) => TDeviceUtil.convertCaseTypeToGerman(e.caseType),
-                      )
-                      .toSet();
+    return Autocomplete<String>(
+      optionsBuilder: (TextEditingValue textEditingValue) {
+        switch (type) {
+          case FilterType.status:
+            return ["Offen", "Abgeschlossen"].where(
+              (status) => status.toLowerCase().contains(
+                    textEditingValue.text.toLowerCase(),
+                  ),
+            );
 
-                default:
-                  return provider.cases.map((e) => e.title).toSet();
-              }
-            },
-            onSelected: (String selection) {
-              setState(
-                () {
-                  widget.selectedFilter[type] = selection;
-                },
-              );
-            },
-            fieldViewBuilder: (BuildContext context,
-                TextEditingController textEditingController,
-                FocusNode focusNode,
-                VoidCallback onFieldSubmitted) {
-              textEditingController.text = widget.selectedFilter[type] ?? '';
-              return TextFormField(
-                controller: textEditingController,
-                focusNode: focusNode,
-                onFieldSubmitted: (String value) {
-                  onFieldSubmitted();
-                },
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  labelText: '$title filtern',
-                  labelStyle: const TextStyle(color: Colors.white),
-                ),
-              );
-            },
-            optionsViewBuilder: (BuildContext context,
-                AutocompleteOnSelected<String> onSelected,
-                Iterable<String> options) {
-              return Material(
-                elevation: 4.0,
-                child: ListView(
-                  children: options
-                      .map(
-                        (String option) => ListTile(
-                          title: Text(
-                            option,
-                            style: const TextStyle(color: Colors.black),
+          case FilterType.caseType:
+            return provider.cases
+                .where(
+                  (suggestion) =>
+                      TDeviceUtil.convertCaseTypeToGerman(suggestion.caseType)
+                          .toLowerCase()
+                          .contains(
+                            textEditingValue.text.toLowerCase(),
                           ),
-                          onTap: () {
-                            setState(() {
-                              onSelected(option);
-                            });
-                          },
-                        ),
-                      )
-                      .toList(),
-                ),
-              );
-            },
-          );
+                )
+                .map(
+                  (e) => TDeviceUtil.convertCaseTypeToGerman(e.caseType),
+                )
+                .toSet();
+
+          default:
+            return provider.cases.map((e) => e.title).toSet();
+        }
+      },
+      onSelected: (String selection) {
+        setState(
+          () {
+            widget.selectedFilter[type] = selection;
+          },
+        );
+      },
+      fieldViewBuilder: (BuildContext context,
+          TextEditingController textEditingController,
+          FocusNode focusNode,
+          VoidCallback onFieldSubmitted) {
+        textEditingController.text = widget.selectedFilter[type] ?? '';
+        return TextFormField(
+          controller: textEditingController,
+          focusNode: focusNode,
+          onFieldSubmitted: (String value) {
+            onFieldSubmitted();
+          },
+          style: const TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            labelText: '$title filtern',
+            labelStyle: const TextStyle(color: Colors.white),
+          ),
+        );
+      },
+      optionsViewBuilder: (BuildContext context,
+          AutocompleteOnSelected<String> onSelected, Iterable<String> options) {
+        return Material(
+          elevation: 4.0,
+          child: ListView(
+            children: options
+                .map(
+                  (String option) => ListTile(
+                    title: Text(
+                      option,
+                      style: const TextStyle(color: Colors.black),
+                    ),
+                    onTap: () {
+                      setState(() {
+                        onSelected(option);
+                      });
+                    },
+                  ),
+                )
+                .toList(),
+          ),
+        );
+      },
+    );
   }
 }
