@@ -1,4 +1,3 @@
-import 'package:crime_spotter/src/features/explore/1presentation/exploreArgs.dart';
 import 'package:crime_spotter/src/features/map/views/map_option.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
 import 'package:crime_spotter/src/shared/4data/supabase_const.dart';
@@ -9,11 +8,9 @@ import 'package:geocoding/geocoding.dart';
 
 class ButtonController {
   static List<FloatingActionButton> itemsActionBar(
-      BuildContext context,
-      bool isAdmin,
-      MapController mapController,
-      Map<GeoPoint, List<Placemark>> markers,
-      Map<FilterType, String?> selectedFilter) {
+    BuildContext context,
+    bool isAdmin,
+  ) {
     List<FloatingActionButton> list = [];
     list.add(
       FloatingActionButton(
@@ -35,10 +32,6 @@ class ButtonController {
           Navigator.pushNamed(
             context,
             UIData.explore,
-            arguments: ExploreArgs(
-                mapController: mapController,
-                markers: markers,
-                selectedFilter: selectedFilter),
           );
         },
         tooltip: "Entdecken",

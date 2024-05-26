@@ -1,15 +1,21 @@
 import 'dart:math';
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
 import 'package:crime_spotter/src/shared/4data/case_service.dart';
+import 'package:crime_spotter/src/shared/4data/helper_functions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 
 enum CaseVoting { like, dislike }
 
 enum CaseType { murder, theft, robberyMurder, brawl, rape }
 
+enum CaseTypeNullable { murder, theft, robberyMurder, brawl, rape, none }
+
 enum CaseStatus { open, closed }
+
+enum CaseStatusNullable { open, closed, none }
 
 class CaseProvider extends ChangeNotifier {
   CaseProvider() {
@@ -19,6 +25,7 @@ class CaseProvider extends ChangeNotifier {
   final List<CaseDetails> _casesDetailed = [];
   List<CaseDetails> _cases = [];
   List<CaseDetails> _filteredCases = [];
+  List<CaseDetails> _filteredCasesExploreView = [];
   List<Uint8List> _casesForVoting = [];
   Offset _position = Offset.zero;
   bool _isDragging = false;
@@ -28,6 +35,7 @@ class CaseProvider extends ChangeNotifier {
   List<CaseDetails> get cases => _cases;
   List<CaseDetails> get casesDetailed => _casesDetailed;
   List<CaseDetails> get filteredCases => _filteredCases;
+  List<CaseDetails> get filteredCasesExploreView => _filteredCasesExploreView;
   List<Uint8List> get casesForVoting => _casesForVoting;
   Offset get position => _position;
   bool get isDragging => _isDragging;
@@ -128,6 +136,7 @@ class CaseProvider extends ChangeNotifier {
     _casesDetailed.clear();
     _filteredCases.clear();
     _casesForVoting.clear();
+    _filteredCasesExploreView.clear();
 
     CaseService.getAllCases()
         .then(
@@ -145,6 +154,9 @@ class CaseProvider extends ChangeNotifier {
                   (value) => {
                     _casesDetailed.add(value),
                     _casesDetailed.sort((a, b) => a.title.compareTo(b.title)),
+                    _filteredCasesExploreView.add(value),
+                    _filteredCasesExploreView
+                        .sort((a, b) => a.title.compareTo(b.title)),
                     notifyListeners(),
                   },
                 ),
@@ -218,5 +230,59 @@ class CaseProvider extends ChangeNotifier {
     _cases.removeWhere((element) => element.id == idToRemove);
     _casesDetailed.removeWhere((element) => element.id == idToRemove);
     _filteredCases.removeWhere((element) => element.id == idToRemove);
+    _filteredCasesExploreView
+        .removeWhere((element) => element.id == idToRemove);
+  }
+
+  void filterForExplore(
+      {DateTime? createdAt,
+      String? title,
+      String? createdBy,
+      String? placeName,
+      CaseTypeNullable? type,
+      CaseStatusNullable? status}) {
+    _filteredCasesExploreView.clear();
+    DateTime? startOfDay;
+    DateTime? endOfDay;
+
+    if (createdAt != null) {
+      startOfDay = DateTime(createdAt.year, createdAt.month, createdAt.day)
+          .subtract(const Duration(hours: 1));
+      endOfDay = startOfDay.add(const Duration(days: 1));
+    }
+
+    _filteredCasesExploreView.addAll(
+      _casesDetailed
+          .where(
+            (element) =>
+                (createdAt != null
+                    ? element.crimeDateTime.isAfter(startOfDay!) &&
+                        element.crimeDateTime.isBefore(endOfDay!)
+                    : true) &&
+                (title != null && title.isNotEmpty
+                    ? element.title.toLowerCase().contains(title.toLowerCase())
+                    : true) &&
+                (createdBy != null && createdBy.isNotEmpty
+                    ? element.createdBy
+                        .toLowerCase()
+                        .contains(createdBy.toLowerCase())
+                    : true) &&
+                (placeName != null && placeName.isNotEmpty
+                    ? element.placeName
+                        .toLowerCase()
+                        .contains(placeName.toLowerCase())
+                    : true) &&
+                (type != null && type != CaseTypeNullable.none
+                    ? element.caseType ==
+                        TDeviceUtil.convertNullableCaseTypeToCaseType(type)
+                    : true) &&
+                (status != null && status != CaseStatusNullable.none
+                    ? element.status ==
+                        TDeviceUtil.convertNullableCaseStatusToCaseStatus(
+                            status)
+                    : true),
+          )
+          .toList(),
+    );
   }
 }

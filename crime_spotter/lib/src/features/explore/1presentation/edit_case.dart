@@ -7,6 +7,7 @@ import 'package:crime_spotter/src/shared/4data/case_service.dart';
 import 'package:crime_spotter/src/shared/4data/helper_functions.dart';
 import 'package:crime_spotter/src/shared/4data/supabase_const.dart';
 import 'package:crime_spotter/src/shared/4data/userdetails_provider.dart';
+import 'package:crime_spotter/src/shared/constants/colors.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -69,17 +70,48 @@ class _EditCaseState extends State<EditCase> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           // Display a loading indicator while waiting for the data
           return Scaffold(
-            appBar: AppBar(),
-            body: const Center(
-              child: CircularProgressIndicator(),
+            appBar: AppBar(
+              foregroundColor: Colors.white,
+              backgroundColor: TColor.backgroundColor,
+              surfaceTintColor: TColor.backgroundColor,
+            ),
+            body: Container(
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage("assets/Backgroung.png"),
+                  fit: BoxFit.cover,
+                ),
+              ),
+              child: const Center(
+                child: CircularProgressIndicator(
+                  backgroundColor: TColor.buttonColor,
+                ),
+              ),
             ),
           );
         } else if (snapshot.hasError) {
           // Display an error message if something went wrong
           return Scaffold(
-            appBar: AppBar(),
-            body: Center(
-              child: Text('Error: ${snapshot.error}'),
+            appBar: AppBar(
+              foregroundColor: Colors.white,
+              backgroundColor: TColor.backgroundColor,
+              surfaceTintColor: TColor.backgroundColor,
+            ),
+            body: Container(
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage("assets/Backgroung.png"),
+                  fit: BoxFit.cover,
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  'Error: ${snapshot.error}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
+              ),
             ),
           );
         } else {
@@ -105,7 +137,14 @@ class _EditCaseState extends State<EditCase> {
               Tab(text: 'Links'),
               Tab(text: 'Bilder'),
             ],
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white,
+            indicatorColor: Colors.white,
+            indicatorWeight: 4.0,
           ),
+          foregroundColor: Colors.white,
+          backgroundColor: TColor.backgroundColor,
+          surfaceTintColor: TColor.backgroundColor,
         ),
         body: Stack(
           children: [
@@ -150,276 +189,402 @@ class _EditCaseState extends State<EditCase> {
   }
 
   Widget _buildSummaryTab(CaseDetails shownCase) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          TextFormField(
-            initialValue: shownCase.title,
-            onChanged: (value) {
-              shownCase.title = value;
-            },
-            decoration: const InputDecoration(
-              contentPadding: EdgeInsets.only(left: 10, right: 10),
-              labelText: 'Titel',
-              labelStyle: TextStyle(
-                fontSize: 22,
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage("assets/Backgroung.png"),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextFormField(
+              initialValue: shownCase.title,
+              onChanged: (value) {
+                shownCase.title = value;
+              },
+              cursorColor: Colors.white,
+              style: const TextStyle(
+                color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
-              border: OutlineInputBorder(),
+              decoration: const InputDecoration(
+                contentPadding: EdgeInsets.only(left: 10, right: 10),
+                labelText: 'Titel',
+                labelStyle: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
+                ),
+              ),
             ),
-          ),
-          const SizedBox(height: 15),
-          Row(
-            children: [
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 20),
+            const SizedBox(height: 15),
+            Row(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Typ:',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        InputDecorator(
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(4.0)),
+                              borderSide: BorderSide(
+                                  color: Colors
+                                      .white), // Set border color to white
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.white),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.white),
+                            ),
+                            contentPadding:
+                                EdgeInsets.only(left: 10, right: 10),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<CaseType>(
+                              value: shownCase.caseType,
+                              onChanged: (value) {
+                                setState(() {
+                                  shownCase.caseType =
+                                      value!; // Update the case type
+                                });
+                              },
+                              icon: const Icon(Icons.arrow_drop_down,
+                                  color: Colors.white),
+                              dropdownColor: TColor.backgroundColor,
+                              items: CaseType.values
+                                  .map<DropdownMenuItem<CaseType>>(
+                                      (CaseType value) {
+                                return DropdownMenuItem<CaseType>(
+                                  value: value,
+                                  child: Text(
+                                    TDeviceUtil.convertCaseTypeToGerman(value),
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                );
+                              }).toList(),
+                              underline: const SizedBox(),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Typ:',
+                        'Status:',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
                       InputDecorator(
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(4.0))),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(4.0)),
+                            borderSide: BorderSide(
+                                color:
+                                    Colors.white), // Set border color to white
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white),
+                          ),
                           contentPadding: EdgeInsets.only(left: 10, right: 10),
                         ),
                         child: DropdownButtonHideUnderline(
-                          child: DropdownButton<CaseType>(
-                            value: shownCase.caseType,
+                          child: DropdownButton<CaseStatus>(
+                            value: shownCase.status,
                             onChanged: (value) {
                               setState(() {
-                                shownCase.caseType =
+                                shownCase.status =
                                     value!; // Update the case type
                               });
                             },
-                            items: CaseType.values
-                                .map<DropdownMenuItem<CaseType>>(
-                                    (CaseType value) {
-                              return DropdownMenuItem<CaseType>(
+                            icon: const Icon(Icons.arrow_drop_down,
+                                color: Colors.white),
+                            dropdownColor: TColor.backgroundColor,
+                            items: CaseStatus.values
+                                .map<DropdownMenuItem<CaseStatus>>(
+                                    (CaseStatus value) {
+                              return DropdownMenuItem<CaseStatus>(
                                 value: value,
                                 child: Text(
-                                    TDeviceUtil.convertCaseTypeToGerman(value)),
+                                  TDeviceUtil.convertCaseStatusToGerman(value),
+                                  style: const TextStyle(color: Colors.white),
+                                ),
                               );
                             }).toList(),
-                            underline: const SizedBox(),
                           ),
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Typ:',
-                      style: TextStyle(
-                        fontSize: 16,
+              ],
+            ),
+            const SizedBox(height: 25),
+            Row(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 20),
+                    child: TextFormField(
+                      keyboardType: TextInputType.number,
+                      inputFormatters: <TextInputFormatter>[
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                      initialValue: shownCase.zipCode.toString(),
+                      onChanged: (value) {
+                        try {
+                          shownCase.zipCode = int.parse(value);
+                        } catch (e) {
+                          // ignore
+                        }
+                      },
+                      cursorColor: Colors.white,
+                      style: const TextStyle(
+                        color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
-                    ),
-                    InputDecorator(
                       decoration: const InputDecoration(
-                        border: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(4.0))),
                         contentPadding: EdgeInsets.only(left: 10, right: 10),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<CaseStatus>(
-                          value: shownCase.status,
-                          onChanged: (value) {
-                            setState(() {
-                              shownCase.status = value!; // Update the case type
-                            });
-                          },
-                          items: CaseStatus.values
-                              .map<DropdownMenuItem<CaseStatus>>(
-                                  (CaseStatus value) {
-                            return DropdownMenuItem<CaseStatus>(
-                              value: value,
-                              child: Text(
-                                  TDeviceUtil.convertCaseStatusToGerman(value)),
-                            );
-                          }).toList(),
+                        labelText: 'Postleitzahl',
+                        labelStyle: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.white),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.white),
                         ),
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 25),
-          Row(
-            children: [
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 20),
-                  child: TextFormField(
-                    keyboardType: TextInputType.number,
-                    inputFormatters: <TextInputFormatter>[
-                      FilteringTextInputFormatter.digitsOnly,
-                    ],
-                    initialValue: shownCase.zipCode.toString(),
-                    onChanged: (value) {
-                      try {
-                        shownCase.zipCode = int.parse(value);
-                      } catch (e) {
-                        // ignore
-                      }
-                    },
-                    decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.only(left: 10, right: 10),
-                      labelText: 'Postleitzahl',
-                      labelStyle: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      border: OutlineInputBorder(),
-                    ),
                   ),
                 ),
-              ),
-              Expanded(
-                child: TextFormField(
-                  initialValue: shownCase.placeName,
-                  onChanged: (value) {
-                    shownCase.placeName = value;
-                  },
-                  decoration: const InputDecoration(
-                    contentPadding: EdgeInsets.only(left: 10, right: 10),
-                    labelText: 'Ortsname',
-                    labelStyle: TextStyle(
-                      fontSize: 22,
+                Expanded(
+                  child: TextFormField(
+                    initialValue: shownCase.placeName,
+                    onChanged: (value) {
+                      shownCase.placeName = value;
+                    },
+                    cursorColor: Colors.white,
+                    style: const TextStyle(
+                      color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 25),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 20),
-                  child: TextFormField(
-                    readOnly: true,
-                    initialValue: DateFormat('dd.MM.yyyy')
-                        .format(shownCase.crimeDateTime),
                     decoration: const InputDecoration(
                       contentPadding: EdgeInsets.only(left: 10, right: 10),
-                      labelText: 'Datum der Tat',
+                      labelText: 'Ortsname',
                       labelStyle: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
-                      border: OutlineInputBorder(),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.white),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.white),
+                      ),
                     ),
                   ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 25),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 20),
+                    child: TextFormField(
+                      readOnly: true,
+                      initialValue: DateFormat('dd.MM.yyyy')
+                          .format(shownCase.crimeDateTime),
+                      cursorColor: Colors.white,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      decoration: const InputDecoration(
+                        contentPadding: EdgeInsets.only(left: 10, right: 10),
+                        labelText: 'Datum der Tat',
+                        labelStyle: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.white),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => _selectDate(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: TColor.buttonColor,
+                    ),
+                    child: const Text(
+                      'Datum wählen',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 15),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: TColor.buttonColor,
               ),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () => _selectDate(context),
-                  child: const Text('Datum wählen'),
+              child: const Text(
+                "Ort wählen",
+                style: TextStyle(
+                  color: Colors.white,
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 15),
-          ElevatedButton(
-            child: const Text("Ort wählen"),
-            onPressed: () async {
-              GeoPoint? result = await showSimplePickerLocation(
-                contentPadding: const EdgeInsets.all(12),
-                radius: 12,
-                context: context,
-                isDismissible: true,
-                title: "Ort wählen",
-                textConfirmPicker: "Ok",
-                textCancelPicker: "Abbrechen",
-                initCurrentUserPosition: const UserTrackingOption(
-                  unFollowUser: false,
-                  enableTracking: true,
-                ),
-              );
+              onPressed: () async {
+                GeoPoint? result = await showSimplePickerLocation(
+                  contentPadding: const EdgeInsets.all(12),
+                  radius: 12,
+                  context: context,
+                  isDismissible: true,
+                  title: "Ort wählen",
+                  textConfirmPicker: "Ok",
+                  textCancelPicker: "Abbrechen",
+                  initCurrentUserPosition: const UserTrackingOption(
+                    unFollowUser: false,
+                    enableTracking: true,
+                  ),
+                );
 
-              if (result != null) {
-                shownCase.latitude = result.latitude;
-                shownCase.longitude = result.longitude;
-              }
-            },
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 20),
+                if (result != null) {
+                  shownCase.latitude = result.latitude;
+                  shownCase.longitude = result.longitude;
+                }
+              },
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Längengrad:',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          shownCase.latitude.toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Längengrad:',
+                        'Breitengrad:',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
-                      Text(shownCase.latitude.toString()),
+                      Text(
+                        shownCase.longitude.toString(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
                     ],
                   ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 15),
+            const Text(
+              'Zusammenfassung:',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Breitengrad:',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(shownCase.longitude.toString()),
-                  ],
+            ),
+            TextFormField(
+              initialValue: shownCase.summary,
+              onChanged: (value) {
+                shownCase.summary = value;
+              },
+              cursorColor: Colors.white,
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 15),
-          const Text(
-            'Zusammenfassung:',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+              maxLines: null,
             ),
-          ),
-          TextFormField(
-            initialValue: shownCase.summary,
-            onChanged: (value) {
-              shownCase.summary = value;
-            },
-            maxLines: null,
-          ),
-        ],
+            const SizedBox(height: 80),
+          ],
+        ),
       ),
     );
   }
@@ -441,29 +606,41 @@ class _EditCaseState extends State<EditCase> {
 
   Widget _buildLinksTab(CaseDetails shownCase) {
     links = shownCase.furtherLinks ?? [];
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ListView.builder(
-            physics: const NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            itemCount: shownCase!.furtherLinks.length,
-            itemBuilder: (context, index) {
-              return _buildLinkItem(index, shownCase.furtherLinks[index]);
-            },
-          ),
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage("assets/Backgroung.png"),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ListView.builder(
+              physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              itemCount: shownCase.furtherLinks.length,
+              itemBuilder: (context, index) {
+                return _buildLinkItem(index, shownCase.furtherLinks[index]);
+              },
+            ),
 
-          const SizedBox(height: 5),
-          // Add Link button
-          IconButton(
-            onPressed: () {
-              _addLink();
-            },
-            icon: const Icon(Icons.add_link),
-          ),
-        ],
+            const SizedBox(height: 5),
+            // Add Link button
+            IconButton(
+              onPressed: () {
+                _addLink();
+              },
+              icon: const Icon(
+                Icons.add_link,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 80),
+          ],
+        ),
       ),
     );
   }
@@ -474,6 +651,8 @@ class _EditCaseState extends State<EditCase> {
       children: [
         // Dropdown for link type
         DropdownButton<String>(
+          icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+          dropdownColor: TColor.backgroundColor,
           value: link.type,
           onChanged: (value) {
             setState(() {
@@ -484,7 +663,10 @@ class _EditCaseState extends State<EditCase> {
               .map<DropdownMenuItem<String>>((String value) {
             return DropdownMenuItem<String>(
               value: value,
-              child: Text(value),
+              child: Text(
+                value,
+                style: const TextStyle(color: Colors.white),
+              ),
             );
           }).toList(),
         ),
@@ -498,14 +680,26 @@ class _EditCaseState extends State<EditCase> {
                 links[index] = link.copyWith(url: value); // Update the link URL
               });
             },
+            cursorColor: Colors.white,
+            style: const TextStyle(color: Colors.white),
             decoration: const InputDecoration(
               hintText: 'URL eingeben',
+              hintStyle: TextStyle(color: Colors.white),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white),
+              ),
             ),
           ),
         ),
         // Remove link button
         IconButton(
-          icon: const Icon(Icons.link_off),
+          icon: const Icon(
+            Icons.link_off,
+            color: Colors.white,
+          ),
           onPressed: () {
             _deleteLink(index);
           },
@@ -515,52 +709,72 @@ class _EditCaseState extends State<EditCase> {
   }
 
   Widget _buildImagesTab(CaseDetails shownCase) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Add Image button
-          Row(
-            children: [
-              const Text("Bild hinzufügen:"),
-              const Spacer(),
-              IconButton(
-                onPressed: () {
-                  setState(() {
-                    _uploadImage(ImageSource.gallery);
-                  });
-                },
-                icon: const Icon(Icons.crop_original),
-              ),
-              const SizedBox(width: 10),
-              IconButton(
-                onPressed: () {
-                  setState(() {
-                    _uploadImage(ImageSource.camera);
-                  });
-                },
-                icon: const Icon(Icons.photo_camera),
-              ),
-            ],
-          ),
-
-          // List of images
-          GridView.builder(
-            physics: const NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount:
-                  2, // Adjust the number of images per row as needed
-              crossAxisSpacing: 10.0,
-              mainAxisSpacing: 10.0,
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage("assets/Backgroung.png"),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Add Image button
+            Row(
+              children: [
+                const Text(
+                  "Bild hinzufügen:",
+                  style: TextStyle(color: Colors.white),
+                ),
+                const Spacer(),
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _uploadImage(
+                        ImageSource.gallery,
+                      );
+                    });
+                  },
+                  icon: const Icon(
+                    Icons.crop_original,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _uploadImage(ImageSource.camera);
+                    });
+                  },
+                  icon: const Icon(
+                    Icons.photo_camera,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
             ),
-            itemCount: shownCase.images.length,
-            itemBuilder: (context, index) {
-              return _buildImageItem(index, shownCase.images[index].image);
-            },
-          ),
-        ],
+
+            // List of images
+            GridView.builder(
+              physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount:
+                    2, // Adjust the number of images per row as needed
+                crossAxisSpacing: 10.0,
+                mainAxisSpacing: 10.0,
+              ),
+              itemCount: shownCase.images.length,
+              itemBuilder: (context, index) {
+                return _buildImageItem(index, shownCase.images[index].image);
+              },
+            ),
+            const SizedBox(height: 80),
+          ],
+        ),
       ),
     );
   }
@@ -577,10 +791,13 @@ class _EditCaseState extends State<EditCase> {
         ),
         // Remove image button
         Positioned(
-          top: 5,
-          right: 5,
+          top: 0,
+          right: 0,
           child: IconButton(
-            icon: const Icon(Icons.remove_circle),
+            icon: const Icon(
+              Icons.remove_circle_outline_outlined,
+              color: Colors.redAccent,
+            ),
             onPressed: () {
               setState(() {
                 _deleteImage(index);

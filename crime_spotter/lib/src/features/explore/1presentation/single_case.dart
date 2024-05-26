@@ -2,9 +2,12 @@ import 'package:crime_spotter/src/features/explore/1presentation/comment_section
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
 import 'package:crime_spotter/src/shared/4data/card_provider.dart';
 import 'package:crime_spotter/src/shared/4data/case_service.dart';
+import 'package:crime_spotter/src/shared/4data/helper_functions.dart';
 import 'package:crime_spotter/src/shared/4data/supabase_const.dart';
 import 'package:crime_spotter/src/shared/4data/userdetails_provider.dart';
+import 'package:crime_spotter/src/shared/constants/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -113,8 +116,17 @@ class _SingleCaseState extends State<SingleCase> {
             ),
           ],
         ),
+        foregroundColor: Colors.white,
+        backgroundColor: TColor.backgroundColor,
+        surfaceTintColor: TColor.backgroundColor,
       ),
-      body: Card(
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage("assets/Backgroung.png"),
+            fit: BoxFit.cover,
+          ),
+        ),
         child: Column(
           children: [
             if (shownCase.images.isEmpty)
@@ -164,7 +176,7 @@ class _SingleCaseState extends State<SingleCase> {
                         _launchURL(button.url);
                       },
                       elevation: 2.0,
-                      fillColor: Colors.white,
+                      fillColor: TColor.buttonColor,
                       padding: const EdgeInsets.all(10.0),
                       shape: const CircleBorder(),
                       child: Icon(
@@ -182,10 +194,14 @@ class _SingleCaseState extends State<SingleCase> {
                 fontWeight: FontWeight.bold,
               ),
               child: const Center(
-                child: Text('Zusammenfassung:'),
+                child: Text(
+                  'Zusammenfassung:',
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
-            const SizedBox(height: 5),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16.0),
@@ -194,8 +210,105 @@ class _SingleCaseState extends State<SingleCase> {
                   child: Text(
                     shownCase.summary,
                     textAlign: TextAlign.justify,
+                    style: const TextStyle(
+                      color: Colors.white,
+                    ),
                   ),
                 ),
+              ),
+            ),
+            const Divider(
+              color: Colors.white,
+              indent: 16,
+              endIndent: 16,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 16, right: 16),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 20),
+                          child: Row(
+                            children: [
+                              const Text(
+                                "Typ: ",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Text(
+                                TDeviceUtil.convertCaseTypeToGerman(
+                                    shownCase.caseType),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 20),
+                          child: Row(
+                            children: [
+                              const SizedBox(width: 10),
+                              const Text(
+                                "Status: ",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Text(
+                                TDeviceUtil.convertCaseStatusToGerman(
+                                    shownCase.status),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      const Text(
+                        "Ort: ",
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        "${shownCase.zipCode.toString()} ${shownCase.placeName}",
+                        style: const TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      const Text(
+                        "Tatdatum: ",
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        DateFormat('dd.MM.yyyy')
+                            .format(shownCase.crimeDateTime),
+                        style: const TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 10),
@@ -207,7 +320,7 @@ class _SingleCaseState extends State<SingleCase> {
                     _displayCommentSection(context);
                   },
                   elevation: 2.0,
-                  fillColor: Colors.white,
+                  fillColor: TColor.buttonColor,
                   padding: const EdgeInsets.all(10.0),
                   shape: const CircleBorder(),
                   child: const Icon(
@@ -221,7 +334,7 @@ class _SingleCaseState extends State<SingleCase> {
                     _vote(-1);
                   },
                   elevation: 2.0,
-                  fillColor: vote == -1 ? Colors.redAccent : Colors.white,
+                  fillColor: vote == -1 ? Colors.redAccent : TColor.buttonColor,
                   padding: const EdgeInsets.all(10.0),
                   shape: const CircleBorder(),
                   child: const Icon(
@@ -229,13 +342,19 @@ class _SingleCaseState extends State<SingleCase> {
                     size: 25.0,
                   ),
                 ),
-                Text(averageVotes.toString()),
+                Text(
+                  averageVotes.toString(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
                 RawMaterialButton(
                   onPressed: () {
                     _vote(1);
                   },
                   elevation: 2.0,
-                  fillColor: vote == 1 ? Colors.greenAccent : Colors.white,
+                  fillColor:
+                      vote == 1 ? Colors.greenAccent : TColor.buttonColor,
                   padding: const EdgeInsets.all(10.0),
                   shape: const CircleBorder(),
                   child: const Icon(

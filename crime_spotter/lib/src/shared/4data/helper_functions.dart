@@ -89,6 +89,42 @@ class TDeviceUtil {
     }
   }
 
+  static String convertNullableCaseTypeToGerman(CaseTypeNullable type) {
+    switch (type) {
+      case CaseTypeNullable.murder:
+        return 'Mord';
+      case CaseTypeNullable.theft:
+        return 'Diebstahl';
+      case CaseTypeNullable.robberyMurder:
+        return 'Tote bei Raub';
+      case CaseTypeNullable.brawl:
+        return 'Schlägerei';
+      case CaseTypeNullable.rape:
+        return 'Vergewaltigung';
+      case CaseTypeNullable.none:
+        return '-';
+      default:
+        return '-';
+    }
+  }
+
+  static CaseType convertNullableCaseTypeToCaseType(CaseTypeNullable type) {
+    switch (type) {
+      case CaseTypeNullable.murder:
+        return CaseType.murder;
+      case CaseTypeNullable.theft:
+        return CaseType.theft;
+      case CaseTypeNullable.robberyMurder:
+        return CaseType.robberyMurder;
+      case CaseTypeNullable.brawl:
+        return CaseType.brawl;
+      case CaseTypeNullable.rape:
+        return CaseType.rape;
+      default:
+        return CaseType.murder;
+    }
+  }
+
   static String convertCaseStatusToGerman(CaseStatus status) {
     switch (status) {
       case CaseStatus.open:
@@ -97,6 +133,31 @@ class TDeviceUtil {
         return 'Geschlossen';
       default:
         return 'Offen';
+    }
+  }
+
+  static String convertNullableCaseStatusToGerman(CaseStatusNullable status) {
+    switch (status) {
+      case CaseStatusNullable.open:
+        return 'Offen';
+      case CaseStatusNullable.closed:
+        return 'Geschlossen';
+      case CaseStatusNullable.none:
+        return '-';
+      default:
+        return '-';
+    }
+  }
+
+  static CaseStatus convertNullableCaseStatusToCaseStatus(
+      CaseStatusNullable status) {
+    switch (status) {
+      case CaseStatusNullable.open:
+        return CaseStatus.open;
+      case CaseStatusNullable.closed:
+        return CaseStatus.closed;
+      default:
+        return CaseStatus.open;
     }
   }
 }

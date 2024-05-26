@@ -11,42 +11,57 @@ class CommentTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var userProvider = Provider.of<UserDetailsProvider>(context);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(10), // Adjust the value as needed
-        child: Container(
-          alignment: Alignment.centerLeft,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      margin: const EdgeInsets.all(10),
+      padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10, top: 5),
+      decoration: BoxDecoration(
+        image: const DecorationImage(
+          image: AssetImage("assets/LogIn-Card.png"),
+          fit: BoxFit.cover,
+        ),
+        borderRadius:
+            BorderRadius.circular(10), // Adjust the border radius as needed
+        border: Border.all(
+          color: Colors.black, // Set the color of the border
+          width: 1, // Set the width of the border
+        ),
+      ),
+      alignment: Alignment.centerLeft,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  Text(
-                    userProvider.activeUsersIncludingCurrent
-                        .firstWhere((element) => element.id == comment.user_id)
-                        .name,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Spacer(),
-                  if (comment.user_id == userProvider.currentUser.id)
-                    IconButton(
-                      icon: const Icon(Icons.delete),
-                      iconSize: 20,
-                      color: Colors.red,
-                      onPressed: deleteComment,
-                    ),
-                ],
+              Text(
+                userProvider.activeUsersIncludingCurrent
+                    .firstWhere((element) => element.id == comment.user_id)
+                    .name,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
-              SingleChildScrollView(
-                scrollDirection: Axis.vertical, //.horizontal
-                child: Text(comment.text),
-              ),
+              const Spacer(),
+              if (comment.user_id == userProvider.currentUser.id)
+                IconButton(
+                  icon: const Icon(Icons.delete),
+                  iconSize: 20,
+                  color: Colors.white,
+                  onPressed: deleteComment,
+                ),
             ],
           ),
-        ),
+          SingleChildScrollView(
+            scrollDirection: Axis.vertical, //.horizontal
+            child: Text(
+              comment.text,
+              style: const TextStyle(
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

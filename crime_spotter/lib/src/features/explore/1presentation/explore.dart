@@ -1,13 +1,10 @@
 import 'package:crime_spotter/src/features/explore/1presentation/case_tile_short.dart';
-import 'package:crime_spotter/src/features/explore/1presentation/exploreArgs.dart';
+import 'package:crime_spotter/src/features/explore/1presentation/exploreFilter.dart';
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
-import 'package:crime_spotter/src/features/map/views/map_option.dart';
 import 'package:crime_spotter/src/shared/4data/card_provider.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
-import 'package:crime_spotter/src/shared/4data/case_service.dart';
 import 'package:crime_spotter/src/shared/4data/userdetails_provider.dart';
 import 'package:crime_spotter/src/shared/constants/colors.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -21,6 +18,7 @@ class Explore extends StatefulWidget {
 class _ExploreState extends State<Explore> {
   List<CaseDetails> cases = [];
   bool canEdit = false;
+  bool filtering = false;
 
   @override
   void initState() {
@@ -32,17 +30,16 @@ class _ExploreState extends State<Explore> {
     var userProvider = Provider.of<UserDetailsProvider>(context);
     var role = userProvider.userRole;
 
-    var provider = Provider.of<CaseProvider>(context);
-    List<CaseDetails> loadedCases = provider.casesDetailed;
+    var provider = Provider.of<CaseProvider>(context, listen: false);
 
     if (role == UserRole.admin || role == UserRole.crimefluencer) {
       setState(() {
-        cases = loadedCases;
+        cases = provider.filteredCasesExploreView;
         canEdit = true;
       });
     } else {
       setState(() {
-        cases = loadedCases;
+        cases = provider.filteredCasesExploreView;
         canEdit = false;
       });
     }
@@ -54,8 +51,6 @@ class _ExploreState extends State<Explore> {
 
   @override
   Widget build(BuildContext context) {
-    var args = ModalRoute.of(context)?.settings.arguments as ExploreArgs;
-
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -63,26 +58,28 @@ class _ExploreState extends State<Explore> {
             const Text('Fälle erkunden'),
             const Spacer(),
             IconButton(
-              icon: Icon(Icons.search),
+              icon: const Icon(Icons.search),
               onPressed: () {
                 showDialog(
                   context: context,
                   builder: (context) {
-                    return SingleChildScrollView(
-                      child: TMapOption(
-                        controller: args.mapController,
-                        markers: args.markers,
-                        selectedFilter: args.selectedFilter,
-                      ),
-                    );
+                    return ExploreFilter();
                   },
-                );
+                ).then((value) => setState(
+                      () {
+                        var provider =
+                            Provider.of<CaseProvider>(context, listen: false);
+                        filtering = true;
+                        cases = provider.filteredCasesExploreView;
+                      },
+                    ));
               },
             ),
           ],
         ),
         foregroundColor: Colors.white,
         backgroundColor: TColor.backgroundColor,
+        surfaceTintColor: TColor.backgroundColor,
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -101,23 +98,35 @@ class _ExploreState extends State<Explore> {
                           shownCase: cases[index], canEdit: canEdit);
                     },
                   )
-                : const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Fallakten werden geladen",
-                          style: TextStyle(color: Colors.white),
+                : filtering
+                    ? const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Keine Fälle gefunden",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ],
                         ),
-                        SizedBox(
-                          height: 20,
+                      )
+                    : const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Fallakten werden geladen",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            SizedBox(
+                              height: 20,
+                            ),
+                            CircularProgressIndicator(
+                              color: TColor.buttonColor,
+                            ),
+                          ],
                         ),
-                        CircularProgressIndicator(
-                          color: TColor.buttonColor,
-                        ),
-                      ],
-                    ),
-                  ),
+                      ),
             if (canEdit)
               Positioned(
                 bottom: 16.0,
