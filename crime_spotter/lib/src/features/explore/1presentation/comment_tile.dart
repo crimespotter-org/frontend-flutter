@@ -26,44 +26,42 @@ class CommentTile extends StatelessWidget {
           width: 1, // Set the width of the border
         ),
       ),
-      child: Container(
-        alignment: Alignment.centerLeft,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text(
-                  userProvider.activeUsersIncludingCurrent
-                      .firstWhere((element) => element.id == comment.user_id)
-                      .name,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const Spacer(),
-                if (comment.user_id == userProvider.currentUser.id)
-                  IconButton(
-                    icon: const Icon(Icons.delete),
-                    iconSize: 20,
-                    color: Colors.white,
-                    onPressed: deleteComment,
-                  ),
-              ],
-            ),
-            SingleChildScrollView(
-              scrollDirection: Axis.vertical, //.horizontal
-              child: Text(
-                comment.text,
+      alignment: Alignment.centerLeft,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                userProvider.activeUsersIncludingCurrent
+                    .firstWhere((element) => element.id == comment.user_id)
+                    .name,
                 style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
               ),
+              const Spacer(),
+              if (comment.user_id == userProvider.currentUser.id)
+                IconButton(
+                  icon: const Icon(Icons.delete),
+                  iconSize: 20,
+                  color: Colors.white,
+                  onPressed: deleteComment,
+                ),
+            ],
+          ),
+          SingleChildScrollView(
+            scrollDirection: Axis.vertical, //.horizontal
+            child: Text(
+              comment.text,
+              style: const TextStyle(
+                color: Colors.white,
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

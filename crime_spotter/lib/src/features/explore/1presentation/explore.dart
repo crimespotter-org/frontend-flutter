@@ -1,4 +1,5 @@
 import 'package:crime_spotter/src/features/explore/1presentation/case_tile_short.dart';
+import 'package:crime_spotter/src/features/explore/1presentation/exploreFilter.dart';
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
 import 'package:crime_spotter/src/shared/4data/card_provider.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
@@ -17,6 +18,7 @@ class Explore extends StatefulWidget {
 class _ExploreState extends State<Explore> {
   List<CaseDetails> cases = [];
   bool canEdit = false;
+  bool filtering = false;
 
   @override
   void initState() {
@@ -28,17 +30,16 @@ class _ExploreState extends State<Explore> {
     var userProvider = Provider.of<UserDetailsProvider>(context);
     var role = userProvider.userRole;
 
-    var provider = Provider.of<CaseProvider>(context);
-    List<CaseDetails> loadedCases = provider.casesDetailed;
+    var provider = Provider.of<CaseProvider>(context, listen: false);
 
     if (role == UserRole.admin || role == UserRole.crimefluencer) {
       setState(() {
-        cases = loadedCases;
+        cases = provider.filteredCasesExploreView;
         canEdit = true;
       });
     } else {
       setState(() {
-        cases = loadedCases;
+        cases = provider.filteredCasesExploreView;
         canEdit = false;
       });
     }
@@ -62,9 +63,16 @@ class _ExploreState extends State<Explore> {
                 showDialog(
                   context: context,
                   builder: (context) {
-                    return SingleChildScrollView();
+                    return ExploreFilter();
                   },
-                );
+                ).then((value) => setState(
+                      () {
+                        var provider =
+                            Provider.of<CaseProvider>(context, listen: false);
+                        filtering = true;
+                        cases = provider.filteredCasesExploreView;
+                      },
+                    ));
               },
             ),
           ],
@@ -90,23 +98,35 @@ class _ExploreState extends State<Explore> {
                           shownCase: cases[index], canEdit: canEdit);
                     },
                   )
-                : const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Fallakten werden geladen",
-                          style: TextStyle(color: Colors.white),
+                : filtering
+                    ? const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Keine Fälle gefunden",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ],
                         ),
-                        SizedBox(
-                          height: 20,
+                      )
+                    : const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Fallakten werden geladen",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            SizedBox(
+                              height: 20,
+                            ),
+                            CircularProgressIndicator(
+                              color: TColor.buttonColor,
+                            ),
+                          ],
                         ),
-                        CircularProgressIndicator(
-                          color: TColor.buttonColor,
-                        ),
-                      ],
-                    ),
-                  ),
+                      ),
             if (canEdit)
               Positioned(
                 bottom: 16.0,
