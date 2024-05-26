@@ -125,6 +125,7 @@ class CaseProvider extends ChangeNotifier {
 
   void resetCases() {
     _cases.clear();
+    _casesDetailed.clear();
     _filteredCases.clear();
     _casesForVoting.clear();
 
@@ -143,10 +144,11 @@ class CaseProvider extends ChangeNotifier {
                 CaseService.getCaseDetailedById(c.id!).then(
                   (value) => {
                     _casesDetailed.add(value),
+                    _casesDetailed.sort((a, b) => a.title.compareTo(b.title)),
+                    notifyListeners(),
                   },
                 ),
               },
-            notifyListeners(),
           },
         );
     CaseService.getCasesIncludingFirstImage().then(
