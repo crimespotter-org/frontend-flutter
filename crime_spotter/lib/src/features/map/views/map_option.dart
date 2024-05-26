@@ -8,7 +8,14 @@ import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:provider/provider.dart';
 
-enum FilterType { title, createdBy, placeName, caseType, status, createdAt }
+enum FilterType {
+  createdBy,
+  caseType,
+  status,
+  title,
+  placeName,
+  createdAt,
+}
 
 class TMapOption extends StatefulWidget {
   final MapController controller;
@@ -27,15 +34,26 @@ class TMapOption extends StatefulWidget {
 class _TMapOptionState extends State<TMapOption> {
   bool dateIsFiltered = false;
   DateTime selectedDate = DateTime.now();
-  List<bool> _picked = [false, true];
+
+  final TextEditingController _titelController = TextEditingController();
+  final TextEditingController _placeNameController = TextEditingController();
+
   final List<String> filterName = [
-    "Titel",
     'Autor',
-    'Tatort',
     'Fallart',
-    "Status",
+    'Status',
+    'Titel',
+    'Tatort',
     'Tatdatum',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _titelController.text = widget.selectedFilter[FilterType.title] ?? '';
+    _placeNameController.text =
+        widget.selectedFilter[FilterType.placeName] ?? '';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,30 +103,36 @@ class _TMapOptionState extends State<TMapOption> {
                               ),
                             ),
                             child: ListTile(
-                              subtitle: Visibility(
-                                visible: FilterType.values[index] !=
-                                    FilterType.createdAt,
-                                child: buildAutoComplete(
-                                  title: filterName[index],
-                                  type: FilterType.values[index],
-                                ),
-                              ),
-                              trailing: Visibility(
-                                visible: FilterType.values[index] !=
-                                    FilterType.createdAt,
-                                child: GestureDetector(
-                                  onTap: () => {
-                                    setState(
-                                      () {
-                                        widget.selectedFilter[
-                                            FilterType.values[index]] = null;
-                                      },
-                                    ),
-                                  },
-                                  child: const Icon(
-                                    Icons.clear,
-                                    color: Colors.white,
+                              subtitle: FilterType.values[index] !=
+                                      FilterType.createdAt
+                                  ? buildInputBox(
+                                      title: filterName[index],
+                                      type: FilterType.values[index],
+                                    )
+                                  : buildDatePicker(),
+                              trailing: GestureDetector(
+                                onTap: () => {
+                                  setState(
+                                    () {
+                                      widget.selectedFilter[
+                                          FilterType.values[index]] = null;
+
+                                      if (FilterType.values[index] ==
+                                          FilterType.createdAt) {
+                                        dateIsFiltered = false;
+                                      } else if (FilterType.values[index] ==
+                                          FilterType.placeName) {
+                                        _placeNameController.text = '';
+                                      } else if (FilterType.values[index] ==
+                                          FilterType.title) {
+                                        _titelController.text = '';
+                                      }
+                                    },
                                   ),
+                                },
+                                child: const Icon(
+                                  Icons.clear,
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
@@ -117,27 +141,9 @@ class _TMapOptionState extends State<TMapOption> {
                         separatorBuilder: (BuildContext context, int index) {
                           return const Divider();
                         },
-                        itemCount: filterName.length -
-                            1, //createdAt soll nicht gebaut werden
+                        itemCount: filterName.length,
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: dateIsFiltered
-                            ? Text(
-                                'Es wird nach ${selectedDate.day}.${selectedDate.month}.${selectedDate.year} gefiltert',
-                                textAlign: TextAlign.left,
-                                style: const TextStyle(color: Colors.white),
-                              )
-                            : const Text(
-                                'Tatdatum auswählen:',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                      ),
-                    ),
-                    buildDatePicker(),
                     const Divider(),
                     ElevatedButton(
                       style: ButtonStyle(
@@ -153,7 +159,7 @@ class _TMapOptionState extends State<TMapOption> {
                                 widget.selectedFilter[FilterType.createdBy],
                             placeName:
                                 widget.selectedFilter[FilterType.placeName],
-                            type: TDeviceUtil.convertStringtoCaseType(
+                            type: TDeviceUtil.convertStringToCaseType(
                                 widget.selectedFilter[FilterType.caseType]),
                             status: TDeviceUtil.convertStringToCaseStatus(
                                 widget.selectedFilter[FilterType.status]),
@@ -202,27 +208,30 @@ class _TMapOptionState extends State<TMapOption> {
   }
 
   Widget buildDatePicker() {
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        vertical: MediaQuery.of(context).size.height * 0.02,
-      ),
-      child: Align(
-        alignment: Alignment.center,
-        child: ToggleButtons(
-          direction: Axis.horizontal,
-          borderRadius: const BorderRadius.all(Radius.circular(8)),
-          selectedBorderColor: Colors.white,
-          borderColor: Colors.white,
-          selectedColor: Colors.black,
-          fillColor: const Color.fromARGB(60, 255, 255, 255),
-          color: Colors.white,
-          constraints: const BoxConstraints(
-            minHeight: 40.0,
-            minWidth: 80.0,
-          ),
-          isSelected: _picked,
-          onPressed: (int index) {
-            if (index == 0) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        dateIsFiltered
+            ? Text(
+                'Es wird nach dem ${selectedDate.day}.${selectedDate.month}.${selectedDate.year} gefiltert',
+                textAlign: TextAlign.left,
+                style: const TextStyle(color: Colors.white),
+              )
+            : const Text(
+                'Tatdatum auswählen:',
+                style: TextStyle(color: Colors.white),
+              ),
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.01,
+        ),
+        Align(
+          alignment: Alignment.center,
+          child: ElevatedButton(
+            style: ButtonStyle(
+              backgroundColor:
+                  MaterialStateProperty.all<Color>(TColor.buttonColor),
+            ),
+            onPressed: () {
               showDatePicker(
                 context: context,
                 firstDate: DateTime(2000),
@@ -234,164 +243,139 @@ class _TMapOptionState extends State<TMapOption> {
                     setState(
                       () {
                         selectedDate = pickedDate;
+                        dateIsFiltered = true;
                       },
                     );
                   } else {
-                    setState(() {
-                      _picked = <bool>[false, true];
-                      dateIsFiltered = false;
-                    });
+                    setState(
+                      () {
+                        dateIsFiltered = false;
+                      },
+                    );
                   }
                 },
               );
-            }
-
-            setState(
-              () {
-                _picked = <bool>[index == 0, index == 1];
-                dateIsFiltered = index == 0 ? true : false;
-              },
-            );
-          },
-          children: const [
-            Text(
-              'Filtern',
-              style: TextStyle(color: Colors.white),
-            ),
-            Text(
-              'Nicht filtern',
-              style: TextStyle(color: Colors.white),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget buildAutoComplete({required String title, required FilterType type}) {
-    final provider = Provider.of<CaseProvider>(context);
-    final userProvider = Provider.of<UserDetailsProvider>(context);
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        Autocomplete<String>(
-          optionsBuilder: (TextEditingValue textEditingValue) {
-            //if (textEditingValue.text == '') return List.empty();
-            switch (type) {
-              case FilterType.title:
-                return provider.cases
-                    .where(
-                      (suggestion) => suggestion.title.toLowerCase().contains(
-                            textEditingValue.text.toLowerCase(),
-                          ),
-                    )
-                    .map(
-                      (e) => e.title,
-                    )
-                    .toSet();
-              case FilterType.status:
-                return ["Offen", "Abgeschlossen"].where((status) => status
-                    .toLowerCase()
-                    .contains(textEditingValue.text.toLowerCase()));
-              case FilterType.createdBy:
-                return userProvider.activeUsers
-                    .where(
-                      (suggestion) =>
-                          suggestion.name.toLowerCase().contains(
-                                textEditingValue.text.toLowerCase(),
-                              ) &&
-                          suggestion.role != UserRole.crimespotter,
-                    )
-                    .map(
-                      (e) => e.name,
-                    )
-                    .toSet();
-              case FilterType.placeName:
-                return provider.cases
-                    .where(
-                      (suggestion) =>
-                          suggestion.placeName.toLowerCase().contains(
-                                textEditingValue.text.toLowerCase(),
-                              ),
-                    )
-                    .map(
-                      (e) => e.placeName,
-                    )
-                    .toSet();
-              case FilterType.caseType:
-                return provider.cases
-                    .where(
-                      (suggestion) => TDeviceUtil.convertCaseTypeToGerman(
-                              suggestion.caseType)
-                          .toLowerCase()
-                          .contains(
-                            textEditingValue.text.toLowerCase(),
-                          ),
-                    )
-                    .map(
-                      (e) => TDeviceUtil.convertCaseTypeToGerman(e.caseType),
-                    )
-                    .toSet();
-
-              default:
-                return provider.cases.map((e) => e.title).toSet();
-            }
-          },
-          onSelected: (String selection) {
-            setState(
-              () {
-                widget.selectedFilter[type] = selection;
-              },
-            );
-          },
-          fieldViewBuilder: (BuildContext context,
-              TextEditingController textEditingController,
-              FocusNode focusNode,
-              VoidCallback onFieldSubmitted) {
-            textEditingController.text = widget.selectedFilter[type] ?? '';
-            return TextFormField(
-              controller: textEditingController,
-              focusNode: focusNode,
-              onFieldSubmitted: (String value) {
-                onFieldSubmitted();
-              },
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                labelText: '$title filtern',
-                labelStyle: const TextStyle(color: Colors.white),
-                suffixIcon: const Icon(
-                  Icons.abc,
-                  color: Colors.white,
-                ),
+            },
+            child: const Text(
+              'Datum auswählen',
+              style: TextStyle(
+                color: Colors.white,
               ),
-            );
-          },
-          optionsViewBuilder: (BuildContext context,
-              AutocompleteOnSelected<String> onSelected,
-              Iterable<String> options) {
-            return Material(
-              elevation: 4.0,
-              child: ListView(
-                children: options
-                    .map(
-                      (String option) => ListTile(
-                        title: Text(
-                          option,
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                        onTap: () {
-                          setState(() {
-                            onSelected(option);
-                          });
-                        },
-                      ),
-                    )
-                    .toList(),
-              ),
-            );
-          },
+            ),
+          ),
         ),
       ],
     );
+  }
+
+  Widget buildInputBox({required String title, required FilterType type}) {
+    final provider = Provider.of<CaseProvider>(context);
+    final userProvider = Provider.of<UserDetailsProvider>(context);
+    return type == FilterType.title || type == FilterType.placeName
+        ? TextFormField(
+            controller: type == FilterType.title
+                ? _titelController
+                : _placeNameController,
+            style: const TextStyle(color: Colors.white),
+            onChanged: (value) {
+              widget.selectedFilter[type] = value;
+            },
+            decoration: InputDecoration(
+              labelText:
+                  type == FilterType.title ? 'Titel filtern' : 'Tatort filtern',
+              labelStyle: const TextStyle(color: Colors.white),
+            ),
+          )
+        : Autocomplete<String>(
+            optionsBuilder: (TextEditingValue textEditingValue) {
+              switch (type) {
+                case FilterType.status:
+                  return ["Offen", "Abgeschlossen"].where((status) => status
+                      .toLowerCase()
+                      .contains(textEditingValue.text.toLowerCase()));
+
+                case FilterType.createdBy:
+                  return userProvider.activeUsersIncludingCurrent
+                      .where(
+                        (suggestion) =>
+                            suggestion.name.toLowerCase().contains(
+                                  textEditingValue.text.toLowerCase(),
+                                ) &&
+                            suggestion.role != UserRole.crimespotter,
+                      )
+                      .map(
+                        (e) => e.name,
+                      )
+                      .toSet();
+
+                case FilterType.caseType:
+                  return provider.cases
+                      .where(
+                        (suggestion) => TDeviceUtil.convertCaseTypeToGerman(
+                                suggestion.caseType)
+                            .toLowerCase()
+                            .contains(
+                              textEditingValue.text.toLowerCase(),
+                            ),
+                      )
+                      .map(
+                        (e) => TDeviceUtil.convertCaseTypeToGerman(e.caseType),
+                      )
+                      .toSet();
+
+                default:
+                  return provider.cases.map((e) => e.title).toSet();
+              }
+            },
+            onSelected: (String selection) {
+              setState(
+                () {
+                  widget.selectedFilter[type] = selection;
+                },
+              );
+            },
+            fieldViewBuilder: (BuildContext context,
+                TextEditingController textEditingController,
+                FocusNode focusNode,
+                VoidCallback onFieldSubmitted) {
+              textEditingController.text = widget.selectedFilter[type] ?? '';
+              return TextFormField(
+                controller: textEditingController,
+                focusNode: focusNode,
+                onFieldSubmitted: (String value) {
+                  onFieldSubmitted();
+                },
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: '$title filtern',
+                  labelStyle: const TextStyle(color: Colors.white),
+                ),
+              );
+            },
+            optionsViewBuilder: (BuildContext context,
+                AutocompleteOnSelected<String> onSelected,
+                Iterable<String> options) {
+              return Material(
+                elevation: 4.0,
+                child: ListView(
+                  children: options
+                      .map(
+                        (String option) => ListTile(
+                          title: Text(
+                            option,
+                            style: const TextStyle(color: Colors.black),
+                          ),
+                          onTap: () {
+                            setState(() {
+                              onSelected(option);
+                            });
+                          },
+                        ),
+                      )
+                      .toList(),
+                ),
+              );
+            },
+          );
   }
 }

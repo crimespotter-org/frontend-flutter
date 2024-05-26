@@ -23,21 +23,45 @@ class TDeviceUtil {
     return list.toSet().toList();
   }
 
-  static CaseType? convertStringtoCaseType(String? crimeString) {
-    switch (crimeString) {
-      case "murder":
-        return CaseType.murder;
-      case "theft":
-        return CaseType.theft;
-      case "robbery-murder":
-        return CaseType.robberyMurder;
-      case "brawl":
-        return CaseType.brawl;
-      case "rape":
-        return CaseType.rape;
-      default:
-        return null;
-    }
+  static const Map<String, CaseType> stringToCaseTypeMap = {
+    "Mord": CaseType.murder,
+    "murder": CaseType.murder,
+    "Diebstahl": CaseType.theft,
+    "theft": CaseType.theft,
+    "Tote bei Raub": CaseType.robberyMurder,
+    "robbery-murder": CaseType.robberyMurder,
+    "Schlägerei": CaseType.brawl,
+    "brawl": CaseType.brawl,
+    "Vergewaltigung": CaseType.rape,
+    "rape": CaseType.rape,
+  };
+
+  static const Map<CaseType, String> caseTypeToStringMap = {
+    CaseType.murder: 'murder',
+    CaseType.theft: 'theft',
+    CaseType.robberyMurder: 'robbery-murder',
+    CaseType.brawl: 'brawl',
+    CaseType.rape: 'rape',
+  };
+
+  static const Map<CaseType, String> caseTypeToGermanMap = {
+    CaseType.murder: 'Mord',
+    CaseType.theft: 'Diebstahl',
+    CaseType.robberyMurder: 'Tote bei Raub',
+    CaseType.brawl: 'Schlägerei',
+    CaseType.rape: 'Vergewaltigung',
+  };
+
+  static CaseType? convertStringToCaseType(String? crimeString) {
+    return stringToCaseTypeMap[crimeString];
+  }
+
+  static String? convertCaseTypeToString(CaseType type) {
+    return caseTypeToStringMap[type];
+  }
+
+  static String convertCaseTypeToGerman(CaseType type) {
+    return caseTypeToGermanMap[type] ?? 'Mord';
   }
 
   static CaseStatus? convertStringToCaseStatus(String? status) {
@@ -47,6 +71,7 @@ class TDeviceUtil {
         return CaseStatus.open;
       case 'closed':
       case 'Geschlossen':
+      case 'Abgeschlossen':
         return CaseStatus.closed;
       default:
         return null;
@@ -61,40 +86,6 @@ class TDeviceUtil {
         return 'closed';
       default:
         return null;
-    }
-  }
-
-  static String? convertCaseTypeToString(CaseType type) {
-    switch (type) {
-      case CaseType.murder:
-        return 'murder';
-      case CaseType.theft:
-        return 'theft';
-      case CaseType.robberyMurder:
-        return "robbery-murder";
-      case CaseType.brawl:
-        return 'brawl';
-      case CaseType.rape:
-        return 'rape';
-      default:
-        return null;
-    }
-  }
-
-  static String convertCaseTypeToGerman(CaseType type) {
-    switch (type) {
-      case CaseType.murder:
-        return 'Mord';
-      case CaseType.theft:
-        return 'Diebstahl';
-      case CaseType.robberyMurder:
-        return 'Tote bei Raub';
-      case CaseType.brawl:
-        return 'Schlägerei';
-      case CaseType.rape:
-        return 'Vergewaltigung';
-      default:
-        return 'Mord';
     }
   }
 

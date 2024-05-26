@@ -190,11 +190,17 @@ class CaseProvider extends ChangeNotifier {
           .where(
             (element) =>
                 (createdAt != null ? element.createdAt == createdAt : true) &&
-                (title != null ? element.title == title : true) &&
                 (createdBy != null ? element.createdBy == createdBy : true) &&
-                (placeName != null ? element.placeName == placeName : true) &&
                 (type != null ? element.caseType == type : true) &&
-                (status != null ? element.status == status : true),
+                (status != null ? element.status == status : true) &&
+                ((title != null && title != '')
+                    ? element.title.toLowerCase().contains(title.toLowerCase())
+                    : true) &&
+                ((placeName != null && placeName != '')
+                    ? element.placeName
+                        .toLowerCase()
+                        .contains(placeName.toLowerCase())
+                    : true),
           )
           .toList(),
     );
