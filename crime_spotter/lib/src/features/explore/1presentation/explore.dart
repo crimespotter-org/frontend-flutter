@@ -1,5 +1,8 @@
 import 'package:crime_spotter/src/features/explore/1presentation/case_tile_short.dart';
+import 'package:crime_spotter/src/features/explore/1presentation/exploreArgs.dart';
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
+import 'package:crime_spotter/src/features/map/views/map_option.dart';
+import 'package:crime_spotter/src/shared/4data/card_provider.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
 import 'package:crime_spotter/src/shared/4data/case_service.dart';
 import 'package:crime_spotter/src/shared/4data/userdetails_provider.dart';
@@ -19,29 +22,28 @@ class _ExploreState extends State<Explore> {
   List<CaseDetails> cases = [];
   bool canEdit = false;
 
-  Future<void> loadData() async {
-    List<CaseDetails> loadedCases =
-        await CaseService.getCasesIncludingFirstImage();
-    if (mounted) {
-      setState(() {
-        cases = loadedCases;
-      });
-    }
-  }
-
   @override
   void initState() {
     super.initState();
-    loadData();
   }
 
   @override
   void didChangeDependencies() {
     var userProvider = Provider.of<UserDetailsProvider>(context);
     var role = userProvider.userRole;
+
+    var provider = Provider.of<CaseProvider>(context);
+    List<CaseDetails> loadedCases = provider.casesDetailed;
+
     if (role == UserRole.admin || role == UserRole.crimefluencer) {
       setState(() {
+        cases = loadedCases;
         canEdit = true;
+      });
+    } else {
+      setState(() {
+        cases = loadedCases;
+        canEdit = false;
       });
     }
 
@@ -52,9 +54,33 @@ class _ExploreState extends State<Explore> {
 
   @override
   Widget build(BuildContext context) {
+    var args = ModalRoute.of(context)?.settings.arguments as ExploreArgs;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Fälle erkunden'),
+        title: Row(
+          children: [
+            const Text('Fälle erkunden'),
+            const Spacer(),
+            IconButton(
+              icon: Icon(Icons.search),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return SingleChildScrollView(
+                      child: TMapOption(
+                        controller: args.mapController,
+                        markers: args.markers,
+                        selectedFilter: args.selectedFilter,
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ],
+        ),
         foregroundColor: Colors.white,
         backgroundColor: TColor.backgroundColor,
       ),

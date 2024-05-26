@@ -148,6 +148,7 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
                   widget.controller.myLocation().then(
                         (value) => mapProvider.updateCurrentPosition(value),
                       );
+
                   widget.markerMap.addAll(
                     await mapProvider.rebuildInitialMarker(
                         controller: widget.controller,
@@ -195,6 +196,7 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
             child: Padding(
               padding: const EdgeInsets.all(20.0),
               child: FloatingActionButton(
+                heroTag: "jumpToMyLocation",
                 backgroundColor: TColor.buttonColor,
                 onPressed: () => {
                   widget.controller.myLocation().then(
@@ -306,7 +308,7 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
         buildRow(
           content: currentCase.status == CaseStatus.closed
               ? 'Ermittlungen sind bereits abgeschlossen'
-              : 'Es wird bereits ermittel',
+              : 'Es wird ermittel',
           widget: Container(
             decoration: BoxDecoration(
                 shape: BoxShape.circle,

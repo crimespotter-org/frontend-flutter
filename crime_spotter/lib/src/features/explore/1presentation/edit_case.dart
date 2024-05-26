@@ -33,7 +33,8 @@ class _EditCaseState extends State<EditCase> {
   Future<CaseDetails> getCase(String id) async {
     if (id == "-1") {
       var newCase = CaseDetails.createNew();
-      var userProvider = Provider.of<UserDetailsProvider>(context);
+      var userProvider =
+          Provider.of<UserDetailsProvider>(context, listen: false);
       newCase.createdBy = userProvider.currentUser.id;
       return newCase;
     }
@@ -84,13 +85,13 @@ class _EditCaseState extends State<EditCase> {
         } else {
           // Data has been loaded successfully
           shownCase = snapshot.data!;
-          return _buildMainView();
+          return _buildMainView(context);
         }
       },
     );
   }
 
-  Widget _buildMainView() {
+  Widget _buildMainView(context) {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
@@ -100,7 +101,7 @@ class _EditCaseState extends State<EditCase> {
               : const Text("Fall bearbeiten"),
           bottom: const TabBar(
             tabs: [
-              Tab(text: 'Zusammenfassung'),
+              Tab(text: 'Details'),
               Tab(text: 'Links'),
               Tab(text: 'Bilder'),
             ],
@@ -122,7 +123,7 @@ class _EditCaseState extends State<EditCase> {
                 heroTag: "saveCase",
                 backgroundColor: Colors.greenAccent,
                 onPressed: () {
-                  _saveCase();
+                  _saveCase(context);
                 },
                 tooltip: "Speichern",
                 child: const Icon(Icons.save),
@@ -136,7 +137,7 @@ class _EditCaseState extends State<EditCase> {
                   heroTag: "deleteCase",
                   backgroundColor: Colors.redAccent,
                   onPressed: () async {
-                    _showDeleteDialog();
+                    _showDeleteDialog(context);
                   },
                   tooltip: "Fall löschen",
                   child: const Icon(Icons.delete),
@@ -344,13 +345,16 @@ class _EditCaseState extends State<EditCase> {
           ),
           const SizedBox(height: 15),
           ElevatedButton(
-            child: const Text("Pick Location"),
+            child: const Text("Ort wählen"),
             onPressed: () async {
               GeoPoint? result = await showSimplePickerLocation(
+                contentPadding: const EdgeInsets.all(12),
+                radius: 12,
                 context: context,
                 isDismissible: true,
-                title: "Title dialog",
-                textConfirmPicker: "pick",
+                title: "Ort wählen",
+                textConfirmPicker: "Ok",
+                textCancelPicker: "Abbrechen",
                 initCurrentUserPosition: const UserTrackingOption(
                   unFollowUser: false,
                   enableTracking: true,
@@ -675,12 +679,12 @@ class _EditCaseState extends State<EditCase> {
     });
   }
 
-  Future<void> _updateLinkInSupabase(Links link) async {
-    await SupaBaseConst.supabase.from('furtherlinks').update({
-      'url': link.url,
-      'type': link.type,
-    }).match({'id': link.id});
-  }
+  // Future<void> _updateLinkInSupabase(Links link) async {
+  //   await SupaBaseConst.supabase.from('furtherlinks').update({
+  //     'url': link.url,
+  //     'type': link.type,
+  //   }).match({'id': link.id});
+  // }
 
   bool _isNotInAddLinkList(Links linkToCheck) {
     for (var link in links.where((element) => element.isNew)) {
@@ -700,35 +704,36 @@ class _EditCaseState extends State<EditCase> {
     return true; // No matching link found, so it's not in the list
   }
 
-  Future<void> _saveCase() async {
+  Future<void> _saveCase(context) async {
     //case
     if (shownCase!.isNew) {
-      _saveNewCase();
+      _saveNewCase(context);
     } else {
-      _updateCase();
+      _updateCase(context);
     }
   }
 
-  Future<void> _updateCase() async {
+  Future<void> _updateCase(context) async {
     try {
       //case
-      await SupaBaseConst.supabase.from('cases').update({
-        'title': shownCase!.title,
-        'summary': shownCase!.summary,
-        'case_type': shownCase!.caseType,
-      }).match({'id': shownCase!.id});
+      var updatedCase =
+          await SupaBaseConst.supabase.rpc('update_case_angular', params: {
+        'p_case_id': shownCase!.id,
+        'p_title': shownCase!.title,
+        'p_summary': shownCase!.summary,
+        'p_place_name': shownCase!.placeName,
+        'p_zip_code': shownCase!.zipCode,
+        'p_case_type': TDeviceUtil.convertCaseTypeToString(shownCase!.caseType),
+        'p_status': TDeviceUtil.convertCaseStatusToString(shownCase!.status),
+        'p_longitude': shownCase!.longitude,
+        'p_latitude': shownCase!.latitude,
+        'p_crime_date_time': shownCase!.crimeDateTime.toIso8601String(),
+        'p_links': null, //all links get deleted
+      });
 
       //links
-      for (var link in links.where((element) => element.isNew)) {
+      for (var link in links.where((element) => !element.delete)) {
         _saveLinkToSupaBase(link);
-      }
-      for (var link in links) {
-        if (link.updated && _isNotInAddLinkList(link)) {
-          await _updateLinkInSupabase(link);
-        }
-      }
-      for (var link in links.where((element) => element.delete)) {
-        await _deleteLinkFromSupabase(link);
       }
 
       //images
@@ -759,7 +764,7 @@ class _EditCaseState extends State<EditCase> {
     }
   }
 
-  Future<void> _saveNewCase() async {
+  Future<void> _saveNewCase(context) async {
     try {
       //case
       var createdCase = await SupaBaseConst.supabase
@@ -789,7 +794,7 @@ class _EditCaseState extends State<EditCase> {
       }
 
       if (mounted) {
-        var provider = Provider.of<CaseProvider>(context);
+        var provider = Provider.of<CaseProvider>(context, listen: false);
         provider.resetCases();
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -798,6 +803,7 @@ class _EditCaseState extends State<EditCase> {
             backgroundColor: Colors.greenAccent,
           ),
         );
+        Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
@@ -811,9 +817,9 @@ class _EditCaseState extends State<EditCase> {
     }
   }
 
-  void _showDeleteDialog() {
+  void _showDeleteDialog(parentcontext) {
     showDialog(
-      context: context,
+      context: parentcontext,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Fall löschen'),
@@ -828,7 +834,7 @@ class _EditCaseState extends State<EditCase> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                _deleteCase();
+                _deleteCase(parentcontext);
               },
               child: const Text('Bestätigen'),
             ),
@@ -838,7 +844,7 @@ class _EditCaseState extends State<EditCase> {
     );
   }
 
-  Future<void> _deleteCase() async {
+  Future<void> _deleteCase(context) async {
     try {
       //links
       for (var link in shownCase!.furtherLinks) {
@@ -856,13 +862,13 @@ class _EditCaseState extends State<EditCase> {
           .match({'id': shownCase!.id});
 
       if (mounted) {
-        var provider = Provider.of<CaseProvider>(context);
+        var provider = Provider.of<CaseProvider>(context, listen: false);
         provider.removeCaseFromLists(shownCase!.id!);
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Löschen erfolgreich!'),
-            backgroundColor: Colors.yellowAccent,
+            backgroundColor: Colors.greenAccent,
           ),
         );
         Navigator.pop(context);

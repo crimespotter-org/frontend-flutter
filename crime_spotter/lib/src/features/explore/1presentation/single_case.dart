@@ -139,38 +139,41 @@ class _SingleCaseState extends State<SingleCase> {
               ),
             const SizedBox(height: 10),
             if (shownCase.furtherLinks.isNotEmpty)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: shownCase.furtherLinks.map((button) {
-                  IconData iconData;
-                  switch (button.type) {
-                    case "book":
-                      iconData = Icons.book;
-                      break;
-                    case "podcast":
-                      iconData = Icons.headphones;
-                      break;
-                    case "newspaper":
-                      iconData = Icons.newspaper;
-                      break;
-                    default:
-                      iconData = Icons.error; // or any other default icon
-                  }
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: shownCase.furtherLinks.map((button) {
+                    IconData iconData;
+                    switch (button.type) {
+                      case "book":
+                        iconData = Icons.book;
+                        break;
+                      case "podcast":
+                        iconData = Icons.headphones;
+                        break;
+                      case "newspaper":
+                        iconData = Icons.newspaper;
+                        break;
+                      default:
+                        iconData = Icons.error; // or any other default icon
+                    }
 
-                  return RawMaterialButton(
-                    onPressed: () {
-                      _launchURL(button.url);
-                    },
-                    elevation: 2.0,
-                    fillColor: Colors.white,
-                    padding: const EdgeInsets.all(10.0),
-                    shape: const CircleBorder(),
-                    child: Icon(
-                      iconData,
-                      size: 25.0,
-                    ),
-                  );
-                }).toList(),
+                    return RawMaterialButton(
+                      onPressed: () {
+                        _launchURL(button.url);
+                      },
+                      elevation: 2.0,
+                      fillColor: Colors.white,
+                      padding: const EdgeInsets.all(10.0),
+                      shape: const CircleBorder(),
+                      child: Icon(
+                        iconData,
+                        size: 25.0,
+                      ),
+                    );
+                  }).toList(),
+                ),
               ),
             const SizedBox(height: 10),
             DefaultTextStyle.merge(

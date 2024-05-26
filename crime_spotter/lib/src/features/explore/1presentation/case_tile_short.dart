@@ -1,5 +1,6 @@
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
+import 'package:crime_spotter/src/shared/constants/colors.dart';
 import 'package:flutter/material.dart';
 
 class CaseTileShort extends StatelessWidget {
@@ -68,14 +69,21 @@ class CaseTileShort extends StatelessWidget {
                     children: [
                       const Spacer(),
                       if (canEdit)
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          iconSize: 50,
-                          color: Colors.redAccent,
+                        FloatingActionButton(
+                          heroTag: "EditCase${shownCase.id}",
+                          backgroundColor: Colors.black,
                           onPressed: () async {
                             Navigator.pushNamed(context, UIData.editCase,
                                 arguments: shownCase.id);
                           },
+                          tooltip: "Fall bearbeiten",
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          child: const Icon(
+                            Icons.edit,
+                            color: Colors.white,
+                          ),
                         ),
                     ],
                   ),
