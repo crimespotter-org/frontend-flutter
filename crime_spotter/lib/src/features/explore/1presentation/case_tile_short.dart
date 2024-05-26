@@ -33,7 +33,7 @@ class CaseTileShort extends StatelessWidget {
           ),
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           child: Stack(
             children: [
               shownCase.images.isEmpty

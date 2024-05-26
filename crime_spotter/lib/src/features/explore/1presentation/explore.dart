@@ -83,6 +83,7 @@ class _ExploreState extends State<Explore> {
         ),
         foregroundColor: Colors.white,
         backgroundColor: TColor.backgroundColor,
+        surfaceTintColor: TColor.backgroundColor,
       ),
       body: Container(
         decoration: const BoxDecoration(
