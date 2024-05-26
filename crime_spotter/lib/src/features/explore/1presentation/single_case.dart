@@ -1,9 +1,9 @@
 import 'package:crime_spotter/src/features/explore/1presentation/comment_section.dart';
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
-import 'package:crime_spotter/src/shared/4data/cardProvider.dart';
-import 'package:crime_spotter/src/shared/4data/caseService.dart';
-import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
-import 'package:crime_spotter/src/shared/4data/userdetailsProvider.dart';
+import 'package:crime_spotter/src/shared/4data/card_provider.dart';
+import 'package:crime_spotter/src/shared/4data/case_service.dart';
+import 'package:crime_spotter/src/shared/4data/supabase_const.dart';
+import 'package:crime_spotter/src/shared/4data/userdetails_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';

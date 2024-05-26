@@ -1,5 +1,5 @@
 import 'package:crime_spotter/src/features/map/controller/controller.dart';
-import 'package:crime_spotter/src/shared/4data/userdetailsProvider.dart';
+import 'package:crime_spotter/src/shared/4data/userdetails_provider.dart';
 import 'package:crime_spotter/src/shared/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

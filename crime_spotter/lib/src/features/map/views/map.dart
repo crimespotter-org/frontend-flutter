@@ -1,18 +1,15 @@
-import 'dart:io';
-
-import 'package:crime_spotter/src/common/widget/widget/radioButton.dart';
-import 'package:crime_spotter/src/common/widget/widget/searchBar.dart';
-import 'package:crime_spotter/src/features/map/views/fleaFletMap.dart';
-import 'package:crime_spotter/src/features/map/views/mapOption.dart';
-import 'package:crime_spotter/src/features/map/views/mapSwipeCases.dart';
-import 'package:crime_spotter/src/features/map/views/mapToggleButton.dart';
-import 'package:crime_spotter/src/shared/4data/cardProvider.dart';
+import 'package:crime_spotter/src/common/widget/widget/radio_button.dart';
+import 'package:crime_spotter/src/common/widget/widget/search_bar.dart';
+import 'package:crime_spotter/src/features/map/views/flea_flet_map.dart';
+import 'package:crime_spotter/src/features/map/views/map_option.dart';
+import 'package:crime_spotter/src/features/map/views/map_toggle_button.dart';
+import 'package:crime_spotter/src/shared/4data/card_provider.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
-import 'package:crime_spotter/src/shared/4data/mapProvider.dart';
-import 'package:crime_spotter/src/shared/4data/supabaseConst.dart';
-import 'package:crime_spotter/src/shared/4data/userdetailsProvider.dart';
+import 'package:crime_spotter/src/shared/4data/map_provider.dart';
+import 'package:crime_spotter/src/shared/4data/supabase_const.dart';
+import 'package:crime_spotter/src/shared/4data/userdetails_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:crime_spotter/src/features/map/views/openStreetMap.dart';
+import 'package:crime_spotter/src/features/map/views/open_street_map.dart';
 import 'package:flutter_map/flutter_map.dart' as heat;
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:geocoding/geocoding.dart';
@@ -97,8 +94,7 @@ class _MapPageState extends State<MapPage> {
             child: OpenStreetMap(controller: heatController),
           ),
           Positioned(
-            left: -MediaQuery.of(context).size.width /
-                2, // Adjust the left position as needed
+            left: -MediaQuery.of(context).size.width / 2,
             top: -MediaQuery.of(context).size.height * 0.21,
             height: MediaQuery.of(context).size.height * 0.53,
             width: MediaQuery.of(context).size.width * 2,
@@ -163,38 +159,6 @@ class _MapPageState extends State<MapPage> {
             visible: provider.mapLoaded,
             child: const TRadioButton(),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 30),
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width * 0.75,
-                height: MediaQuery.of(context).size.height * 0.5,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 50),
-                  child: Visibility(
-                    visible: provider.showSwipeableCases,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.blue,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Stack(
-                        alignment: Alignment.bottomCenter,
-                        children: [
-                          buildCases(),
-                          Align(
-                            alignment: Alignment.bottomCenter,
-                            child: buildButtons(),
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -240,8 +204,34 @@ class _MapPageState extends State<MapPage> {
                           (file) => {
                             if (file != null)
                               {
-                                userDetailsprovider.updateProfilePicture(
-                                    image: file)
+                                userDetailsprovider
+                                    .updateProfilePicture(image: file)
+                                    .then(
+                                      (successful) => {
+                                        if (!successful)
+                                          {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                    "Fehler beim Profilbild aktualisieren"),
+                                                backgroundColor: Colors.red,
+                                              ),
+                                            ),
+                                          }
+                                        else
+                                          {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                    "Ihr Profilbild wurde aktualisiert"),
+                                                backgroundColor: Colors.green,
+                                              ),
+                                            ),
+                                          },
+                                      },
+                                    ),
                               }
                           },
                         ),
@@ -352,33 +342,6 @@ class _MapPageState extends State<MapPage> {
         },
       ),
     );
-  }
-
-  Widget buildCases() {
-    final provider = Provider.of<CaseProvider>(context);
-    final cases = provider.casesForVoting;
-
-    return cases.isEmpty
-        ? Center(
-            child: ElevatedButton(
-              child: const Text('Neu beginnen'),
-              onPressed: () {
-                final provider =
-                    Provider.of<CaseProvider>(context, listen: false);
-                provider.resetCases();
-              },
-            ),
-          )
-        : Stack(
-            children: cases
-                .map(
-                  (image) => TMapSwipeCases(
-                    image: image,
-                    isFront: cases.last == image,
-                  ),
-                )
-                .toList(),
-          );
   }
 
   Widget buildButtons() {

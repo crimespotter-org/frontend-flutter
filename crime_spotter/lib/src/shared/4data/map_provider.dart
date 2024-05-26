@@ -1,5 +1,7 @@
-import 'package:crime_spotter/src/features/map/views/mapToggleButton.dart';
-import 'package:crime_spotter/src/shared/4data/cardProvider.dart';
+import 'package:crime_spotter/src/features/map/views/map_toggle_button.dart';
+import 'package:crime_spotter/src/shared/4data/card_provider.dart';
+import 'package:crime_spotter/src/shared/constants/colors.dart';
+import 'package:crime_spotter/src/shared/constants/size.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:geocoding/geocoding.dart';
@@ -103,40 +105,28 @@ class MapProvider extends ChangeNotifier {
   }
 
   MarkerIcon buildMarker(CaseType type) {
-    IconData icon;
-    MaterialColor color;
+    final iconMap = {
+      CaseType.murder: 'Murder',
+      CaseType.theft: 'Theft',
+      CaseType.robberyMurder: 'RobberyMurder',
+      CaseType.brawl: 'Brawl',
+      CaseType.rape: 'Rape',
+    };
 
-    switch (type) {
-      case CaseType.murder:
-        icon = Icons.directions_run;
-        color = Colors.red;
-        break;
-      case CaseType.theft:
-        icon = Icons.report;
-        color = Colors.grey;
-        break;
-      case CaseType.robberyMurder:
-        icon = Icons.local_atm;
-        color = Colors.green;
-        break;
-      case CaseType.brawl:
-        icon = Icons.groups;
-        color = Colors.brown;
-        break;
-      case CaseType.rape:
-        icon = Icons.pan_tool;
-        color = Colors.purple;
-        break;
-      default:
-        icon = Icons.pin_drop;
-        color = Colors.blue;
-        break;
-    }
+    final iconPicture = iconMap[type] ?? 'Theft';
+
     return MarkerIcon(
-      icon: Icon(
-        icon,
-        color: color,
-        size: 48,
+      iconWidget: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          height: TSize.defaultPinSize,
+          color: TColor.buttonColor2,
+          padding: const EdgeInsets.all(5),
+          child: Image.asset(
+            'assets/icons/$iconPicture.png',
+            color: Colors.white,
+          ),
+        ),
       ),
     );
   }

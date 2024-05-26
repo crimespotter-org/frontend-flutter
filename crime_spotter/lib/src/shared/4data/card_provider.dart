@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
-import 'package:crime_spotter/src/shared/4data/caseService.dart';
+import 'package:crime_spotter/src/shared/4data/case_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,8 +16,8 @@ class CaseProvider extends ChangeNotifier {
     resetCases();
   }
 
+  final List<CaseDetails> _casesDetailed = [];
   List<CaseDetails> _cases = [];
-  List<CaseDetails> _casesDetailed = [];
   List<CaseDetails> _filteredCases = [];
   List<Uint8List> _casesForVoting = [];
   Offset _position = Offset.zero;

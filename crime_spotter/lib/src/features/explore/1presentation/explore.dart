@@ -1,8 +1,8 @@
 import 'package:crime_spotter/src/features/explore/1presentation/case_tile_short.dart';
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
-import 'package:crime_spotter/src/shared/4data/caseService.dart';
-import 'package:crime_spotter/src/shared/4data/userdetailsProvider.dart';
+import 'package:crime_spotter/src/shared/4data/case_service.dart';
+import 'package:crime_spotter/src/shared/4data/userdetails_provider.dart';
 import 'package:crime_spotter/src/shared/constants/colors.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -102,7 +102,7 @@ class _ExploreState extends State<Explore> {
                   onPressed: () async {
                     setState(
                       () {
-                        Navigator.pushNamed(context, UIData.edit_case,
+                        Navigator.pushNamed(context, UIData.editCase,
                             arguments: "-1");
                       },
                     );

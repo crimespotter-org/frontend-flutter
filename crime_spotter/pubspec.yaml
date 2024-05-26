@@ -97,6 +97,11 @@ flutter:
   assets:
   - assets/initial_data.json
   - assets/ #add all
+  - assets/icons/Theft.png
+  - assets/icons/Brawl.png
+  - assets/icons/Murder.png
+  - assets/icons/Rape.png
+  - assets/icons/RobberyMurder.png
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

@@ -1,8 +1,9 @@
 import 'package:crime_spotter/src/features/map/4data/fetch_data.dart';
 import 'package:crime_spotter/src/shared/4data/helper_functions.dart';
-import 'package:crime_spotter/src/shared/4data/mapProvider.dart';
+import 'package:crime_spotter/src/shared/4data/map_provider.dart';
 import 'package:crime_spotter/src/shared/constants/colors.dart';
-import 'package:crime_spotter/src/shared/model/predictionResponse.dart';
+import 'package:crime_spotter/src/shared/constants/size.dart';
+import 'package:crime_spotter/src/shared/model/prediction_response.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 
@@ -54,9 +55,9 @@ class _TSearchBarState extends State<TSearchBar> {
       position,
       markerIcon: const MarkerIcon(
         icon: Icon(
-          Icons.pin_drop,
-          color: Colors.blue,
-          size: 48,
+          Icons.person_pin_circle,
+          color: TColor.defaultPinColor,
+          size: TSize.defaultPinSize,
         ),
       ),
     );

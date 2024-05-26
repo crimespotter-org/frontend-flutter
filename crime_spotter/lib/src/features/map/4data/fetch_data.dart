@@ -1,6 +1,6 @@
 import 'package:crime_spotter/src/shared/4data/const.dart';
-import 'package:crime_spotter/src/shared/model/DetailedAddress.dart';
-import 'package:crime_spotter/src/shared/model/predictionResponse.dart';
+import 'package:crime_spotter/src/shared/model/detailed_address.dart';
+import 'package:crime_spotter/src/shared/model/prediction_response.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert' as convert;
 
