@@ -2,6 +2,8 @@ import 'dart:math';
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
 import 'package:crime_spotter/src/shared/4data/case_service.dart';
 import 'package:crime_spotter/src/shared/4data/helper_functions.dart';
+import 'package:crime_spotter/src/shared/4data/userdetails_provider.dart';
+import 'package:crime_spotter/src/shared/model/active_user_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -235,7 +237,8 @@ class CaseProvider extends ChangeNotifier {
   }
 
   void filterForExplore(
-      {DateTime? createdAt,
+      {required UserDetailsProvider userProvider,
+      DateTime? createdAt,
       String? title,
       String? createdBy,
       String? placeName,
@@ -244,11 +247,16 @@ class CaseProvider extends ChangeNotifier {
     _filteredCasesExploreView.clear();
     DateTime? startOfDay;
     DateTime? endOfDay;
+    Iterable<ActiveUser>? users;
 
     if (createdAt != null) {
       startOfDay = DateTime(createdAt.year, createdAt.month, createdAt.day)
           .subtract(const Duration(hours: 1));
       endOfDay = startOfDay.add(const Duration(days: 1));
+    }
+    if (createdBy != null) {
+      users = userProvider.activeUsersIncludingCurrent.where((element) =>
+          element.name.toLowerCase().contains(createdBy.toLowerCase()));
     }
 
     _filteredCasesExploreView.addAll(
@@ -262,10 +270,10 @@ class CaseProvider extends ChangeNotifier {
                 (title != null && title.isNotEmpty
                     ? element.title.toLowerCase().contains(title.toLowerCase())
                     : true) &&
-                (createdBy != null && createdBy.isNotEmpty
-                    ? element.createdBy
+                (createdBy != null && createdBy.isNotEmpty && users != null
+                    ? users.any((user) => user.id
                         .toLowerCase()
-                        .contains(createdBy.toLowerCase())
+                        .contains(element.createdBy.toLowerCase()))
                     : true) &&
                 (placeName != null && placeName.isNotEmpty
                     ? element.placeName

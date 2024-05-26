@@ -157,11 +157,7 @@ class _MapPageState extends State<MapPage> {
             ),
           ),
           provider.initialMarkersDrawn
-              ? TRadioButton(
-                  mapController: controller,
-                  markers: markerMap,
-                  selectedFilter: selectedFilter,
-                )
+              ? TRadioButton()
               : Align(
                   alignment: Alignment.bottomRight,
                   child: Padding(

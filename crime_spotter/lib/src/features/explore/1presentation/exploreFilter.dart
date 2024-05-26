@@ -1,5 +1,6 @@
 import 'package:crime_spotter/src/shared/4data/card_provider.dart';
 import 'package:crime_spotter/src/shared/4data/helper_functions.dart';
+import 'package:crime_spotter/src/shared/4data/userdetails_provider.dart';
 import 'package:crime_spotter/src/shared/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -596,14 +597,17 @@ class _ExploreFilterState extends State<ExploreFilter> {
   _filter(BuildContext context) {
     if (mounted) {
       var provider = Provider.of<CaseProvider>(context, listen: false);
+      var userProvider =
+          Provider.of<UserDetailsProvider>(context, listen: false);
+
       provider.filterForExplore(
-        createdAt: filterDate == true ? dateFilter : null,
-        title: _titleController.text,
-        placeName: _tatortController.text,
-        createdBy: _autorController.text,
-        type: caseType,
-        status: caseState,
-      );
+          createdAt: filterDate == true ? dateFilter : null,
+          title: _titleController.text,
+          placeName: _tatortController.text,
+          createdBy: _autorController.text,
+          type: caseType,
+          status: caseState,
+          userProvider: userProvider);
 
       Navigator.pop(context);
     }
