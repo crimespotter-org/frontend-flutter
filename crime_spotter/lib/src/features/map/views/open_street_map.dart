@@ -144,6 +144,7 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
               await Future.delayed(
                 Duration.zero,
                 () async {
+                  mapProvider.mapIsLoaded();
                   widget.controller.myLocation().then(
                         (value) => mapProvider.updateCurrentPosition(value),
                       );
@@ -154,7 +155,7 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
                         caseProvider: caseProvider,
                         markers: widget.markerMap),
                   );
-                  mapProvider.mapIsLoaded();
+                  mapProvider.initMarkersDrawn(true);
                 },
               ),
           },

@@ -13,6 +13,7 @@ class MapProvider extends ChangeNotifier {
   bool _isHeatMap = false;
   bool _showSwipeableCases = false;
   bool _mapLoaded = false;
+  bool _initialMarkersDrawn = false;
   GeoPoint _currentPosition = GeoPoint(latitude: 0, longitude: 0);
   final List<bool> _selectedToggle = <bool>[
     true, //map
@@ -23,11 +24,17 @@ class MapProvider extends ChangeNotifier {
   bool get isHeatmap => _isHeatMap;
   bool get showSwipeableCases => _showSwipeableCases;
   bool get mapLoaded => _mapLoaded;
+  bool get initialMarkersDrawn => _initialMarkersDrawn;
   GeoPoint get currentPosition => _currentPosition;
   List<bool> get selectedToggle => _selectedToggle;
 
   void showCases() {
     _showSwipeableCases = true;
+    notifyListeners();
+  }
+
+  void initMarkersDrawn(bool state) {
+    _initialMarkersDrawn = state;
     notifyListeners();
   }
 
