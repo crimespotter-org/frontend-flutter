@@ -1,13 +1,9 @@
 import 'package:crime_spotter/src/features/explore/1presentation/case_tile_short.dart';
-import 'package:crime_spotter/src/features/explore/1presentation/exploreArgs.dart';
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
-import 'package:crime_spotter/src/features/map/views/map_option.dart';
 import 'package:crime_spotter/src/shared/4data/card_provider.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
-import 'package:crime_spotter/src/shared/4data/case_service.dart';
 import 'package:crime_spotter/src/shared/4data/userdetails_provider.dart';
 import 'package:crime_spotter/src/shared/constants/colors.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -54,8 +50,6 @@ class _ExploreState extends State<Explore> {
 
   @override
   Widget build(BuildContext context) {
-    var args = ModalRoute.of(context)?.settings.arguments as ExploreArgs;
-
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -63,18 +57,12 @@ class _ExploreState extends State<Explore> {
             const Text('Fälle erkunden'),
             const Spacer(),
             IconButton(
-              icon: Icon(Icons.search),
+              icon: const Icon(Icons.search),
               onPressed: () {
                 showDialog(
                   context: context,
                   builder: (context) {
-                    return SingleChildScrollView(
-                      child: TMapOption(
-                        controller: args.mapController,
-                        markers: args.markers,
-                        selectedFilter: args.selectedFilter,
-                      ),
-                    );
+                    return SingleChildScrollView();
                   },
                 );
               },

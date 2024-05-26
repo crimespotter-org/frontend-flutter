@@ -157,11 +157,7 @@ class _MapPageState extends State<MapPage> {
           ),
           Visibility(
             visible: provider.mapLoaded,
-            child: TRadioButton(
-              mapController: controller,
-              markers: markerMap,
-              selectedFilter: selectedFilter,
-            ),
+            child: const TRadioButton(),
           ),
         ],
       ),
