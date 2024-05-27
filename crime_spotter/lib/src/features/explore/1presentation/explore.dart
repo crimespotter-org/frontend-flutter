@@ -26,7 +26,9 @@ class _ExploreState extends State<Explore> {
   void initState() {
     super.initState();
     Timer.periodic(const Duration(seconds: 5), (timer) {
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     });
   }
 
