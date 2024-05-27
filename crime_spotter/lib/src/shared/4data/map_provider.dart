@@ -81,34 +81,39 @@ class MapProvider extends ChangeNotifier {
       required CaseProvider caseProvider,
       required Map<GeoPoint, List<Placemark>> markers}) async {
     //Erst alle Case-Marker löschen
-    for (var singleCase in caseProvider.cases) {
-      var currentPosition = GeoPoint(
-          latitude: singleCase.latitude, longitude: singleCase.longitude);
-      controller.removeMarker(currentPosition);
-      markers.removeWhere((key, value) => key == currentPosition);
-    }
+    try {
+      for (var singleCase in caseProvider.cases) {
+        var currentPosition = GeoPoint(
+            latitude: singleCase.latitude, longitude: singleCase.longitude);
+        controller.removeMarker(currentPosition);
+        markers.removeWhere((key, value) => key == currentPosition);
+      }
 
-    //Alle gefilterten Cases wieder hinzufügen
-    for (var singleCase in caseProvider.filteredCases) {
-      GeoPoint currentPosition = GeoPoint(
-          latitude: singleCase.latitude, longitude: singleCase.longitude);
+      //Alle gefilterten Cases wieder hinzufügen
+      for (var singleCase in caseProvider.filteredCases) {
+        GeoPoint currentPosition = GeoPoint(
+            latitude: singleCase.latitude, longitude: singleCase.longitude);
 
-      await controller.addMarker(
-        currentPosition,
-        markerIcon: buildMarker(singleCase.caseType),
-      );
-      placemarkFromCoordinates(singleCase.latitude, singleCase.longitude).then(
-        (value) => {
-          if (value.isNotEmpty)
-            {
-              markers[GeoPoint(
-                  latitude: singleCase.latitude,
-                  longitude: singleCase.longitude)] = value
-            },
-        },
-      );
+        await controller.addMarker(
+          currentPosition,
+          markerIcon: buildMarker(singleCase.caseType),
+        );
+        placemarkFromCoordinates(singleCase.latitude, singleCase.longitude)
+            .then(
+          (value) => {
+            if (value.isNotEmpty)
+              {
+                markers[GeoPoint(
+                    latitude: singleCase.latitude,
+                    longitude: singleCase.longitude)] = value
+              },
+          },
+        );
+      }
+      return markers;
+    } catch (ex) {
+      return markers;
     }
-    return markers;
   }
 
   MarkerIcon buildMarker(CaseType type) {

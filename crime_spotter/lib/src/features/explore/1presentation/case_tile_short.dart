@@ -1,15 +1,13 @@
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
-import 'package:crime_spotter/src/shared/constants/colors.dart';
 import 'package:flutter/material.dart';
 
 class CaseTileShort extends StatelessWidget {
   final CaseDetails shownCase;
   final bool canEdit;
   final VoidCallback callback;
-  Function(BuildContext)? deleteFunction;
 
-  CaseTileShort({
+  const CaseTileShort({
     super.key,
     required this.shownCase,
     required this.canEdit,

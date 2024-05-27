@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:crime_spotter/src/features/explore/1presentation/case_tile_short.dart';
-import 'package:crime_spotter/src/features/explore/1presentation/exploreFilter.dart';
+import 'package:crime_spotter/src/features/explore/1presentation/explore_filter.dart';
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
 import 'package:crime_spotter/src/shared/4data/card_provider.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
@@ -68,7 +68,7 @@ class _ExploreState extends State<Explore> {
                 showDialog(
                   context: context,
                   builder: (context) {
-                    return ExploreFilter();
+                    return const ExploreFilter();
                   },
                 ).then((value) => setState(
                       () {

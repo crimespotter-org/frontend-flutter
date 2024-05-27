@@ -36,8 +36,6 @@ class _LogInState extends State<LogIn> {
       var response = await SupaBaseConst.supabase.auth.signInWithPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text,
-        // emailRedirectTo:
-        //     kIsWeb ? null : 'io.supabase.flutterquickstart://login-callback/',
       );
 
       if (mounted && SupaBaseConst.supabase.auth.currentSession != null) {
@@ -56,7 +54,7 @@ class _LogInState extends State<LogIn> {
     } on AuthException {
       sn.showSnackBar(
         SnackBar(
-          content: const Text('Überprüfen Sie Ihre Eingaben'),
+          content: const Text('Bestätigen Sie Ihre E-Mail'),
           backgroundColor: currentContext.colorScheme.error,
         ),
       );

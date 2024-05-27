@@ -1,6 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
-
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
 import 'package:crime_spotter/src/shared/4data/card_provider.dart';
 import 'package:crime_spotter/src/shared/4data/case_service.dart';
@@ -8,14 +6,10 @@ import 'package:crime_spotter/src/shared/4data/helper_functions.dart';
 import 'package:crime_spotter/src/shared/4data/supabase_const.dart';
 import 'package:crime_spotter/src/shared/4data/userdetails_provider.dart';
 import 'package:crime_spotter/src/shared/constants/colors.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
@@ -616,7 +610,7 @@ class _EditCaseState extends State<EditCase> {
   }
 
   Widget _buildLinksTab(CaseDetails shownCase) {
-    links = shownCase.furtherLinks ?? [];
+    links = shownCase.furtherLinks;
     return Container(
       decoration: const BoxDecoration(
         image: DecorationImage(
@@ -847,7 +841,7 @@ class _EditCaseState extends State<EditCase> {
 
   Future<void> _addLink() async {
     setState(() {
-      shownCase!.furtherLinks ??= [];
+      shownCase!.furtherLinks;
       shownCase!.furtherLinks.add(Links.createNew());
     });
   }
@@ -878,7 +872,7 @@ class _EditCaseState extends State<EditCase> {
   Future<void> _deleteImageFromBucket(Media image) async {
     String storageDir = 'case-${shownCase!.id}';
     final String fileName = image.name;
-    final List<FileObject> objects = await SupaBaseConst.supabase.storage
+    await SupaBaseConst.supabase.storage
         .from('media')
         .remove(['$storageDir/$fileName']);
   }
@@ -944,8 +938,7 @@ class _EditCaseState extends State<EditCase> {
   Future<void> _updateCase(context) async {
     try {
       //case
-      var updatedCase =
-          await SupaBaseConst.supabase.rpc('update_case_angular', params: {
+      await SupaBaseConst.supabase.rpc('update_case_angular', params: {
         'p_case_id': shownCase!.id,
         'p_title': shownCase!.title,
         'p_summary': shownCase!.summary,
