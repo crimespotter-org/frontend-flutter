@@ -30,7 +30,7 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  MyApp({super.key, required this.permissionState});
+  const MyApp({super.key, required this.permissionState});
   final PermissionStatus permissionState;
 
   @override
