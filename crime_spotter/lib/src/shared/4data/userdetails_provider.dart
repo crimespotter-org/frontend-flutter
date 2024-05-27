@@ -148,12 +148,12 @@ class UserDetailsProvider extends ChangeNotifier {
       String? userId,
       bool useCurrentUser = true}) async {
     String? response;
-    FileModel? profileToChange = _profilePictures
-        .where((element) => element.userId == userId)
-        .firstOrNull;
 
     try {
       userId = useCurrentUser ? _currentUser?.id ?? "" : userId;
+      FileModel? profileToChange = _profilePictures
+          .where((element) => element.userId == userId)
+          .firstOrNull;
       if (profileToChange == null) {
         String path = '$userId.${image.name.split('.').last}';
         response = await SupaBaseConst.supabase.storage.from('avatars').upload(
@@ -171,12 +171,15 @@ class UserDetailsProvider extends ChangeNotifier {
                 const FileOptions(cacheControl: '3600', upsert: false));
       }
       if (response.isNotEmpty) {
-        if (profileToChange == null) {
-          _profilePictures.add(FileModel(
-              userId: userId!,
-              imageInBytes: await File(image.path).readAsBytes(),
-              extension: image.name.split('.').last));
+        if (profileToChange != null) {
+          _profilePictures.remove(_profilePictures
+              .where((element) => element.userId == userId)
+              .first);
         }
+        _profilePictures.add(FileModel(
+            userId: userId!,
+            imageInBytes: await File(image.path).readAsBytes(),
+            extension: image.name.split('.').last));
       }
       notifyListeners();
       return true;
