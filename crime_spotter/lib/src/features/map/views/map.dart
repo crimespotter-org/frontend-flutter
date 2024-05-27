@@ -15,15 +15,22 @@ import 'package:flutter_map/flutter_map.dart' as heat;
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 class MapPage extends StatefulWidget {
-  const MapPage({super.key, required this.title});
+  const MapPage({
+    super.key,
+    required this.title,
+    required this.permissionState,
+  });
 
   final String title;
+  final PermissionStatus permissionState;
 
   @override
-  State<MapPage> createState() => _MapPageState();
+  State<MapPage> createState() =>
+      _MapPageState(permissionState: permissionState);
 }
 
 class _MapPageState extends State<MapPage> {
@@ -31,30 +38,42 @@ class _MapPageState extends State<MapPage> {
   bool mapLoaded = false;
   bool isHeatMap = false;
   bool showUpgradeRole = false;
+  final PermissionStatus permissionState;
+
+  _MapPageState({
+    required this.permissionState,
+  }) {
+    controller = MapController.customLayer(
+      customTile: CustomTile(
+        sourceName: "opentopomap",
+        tileExtension: ".png",
+        minZoomLevel: 2,
+        maxZoomLevel: 19,
+        urlsServers: [
+          TileURLs(
+            url: "https://tile.openstreetmap.org/",
+            subdomains: [],
+          )
+        ],
+        tileSize: 256,
+      ),
+      initMapWithUserPosition: permissionState != PermissionStatus.denied
+          ? const UserTrackingOption(
+              unFollowUser: false,
+              enableTracking: true,
+            )
+          : null,
+      initPosition: permissionState == PermissionStatus.denied
+          ? GeoPoint(latitude: 48.445127, longitude: 8.696821)
+          : null,
+    );
+  }
 
   final ImagePicker _picker = ImagePicker();
   final heat.MapController heatController = heat.MapController();
   final Map<GeoPoint, List<Placemark>> markerMap = {};
   final Map<FilterType, String?> selectedFilter = {};
-  final MapController controller = MapController.customLayer(
-    customTile: CustomTile(
-      sourceName: "opentopomap",
-      tileExtension: ".png",
-      minZoomLevel: 2,
-      maxZoomLevel: 19,
-      urlsServers: [
-        TileURLs(
-          url: "https://tile.openstreetmap.org/",
-          subdomains: [],
-        )
-      ],
-      tileSize: 256,
-    ),
-    initMapWithUserPosition: const UserTrackingOption(
-      unFollowUser: false,
-      enableTracking: true,
-    ),
-  );
+  late MapController controller;
 
   @override
   void setState(fn) {
@@ -89,10 +108,16 @@ class _MapPageState extends State<MapPage> {
     return Scaffold(
       body: Stack(
         children: <Widget>[
-          TOpenStreetMap(controller: controller, markerMap: markerMap),
+          TOpenStreetMap(
+              controller: controller,
+              markerMap: markerMap,
+              permissionState: widget.permissionState),
           Visibility(
             visible: provider.isHeatmap,
-            child: OpenStreetMap(controller: heatController),
+            child: OpenStreetMap(
+              controller: heatController,
+              permissionState: permissionState,
+            ),
           ),
           Positioned(
             left: -MediaQuery.of(context).size.width / 2,

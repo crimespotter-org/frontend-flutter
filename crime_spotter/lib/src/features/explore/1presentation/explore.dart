@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:crime_spotter/src/features/explore/1presentation/case_tile_short.dart';
 import 'package:crime_spotter/src/features/explore/1presentation/explore_filter.dart';
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
@@ -23,6 +25,9 @@ class _ExploreState extends State<Explore> {
   @override
   void initState() {
     super.initState();
+    Timer.periodic(Duration(seconds: 5), (timer) {
+      setState(() {});
+    });
   }
 
   @override
@@ -75,6 +80,21 @@ class _ExploreState extends State<Explore> {
                     ));
               },
             ),
+            if (filtering)
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () {
+                  var provider =
+                      Provider.of<CaseProvider>(context, listen: false);
+                  var userProvider =
+                      Provider.of<UserDetailsProvider>(context, listen: false);
+                  provider.filterForExplore(userProvider: userProvider);
+
+                  setState(() {
+                    filtering = false;
+                  });
+                },
+              ),
           ],
         ),
         foregroundColor: Colors.white,
@@ -95,7 +115,10 @@ class _ExploreState extends State<Explore> {
                     itemCount: cases.length,
                     itemBuilder: (context, index) {
                       return CaseTileShort(
-                          shownCase: cases[index], canEdit: canEdit);
+                        shownCase: cases[index],
+                        canEdit: canEdit,
+                        callback: _updateState,
+                      );
                     },
                   )
                 : filtering
@@ -135,10 +158,14 @@ class _ExploreState extends State<Explore> {
                   heroTag: "addCase",
                   backgroundColor: TColor.buttonColor,
                   onPressed: () async {
+                    await Navigator.pushNamed(context, UIData.editCase,
+                        arguments: "-1");
+                    var provider =
+                        Provider.of<CaseProvider>(context, listen: false);
+                    var temp = provider.filteredCasesExploreView;
                     setState(
                       () {
-                        Navigator.pushNamed(context, UIData.editCase,
-                            arguments: "-1");
+                        cases = temp;
                       },
                     );
                   },
@@ -150,5 +177,15 @@ class _ExploreState extends State<Explore> {
         ),
       ),
     );
+  }
+
+  void _updateState() {
+    var provider = Provider.of<CaseProvider>(context, listen: false);
+    var temp = provider.filteredCasesExploreView;
+    Future.delayed(const Duration(seconds: 2), () {
+      setState(() {
+        cases = temp;
+      });
+    });
   }
 }

@@ -6,11 +6,17 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_heatmap/flutter_map_heatmap.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 class OpenStreetMap extends StatefulWidget {
   final MapController controller;
-  const OpenStreetMap({super.key, required this.controller});
+  final PermissionStatus permissionState;
+  const OpenStreetMap({
+    super.key,
+    required this.controller,
+    required this.permissionState,
+  });
 
   @override
   State<OpenStreetMap> createState() => _OpenStreetMapState();
@@ -83,22 +89,23 @@ class _OpenStreetMapState extends State<OpenStreetMap> {
             ],
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.all(20),
-          child: Align(
-            alignment: Alignment.bottomLeft,
-            child: FloatingActionButton(
-              backgroundColor: TColor.buttonColor,
-              heroTag: "heatMapCurrentLocation",
-              onPressed: () async => {
-                currentLocation = await _getCurrentLocation(),
-                widget.controller.move(currentLocation, 15),
-              },
-              tooltip: 'Aktueller Standort',
-              child: const Icon(Icons.my_location),
+        if (widget.permissionState != PermissionStatus.denied)
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Align(
+              alignment: Alignment.bottomLeft,
+              child: FloatingActionButton(
+                backgroundColor: TColor.buttonColor,
+                heroTag: "heatMapCurrentLocation",
+                onPressed: () async => {
+                  currentLocation = await _getCurrentLocation(),
+                  widget.controller.move(currentLocation, 15),
+                },
+                tooltip: 'Aktueller Standort',
+                child: const Icon(Icons.my_location),
+              ),
             ),
           ),
-        ),
       ],
     );
   }

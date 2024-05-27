@@ -5,11 +5,13 @@ import 'package:flutter/material.dart';
 class CaseTileShort extends StatelessWidget {
   final CaseDetails shownCase;
   final bool canEdit;
+  final VoidCallback callback;
 
   const CaseTileShort({
     super.key,
     required this.shownCase,
     required this.canEdit,
+    required this.callback,
   });
 
   @override
