@@ -7,7 +7,6 @@ import 'package:crime_spotter/src/shared/model/active_user_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
 
 enum CaseVoting { like, dislike }
 
@@ -25,9 +24,9 @@ class CaseProvider extends ChangeNotifier {
   }
 
   final List<CaseDetails> _casesDetailed = [];
+  final List<CaseDetails> _filteredCasesExploreView = [];
   List<CaseDetails> _cases = [];
   List<CaseDetails> _filteredCases = [];
-  List<CaseDetails> _filteredCasesExploreView = [];
   List<Uint8List> _casesForVoting = [];
   Offset _position = Offset.zero;
   bool _isDragging = false;

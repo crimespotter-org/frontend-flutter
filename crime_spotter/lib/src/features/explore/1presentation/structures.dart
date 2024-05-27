@@ -134,23 +134,23 @@ class Links {
 
 class Comment {
   String? id;
-  String case_id;
-  String user_id;
+  String caseId;
+  String userId;
   String text;
   DateTime createdAt;
 
   Comment(
       {required this.id,
-      required this.case_id,
-      required this.user_id,
+      required this.caseId,
+      required this.userId,
       required this.text,
       required this.createdAt});
 
   factory Comment.fromJson(Map<String, dynamic> json) {
     return Comment(
         id: json['id'],
-        case_id: json['case_id'],
-        user_id: json['user_id'],
+        caseId: json['case_id'],
+        userId: json['user_id'],
         text: json['text'],
         createdAt: DateTime.parse(json['created_at']));
   }

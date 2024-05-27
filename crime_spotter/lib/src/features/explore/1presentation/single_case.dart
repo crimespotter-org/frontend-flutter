@@ -111,7 +111,18 @@ class _SingleCaseState extends State<SingleCase> {
             IconButton(
               icon: const Icon(Icons.share),
               onPressed: () {
-                shareCase();
+                shareCase().then(
+                  (successful) => {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(successful
+                            ? 'Der Fall wurde versendet!'
+                            : 'Fehler beim Teilen der Falldetails!'),
+                        backgroundColor: successful ? Colors.green : Colors.red,
+                      ),
+                    ),
+                  },
+                );
               },
             ),
           ],
@@ -417,15 +428,16 @@ class _SingleCaseState extends State<SingleCase> {
     });
   }
 
-  Future<void> shareCase() async {
+  Future<bool> shareCase() async {
     final url = 'crimespotter://casedetails/?${shownCase.id}';
     try {
       await Share.share(
         'Schau dir diesen Fall bei Crimespotter an: $url',
         subject: 'Teile diesen Fall',
       );
+      return true;
     } catch (error) {
-      print('Fehler beim Teilen der Case Details: $error');
+      return false;
     }
   }
 

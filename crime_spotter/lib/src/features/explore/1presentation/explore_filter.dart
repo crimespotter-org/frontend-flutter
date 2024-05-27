@@ -14,10 +14,10 @@ class ExploreFilter extends StatefulWidget {
 }
 
 class _ExploreFilterState extends State<ExploreFilter> {
-  TextEditingController _titleController = TextEditingController();
-  TextEditingController _tatortController = TextEditingController();
-  TextEditingController _autorController = TextEditingController();
-  TextEditingController _dateController = TextEditingController();
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _tatortController = TextEditingController();
+  final TextEditingController _autorController = TextEditingController();
+  final TextEditingController _dateController = TextEditingController();
   CaseTypeNullable caseType = CaseTypeNullable.none;
   CaseStatusNullable caseState = CaseStatusNullable.none;
   DateTime? dateFilter;
