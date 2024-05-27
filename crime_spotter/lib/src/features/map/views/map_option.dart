@@ -34,7 +34,7 @@ class TMapOption extends StatefulWidget {
 
 class _TMapOptionState extends State<TMapOption> {
   bool dateIsFiltered = false;
-  DateTime selectedDate = DateTime.now();
+  late DateTime selectedDate;
 
   final TextEditingController _titelController = TextEditingController();
   final TextEditingController _placeNameController = TextEditingController();
@@ -54,6 +54,22 @@ class _TMapOptionState extends State<TMapOption> {
     _titelController.text = widget.selectedFilter[FilterType.title] ?? '';
     _placeNameController.text =
         widget.selectedFilter[FilterType.placeName] ?? '';
+
+    if (widget.selectedFilter[FilterType.createdAt] == null) {
+      selectedDate = DateTime.now();
+    } else {
+      try {
+        List<int>? dateSplitted = widget.selectedFilter[FilterType.createdAt]
+            ?.split('.')
+            .map(int.parse)
+            .toList();
+
+        selectedDate =
+            DateTime(dateSplitted![2], dateSplitted[1], dateSplitted[0]);
+      } catch (ex) {
+        selectedDate = DateTime.now();
+      }
+    }
   }
 
   @override
@@ -212,9 +228,9 @@ class _TMapOptionState extends State<TMapOption> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        dateIsFiltered
+        dateIsFiltered || widget.selectedFilter[FilterType.createdAt] != null
             ? Text(
-                'Es wird nach dem ${selectedDate.day}.${selectedDate.month}.${selectedDate.year} gefiltert',
+                'Es wird nach dem ${widget.selectedFilter[FilterType.createdAt]} gefiltert',
                 textAlign: TextAlign.left,
                 style: const TextStyle(color: Colors.white),
               )
@@ -244,13 +260,20 @@ class _TMapOptionState extends State<TMapOption> {
                     setState(
                       () {
                         selectedDate = pickedDate;
+                        widget.selectedFilter[FilterType.createdAt] =
+                            '${pickedDate.day}.${pickedDate.month}.${pickedDate.year}';
                         dateIsFiltered = true;
                       },
                     );
                   } else {
                     setState(
                       () {
-                        dateIsFiltered = false;
+                        if (widget.selectedFilter[FilterType.createdAt] ==
+                            null) {
+                          dateIsFiltered = false;
+                        } else {
+                          dateIsFiltered = true;
+                        }
                       },
                     );
                   }
