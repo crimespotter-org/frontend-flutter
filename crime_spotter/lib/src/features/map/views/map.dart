@@ -157,7 +157,7 @@ class _MapPageState extends State<MapPage> {
             ),
           ),
           provider.initialMarkersDrawn
-              ? TRadioButton()
+              ? const TRadioButton()
               : Align(
                   alignment: Alignment.bottomRight,
                   child: Padding(

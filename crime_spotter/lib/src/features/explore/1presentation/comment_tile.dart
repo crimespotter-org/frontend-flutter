@@ -34,7 +34,7 @@ class CommentTile extends StatelessWidget {
             children: [
               Text(
                 userProvider.activeUsersIncludingCurrent
-                    .firstWhere((element) => element.id == comment.user_id)
+                    .firstWhere((element) => element.id == comment.userId)
                     .name,
                 style: const TextStyle(
                   fontSize: 18,
@@ -43,7 +43,7 @@ class CommentTile extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              if (comment.user_id == userProvider.currentUser.id)
+              if (comment.userId == userProvider.currentUser.id)
                 IconButton(
                   icon: const Icon(Icons.delete),
                   iconSize: 20,
