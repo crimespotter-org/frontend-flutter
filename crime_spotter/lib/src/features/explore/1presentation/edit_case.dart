@@ -30,6 +30,7 @@ class EditCase extends StatefulWidget {
 class _EditCaseState extends State<EditCase> {
   CaseDetails? shownCase;
   late Future<CaseDetails> _caseFuture;
+  final TextEditingController _dateController = TextEditingController();
 
   Future<CaseDetails> getCase(String id) async {
     if (id == "-1") {
@@ -43,9 +44,14 @@ class _EditCaseState extends State<EditCase> {
     try {
       var temp =
           provider.casesDetailed.firstWhere((element) => element.id == id);
+      _dateController.text =
+          DateFormat('dd.MM.yyyy').format(temp.crimeDateTime);
       return temp;
     } on Exception catch (_) {
-      return CaseService.getCaseDetailedById(id);
+      var temp = await CaseService.getCaseDetailedById(id);
+      _dateController.text =
+          DateFormat('dd.MM.yyyy').format(temp.crimeDateTime);
+      return temp;
     }
   }
 
@@ -60,6 +66,12 @@ class _EditCaseState extends State<EditCase> {
   void didChangeDependencies() {
     loadData();
     super.didChangeDependencies();
+  }
+
+  @override
+  void dispose() {
+    _dateController.dispose();
+    super.dispose();
   }
 
   @override
@@ -434,8 +446,7 @@ class _EditCaseState extends State<EditCase> {
                     padding: const EdgeInsets.only(right: 20),
                     child: TextFormField(
                       readOnly: true,
-                      initialValue: DateFormat('dd.MM.yyyy')
-                          .format(shownCase.crimeDateTime),
+                      controller: _dateController,
                       cursorColor: Colors.white,
                       style: const TextStyle(
                         color: Colors.white,
@@ -495,10 +506,8 @@ class _EditCaseState extends State<EditCase> {
                   title: "Ort wählen",
                   textConfirmPicker: "Ok",
                   textCancelPicker: "Abbrechen",
-                  initCurrentUserPosition: const UserTrackingOption(
-                    unFollowUser: false,
-                    enableTracking: true,
-                  ),
+                  initPosition:
+                      GeoPoint(latitude: 48.445127, longitude: 8.696821),
                 );
 
                 if (result != null) {
@@ -600,6 +609,8 @@ class _EditCaseState extends State<EditCase> {
     if (picked != null) {
       setState(() {
         shownCase!.crimeDateTime = picked;
+
+        _dateController.text = DateFormat('dd.MM.yyyy').format(picked);
       });
     }
   }

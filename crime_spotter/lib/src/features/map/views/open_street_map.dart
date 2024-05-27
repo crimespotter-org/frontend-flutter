@@ -1,3 +1,4 @@
+import 'package:permission_handler/permission_handler.dart';
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
 import 'package:crime_spotter/src/shared/4data/card_provider.dart';
 import 'package:crime_spotter/src/shared/4data/const.dart';
@@ -13,8 +14,13 @@ import 'package:provider/provider.dart';
 class TOpenStreetMap extends StatefulWidget {
   final MapController controller;
   final Map<GeoPoint, List<Placemark>> markerMap;
-  const TOpenStreetMap(
-      {super.key, required this.controller, required this.markerMap});
+  final PermissionStatus permissionState;
+  const TOpenStreetMap({
+    super.key,
+    required this.controller,
+    required this.markerMap,
+    required this.permissionState,
+  });
 
   @override
   State<TOpenStreetMap> createState() => _TOpenStreetMapState();
@@ -160,85 +166,92 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
               ),
           },
           osmOption: OSMOption(
-            userTrackingOption: const UserTrackingOption(
-              enableTracking: true,
-              unFollowUser: false,
-            ),
+            userTrackingOption:
+                widget.permissionState != PermissionStatus.denied
+                    ? const UserTrackingOption(
+                        enableTracking: true,
+                        unFollowUser: false,
+                      )
+                    : null,
             zoomOption: const ZoomOption(
               initZoom: 15,
               minZoomLevel: 3,
               maxZoomLevel: 19,
               stepZoom: 1.0,
             ),
-            userLocationMarker: UserLocationMaker(
-              personMarker: const MarkerIcon(
-                icon: Icon(
-                  Icons.location_history_rounded,
-                  color: Colors.red,
-                  size: 48,
-                ),
-              ),
-              directionArrowMarker: const MarkerIcon(
-                icon: Icon(
-                  Icons.double_arrow,
-                  size: 48,
-                ),
-              ),
-            ),
+            userLocationMarker:
+                widget.permissionState != PermissionStatus.denied
+                    ? UserLocationMaker(
+                        personMarker: const MarkerIcon(
+                          icon: Icon(
+                            Icons.location_history_rounded,
+                            color: Colors.red,
+                            size: 48,
+                          ),
+                        ),
+                        directionArrowMarker: const MarkerIcon(
+                          icon: Icon(
+                            Icons.double_arrow,
+                            size: 48,
+                          ),
+                        ),
+                      )
+                    : null,
             roadConfiguration: const RoadOption(
               roadColor: Colors.blueGrey,
             ),
           ),
         ),
-        Visibility(
-          visible: mapProvider.mapLoaded,
-          child: Align(
-            alignment: Alignment.bottomLeft,
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: FloatingActionButton(
-                heroTag: "jumpToMyLocation",
-                backgroundColor: TColor.buttonColor,
-                onPressed: () => {
-                  widget.controller.myLocation().then(
-                        (posistion) => {
-                          mapProvider.updateCurrentPosition(posistion),
-                          widget.controller.addMarker(
-                            posistion,
-                            markerIcon: const MarkerIcon(
-                              icon: Icon(
-                                Icons.person_pin_circle,
-                                color: Colors.red,
-                                size: TSize.defaultPinSize,
+        if (widget.permissionState != PermissionStatus.denied)
+          Visibility(
+            visible: mapProvider.mapLoaded,
+            child: Align(
+              alignment: Alignment.bottomLeft,
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: FloatingActionButton(
+                  heroTag: "jumpToMyLocation",
+                  backgroundColor: TColor.buttonColor,
+                  onPressed: () => {
+                    widget.controller.myLocation().then(
+                          (posistion) => {
+                            mapProvider.updateCurrentPosition(posistion),
+                            widget.controller.addMarker(
+                              posistion,
+                              markerIcon: const MarkerIcon(
+                                icon: Icon(
+                                  Icons.person_pin_circle,
+                                  color: Colors.red,
+                                  size: TSize.defaultPinSize,
+                                ),
                               ),
                             ),
-                          ),
-                          placemarkFromCoordinates(
-                                  posistion.latitude, posistion.longitude)
-                              .then(
-                            (value) => {
-                              if (value.isNotEmpty)
-                                {
-                                  if (mounted)
-                                    {
-                                      setState(
-                                        () {
-                                          widget.markerMap[posistion] = value;
-                                        },
-                                      ),
-                                    }
-                                },
-                            },
-                          ),
-                          widget.controller.setZoom(zoomLevel: 15),
-                        },
-                      ),
-                },
-                child: const Icon(Icons.my_location),
+                            placemarkFromCoordinates(
+                                    posistion.latitude, posistion.longitude)
+                                .then(
+                              (value) => {
+                                if (value.isNotEmpty)
+                                  {
+                                    if (mounted)
+                                      {
+                                        setState(
+                                          () {
+                                            widget.markerMap[posistion] = value;
+                                          },
+                                        ),
+                                      }
+                                  },
+                              },
+                            ),
+                            widget.controller.setZoom(zoomLevel: 15),
+                          },
+                        ),
+                  },
+                  child: const Icon(Icons.my_location),
+                ),
               ),
             ),
           ),
-        ),
       ],
     );
   }
