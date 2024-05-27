@@ -1,7 +1,9 @@
 import 'package:crime_spotter/src/features/explore/1presentation/structures.dart';
 import 'package:crime_spotter/src/shared/4data/supabase_const.dart';
 import 'package:crime_spotter/src/shared/4data/userdetails_provider.dart';
+import 'package:crime_spotter/src/shared/constants/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
 class CommentTile extends StatelessWidget {
@@ -27,41 +29,50 @@ class CommentTile extends StatelessWidget {
         ),
       ),
       alignment: Alignment.centerLeft,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                userProvider.activeUsersIncludingCurrent
-                    .firstWhere((element) => element.id == comment.userId)
-                    .name,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+      child: ListTile(
+        contentPadding: const EdgeInsets.all(0),
+        horizontalTitleGap: 5,
+        leading: CircleAvatar(
+          radius: 30,
+          backgroundImage: userProvider.profilePictures
+                  .any((element) => element.userId == comment.userId)
+              ? Image.memory(userProvider.profilePictures
+                      .where((element) => element.userId == comment.userId)
+                      .first
+                      .imageInBytes)
+                  .image
+              : const AssetImage(
+                  "assets/placeholder.jpg",
                 ),
-              ),
-              const Spacer(),
-              if (comment.userId == userProvider.currentUser.id)
-                IconButton(
-                  icon: const Icon(Icons.delete),
-                  iconSize: 20,
-                  color: Colors.white,
-                  onPressed: deleteComment,
-                ),
-            ],
+        ),
+        title: Text(
+          userProvider.activeUsersIncludingCurrent
+              .firstWhere((element) => element.id == comment.userId)
+              .name,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
-          SingleChildScrollView(
-            scrollDirection: Axis.vertical, //.horizontal
-            child: Text(
-              comment.text,
-              style: const TextStyle(
-                color: Colors.white,
-              ),
+        ),
+        subtitle: SingleChildScrollView(
+          scrollDirection: Axis.vertical, //.horizontal
+          child: Text(
+            comment.text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
             ),
           ),
-        ],
+        ),
+        trailing: comment.userId == userProvider.currentUser.id
+            ? IconButton(
+                icon: const Icon(Icons.delete),
+                iconSize: 20,
+                color: Colors.white,
+                onPressed: deleteComment,
+              )
+            : null,
       ),
     );
   }
