@@ -198,22 +198,36 @@ class CaseProvider extends ChangeNotifier {
       CaseStatus? status}) {
     _filteredCases.clear();
 
+    DateTime? startOfDay;
+    DateTime? endOfDay;
+
+    if (createdAt != null) {
+      startOfDay = DateTime(createdAt.year, createdAt.month, createdAt.day)
+          .subtract(const Duration(hours: 1));
+      endOfDay = startOfDay.add(const Duration(days: 1));
+    }
+
     _filteredCases.addAll(
-      _cases
+      _casesDetailed
           .where(
             (element) =>
-                (createdAt != null ? element.createdAt == createdAt : true) &&
-                (createdBy != null ? element.createdBy == createdBy : true) &&
-                (type != null ? element.caseType == type : true) &&
-                (status != null ? element.status == status : true) &&
-                ((title != null && title != '')
+                (createdAt != null
+                    ? element.crimeDateTime.isAfter(startOfDay!) &&
+                        element.crimeDateTime.isBefore(endOfDay!)
+                    : true) &&
+                (title != null && title.isNotEmpty
                     ? element.title.toLowerCase().contains(title.toLowerCase())
                     : true) &&
-                ((placeName != null && placeName != '')
+                (createdBy != null && createdBy.isNotEmpty
+                    ? element.createdBy == createdBy
+                    : true) &&
+                (placeName != null && placeName.isNotEmpty
                     ? element.placeName
                         .toLowerCase()
                         .contains(placeName.toLowerCase())
-                    : true),
+                    : true) &&
+                (type != null ? element.caseType == type : true) &&
+                (status != null ? element.status == status : true),
           )
           .toList(),
     );

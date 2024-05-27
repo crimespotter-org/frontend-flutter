@@ -25,8 +25,10 @@ class _ExploreState extends State<Explore> {
   @override
   void initState() {
     super.initState();
-    Timer.periodic(Duration(seconds: 5), (timer) {
-      setState(() {});
+    Timer.periodic(const Duration(seconds: 5), (timer) {
+      if (mounted) {
+        setState(() {});
+      }
     });
   }
 
@@ -160,14 +162,17 @@ class _ExploreState extends State<Explore> {
                   onPressed: () async {
                     await Navigator.pushNamed(context, UIData.editCase,
                         arguments: "-1");
-                    var provider =
-                        Provider.of<CaseProvider>(context, listen: false);
-                    var temp = provider.filteredCasesExploreView;
-                    setState(
-                      () {
-                        cases = temp;
-                      },
-                    );
+                    if (mounted) {
+                      var provider =
+                          // ignore: use_build_context_synchronously
+                          Provider.of<CaseProvider>(context, listen: false);
+                      var temp = provider.filteredCasesExploreView;
+                      setState(
+                        () {
+                          cases = temp;
+                        },
+                      );
+                    }
                   },
                   tooltip: "Neuen Fall hinzufügen",
                   child: const Icon(Icons.add),
