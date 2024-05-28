@@ -19,7 +19,7 @@ class UserDetailsProvider extends ChangeNotifier {
   String _jwt = "";
   bool _userIsAuthenticated = false;
   List<ActiveUser> _activeUsers = [];
-  final List<ActiveUser> _activeUsersIncludingCurrent = [];
+  List<ActiveUser> _activeUsersIncludingCurrent = [];
   final List<FileModel> _profilePictures = [];
 
   String get jwt => _jwt;
@@ -55,6 +55,8 @@ class UserDetailsProvider extends ChangeNotifier {
       );
     }
     _activeUsers = _activeUsers.toSet().toList();
+    _activeUsersIncludingCurrent =
+        _activeUsersIncludingCurrent.toSet().toList();
     return _activeUsers;
   }
 
