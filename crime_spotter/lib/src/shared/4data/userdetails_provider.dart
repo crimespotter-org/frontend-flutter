@@ -84,6 +84,9 @@ class UserDetailsProvider extends ChangeNotifier {
 
     _activeUsersIncludingCurrent.add(user);
     _activeUsers.add(user);
+    _activeUsers = _activeUsers.toSet().toList();
+    _activeUsersIncludingCurrent =
+        _activeUsersIncludingCurrent.toSet().toList();
     return true;
   }
 
