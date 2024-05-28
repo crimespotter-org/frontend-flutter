@@ -19,10 +19,9 @@ class _LogInState extends State<LogIn> {
   bool _hidePassword = true;
   bool _register = false;
 
-  late final TextEditingController _emailController =
-      TextEditingController(text: 'i21034@hb.dhbw-stuttgart.de');
+  late final TextEditingController _emailController = TextEditingController();
   late final TextEditingController _passwordController =
-      TextEditingController(text: 'Test31');
+      TextEditingController();
 
   final _listViewKey = GlobalKey<FormState>();
 
