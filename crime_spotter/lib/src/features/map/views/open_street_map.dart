@@ -34,35 +34,40 @@ class _TOpenStreetMapState extends State<TOpenStreetMap> {
       (timeStamp) {
         widget.controller.listenerMapSingleTapping.addListener(
           () async {
-            GeoPoint? posistion =
-                widget.controller.listenerMapSingleTapping.value;
-            if (posistion != null) {
-              await widget.controller.addMarker(
-                posistion,
-                markerIcon: const MarkerIcon(
-                  icon: Icon(
-                    Icons.place,
-                    color: TColor.defaultPinColor,
-                    size: TSize.defaultPinSize,
+            try {
+              GeoPoint? posistion =
+                  widget.controller.listenerMapSingleTapping.value;
+              if (posistion != null) {
+                await widget.controller.addMarker(
+                  posistion,
+                  markerIcon: const MarkerIcon(
+                    icon: Icon(
+                      Icons.place,
+                      color: TColor.defaultPinColor,
+                      size: TSize.defaultPinSize,
+                    ),
                   ),
-                ),
-              );
-              placemarkFromCoordinates(posistion.latitude, posistion.longitude)
-                  .then(
-                (value) => {
-                  if (value.isNotEmpty)
-                    {
-                      if (mounted)
-                        {
-                          setState(
-                            () {
-                              widget.markerMap[posistion] = value;
-                            },
-                          ),
-                        }
-                    },
-                },
-              );
+                );
+                placemarkFromCoordinates(
+                        posistion.latitude, posistion.longitude)
+                    .then(
+                  (value) => {
+                    if (value.isNotEmpty)
+                      {
+                        if (mounted)
+                          {
+                            setState(
+                              () {
+                                widget.markerMap[posistion] = value;
+                              },
+                            ),
+                          }
+                      },
+                  },
+                );
+              }
+            } catch (ex) {
+              return;
             }
           },
         );
