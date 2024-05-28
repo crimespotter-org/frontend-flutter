@@ -1005,7 +1005,7 @@ class _EditCaseState extends State<EditCase> {
       shownCase!.id = createdCase;
       shownCase!.isNew = false;
       //links
-      for (var link in links.where((element) => element.isNew)) {
+      for (var link in links) {
         _saveLinkToSupaBase(link);
       }
 
